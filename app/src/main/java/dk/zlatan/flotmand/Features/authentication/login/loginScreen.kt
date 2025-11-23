@@ -41,7 +41,7 @@ import dk.zlatan.flotmand.design_system.componenets.Header
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 
 @Composable
-fun loginScreen(
+fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
     onLoginSuccess: () -> Unit = {}
@@ -94,6 +94,9 @@ internal fun LoginContent(
 ) {
     Box(modifier = modifier) {
         Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surfaceTint)
         ) {
 
             Header(

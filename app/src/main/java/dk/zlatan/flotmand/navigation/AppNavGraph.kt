@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import dk.zlatan.flotmand.Features.authentication.login.loginScreen
+import dk.zlatan.flotmand.Features.authentication.login.LoginScreen
 import dk.zlatan.flotmand.Features.frontpage.FrontpageContent
 import dk.zlatan.flotmand.Features.profile.ProfileScreen
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -24,7 +24,7 @@ fun AppNavGraph(
     ) {
         composable(Screen.Login.route) {
             if (!isLoggedIn) {
-                loginScreen(
+                LoginScreen(
                     viewModel = hiltViewModel(),
                     modifier = Modifier,
                     onLoginSuccess = {
