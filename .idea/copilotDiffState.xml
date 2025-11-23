@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/app/src/main/java/dk/zlatan/flotmand/Features/frontpage/FrontPageViewModel.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/dk/zlatan/flotmand/Features/frontpage/FrontPageViewModel.kt" />
+              <option name="originalContent" value="package dk.zlatan.flotmand.Features.frontpage&#10;&#10;import androidx.lifecycle.ViewModel&#10;import dagger.hilt.android.lifecycle.HiltViewModel&#10;import javax.inject.Inject&#10;&#10;@HiltViewModel&#10;class FrontPageViewModel @Inject constructor() : ViewModel() {&#10;    // Add your dependencies in the constructor as needed&#10;}" />
+              <option name="updatedContent" value="package dk.zlatan.flotmand.Features.frontpage&#10;&#10;import androidx.lifecycle.ViewModel&#10;import dagger.hilt.android.lifecycle.HiltViewModel&#10;import javax.inject.Inject&#10;&#10;@HiltViewModel&#10;class FrontPageViewModel @Inject constructor() : ViewModel() {&#10;    // Add your dependencies in the constructor as needed&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+        <entry key="$PROJECT_DIR$/app/src/main/java/dk/zlatan/flotmand/Features/frontpage/model/User.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/dk/zlatan/flotmand/Features/frontpage/model/User.kt" />
+              <option name="originalContent" value="package dk.zlatan.flotmand.Features.frontpage.model&#10;&#10;import com.google.firebase.auth.FirebaseUser&#10;&#10;data class User(&#10;    val uid: String? = null,&#10;    val email: String? = null,&#10;    val displayName: String? = null,&#10;    val photoUrl: String? = null,&#10;    val profilePicture: Int? = null, // For local resource fallback&#10;    val name: String? = null // For local fallback or custom name&#10;) {&#10;    // Optional: secondary constructor for FirebaseUser&#10;    constructor(firebaseUser: FirebaseUser?) : this(&#10;        uid = firebaseUser?.uid,&#10;        email = firebaseUser?.email,&#10;        displayName = firebaseUser?.displayName,&#10;        photoUrl = firebaseUser?.photoUrl?.toString(),&#10;        profilePicture = null,&#10;        name = firebaseUser?.displayName&#10;    )&#10;}&#10;" />
+              <option name="updatedContent" value="package dk.zlatan.flotmand.Features.frontpage.model&#10;&#10;import com.google.firebase.auth.FirebaseUser&#10;&#10;data class User(&#10;    val uid: String? = null,&#10;    val email: String? = null,&#10;    val displayName: String? = null,&#10;    val photoUrl: String? = null,&#10;    val profilePicture: Int? = null, // For local resource fallback&#10;    val name: String? = null // For local fallback or custom name&#10;) {&#10;    // Optional: secondary constructor for FirebaseUser&#10;    constructor(firebaseUser: FirebaseUser?) : this(&#10;        uid = firebaseUser?.uid,&#10;        email = firebaseUser?.email,&#10;        displayName = firebaseUser?.displayName,&#10;        photoUrl = firebaseUser?.photoUrl?.toString(),&#10;        profilePicture = null,&#10;        name = firebaseUser?.displayName&#10;    )&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
