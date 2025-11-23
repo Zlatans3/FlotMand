@@ -1,8 +1,23 @@
 package dk.zlatan.flotmand.Features.frontpage
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.Features.frontpage.model.Event
+import dk.zlatan.flotmand.Features.frontpage.model.Event.Companion.previewEvents
+import dk.zlatan.flotmand.Features.frontpage.ui.EventCard
+import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageHeader
+import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.R
 
 @Composable
 fun FrontPageRoute(
@@ -23,15 +38,40 @@ fun FrontPageScreen(
 @Composable
 fun FrontpageContent(
     modifier: Modifier = Modifier,
-
+    eventList: List<Event> = emptyList(),
     ) {
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = modifier.verticalScroll(scrollState),
+    ) {
+        FrontPageHeader(
 
+        )
+
+
+        VSpacer(12.dp)
+
+        eventList.forEach { eventDetails ->
+            EventCard(
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+                userName = eventDetails.user?.name.orEmpty(),
+                eventName = eventDetails.eventName.orEmpty(),
+                eventDate = eventDetails.eventDate.orEmpty(),
+                eventTime = eventDetails.eventTime.orEmpty(),
+            )
+        }
+
+
+    }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun FrontpageContentPreview() {
-    FrontpageContent(
 
+    val events = previewEvents(5)
+    FrontpageContent(
+        modifier = Modifier,
+        eventList = events,
     )
 }
