@@ -13,6 +13,7 @@ import dk.zlatan.flotmand.Features.frontpage.model.Event.Companion.previewEvents
 import dk.zlatan.flotmand.Features.frontpage.ui.EventCard
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageHeader
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 
 @Composable
 fun FrontPageRoute(
@@ -63,10 +64,11 @@ fun FrontpageContent(
 @Preview(showBackground = true)
 @Composable
 private fun FrontpageContentPreview() {
-
     val events = previewEvents(5)
-    FrontpageContent(
-        modifier = Modifier,
-        eventList = events,
-    )
+    FlotMandTheme {
+        FrontpageContent(
+            modifier = Modifier,
+            eventList = events,
+        )
+    }
 }
