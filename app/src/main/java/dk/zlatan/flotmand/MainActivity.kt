@@ -11,22 +11,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import dk.zlatan.flotmand.Features.authentication.login.LoginUiState
+import dk.zlatan.flotmand.Features.authentication.login.LoginViewModel
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import dk.zlatan.flotmand.Features.frontpage.FrontpageContent
-import dk.zlatan.flotmand.Features.authentication.login.loginScreen
+import dk.zlatan.flotmand.navigation.AppNavGraph
+import dk.zlatan.flotmand.navigation.Screen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -44,47 +40,46 @@ class MainActivity : ComponentActivity() {
 @PreviewScreenSizes
 @Composable
 fun FlotMandApp() {
-    var isLoggedIn by rememberSaveable { mutableStateOf(false) }
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    val navController = rememberNavController()
+    val loginViewModel: LoginViewModel = hiltViewModel()
+    val uiState by loginViewModel.uiState.collectAsState(initial = LoginUiState())
 
-    if (!isLoggedIn) {
-        loginScreen(onGoogleLoginClick = { isLoggedIn = true })
-    } else {
-        NavigationSuiteScaffold(
-            navigationSuiteItems = {
-                AppDestinations.entries.forEach {
-                    item(
-                        icon = {
-                            Icon(
-                                it.icon,
-                                contentDescription = it.label
-                            )
-                        },
-                        label = { Text(it.label) },
-                        selected = it == currentDestination,
-                        onClick = { currentDestination = it }
-                    )
-                }
-            }
-        ) {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                topBar = {
+    if (!uiState.isLoggedIn) {
+        // Only show the login screen, no top bar or navigation
+        AppNavGraph(
+            navController = navController,
+            isLoggedIn = false,
+            modifier = Modifier.fillMaxSize()
+        )
+        return
+    }
 
-                }
-
-            ) { innerPadding ->
-                FrontpageContent()
+    val bottomNavItems = listOf(Screen.Home, Screen.AddEvent, Screen.Profile)
+    NavigationSuiteScaffold(
+        navigationSuiteItems = {
+            bottomNavItems.forEach { screen ->
+                item(
+                    icon = { Icon(screen.icon, contentDescription = screen.label) },
+                    label = { Text(screen.label) },
+                    selected = navController.currentDestination?.route == screen.route,
+                    onClick = {
+                        navController.navigate(screen.route) {
+                            popUpTo(Screen.Home.route) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                )
             }
         }
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize()
+        ) { innerPadding ->
+            AppNavGraph(
+                navController = navController,
+                isLoggedIn = true,
+                modifier = Modifier.fillMaxSize().padding(innerPadding)
+            )
+        }
     }
-}
-
-enum class AppDestinations(
-    val label: String,
-    val icon: ImageVector,
-) {
-    HOME("Home", Icons.Filled.Home),
-    FAVORITES("Favorites", Icons.Filled.Favorite),
-    PROFILE("Profile", Icons.Filled.AccountBox),
 }

@@ -1,5 +1,6 @@
-package dk.zlatan.flotmand.Features.frontpage.ui
+package dk.zlatan.flotmand.design_system.componenets
 
+import android.icu.text.CaseMap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -16,14 +17,17 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 
 @Composable
-internal fun FrontPageHeader(
+internal fun Header(
     modifier: Modifier = Modifier,
-
-) {
+    headerTitle: String,
+    headerTopPadding: Dp = 90.dp
+    ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -32,14 +36,14 @@ internal fun FrontPageHeader(
                 shape = RoundedCornerShape(
                     topStart = 0.dp,
                     topEnd = 0.dp,
-                    bottomStart = 24.dp, // adjust for desired roundness
+                    bottomStart = 24.dp,
                     bottomEnd = 24.dp
                 )
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        VSpacer(90.dp)
+        VSpacer(headerTopPadding)
         Image(
             painter = painterResource(id = R.drawable.flotmandapp),
             contentDescription = "Flotmand Logo",
@@ -49,7 +53,7 @@ internal fun FrontPageHeader(
         )
 
         Text(
-            text = "Forside",
+            text = headerTitle,
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary,
         )
@@ -62,5 +66,10 @@ internal fun FrontPageHeader(
 @Preview
 @Composable
 private fun FrontPageHeaderPreview() {
-    FrontPageHeader(modifier = Modifier)
+    FlotMandTheme() {
+        Header(
+            modifier = Modifier,
+            headerTitle = "Forside"
+        )
+    }
 }
