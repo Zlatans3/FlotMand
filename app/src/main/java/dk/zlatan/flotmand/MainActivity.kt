@@ -25,6 +25,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import dk.zlatan.flotmand.Features.frontpage.FrontpageContent
+import dk.zlatan.flotmand.Features.authentication.login.loginScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -42,36 +44,38 @@ class MainActivity : ComponentActivity() {
 @PreviewScreenSizes
 @Composable
 fun FlotMandApp() {
+    var isLoggedIn by rememberSaveable { mutableStateOf(false) }
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
 
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            AppDestinations.entries.forEach {
-                item(
-                    icon = {
-                        Icon(
-                            it.icon,
-                            contentDescription = it.label
-                        )
-                    },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it }
-                )
+    if (!isLoggedIn) {
+        loginScreen(onGoogleLoginClick = { isLoggedIn = true })
+    } else {
+        NavigationSuiteScaffold(
+            navigationSuiteItems = {
+                AppDestinations.entries.forEach {
+                    item(
+                        icon = {
+                            Icon(
+                                it.icon,
+                                contentDescription = it.label
+                            )
+                        },
+                        label = { Text(it.label) },
+                        selected = it == currentDestination,
+                        onClick = { currentDestination = it }
+                    )
+                }
             }
-        }
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            topBar = {
+        ) {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = {
 
+                }
+
+            ) { innerPadding ->
+                FrontpageContent()
             }
-
-        ) { innerPadding ->
-            Greeting(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding)
-            )
         }
     }
 }
@@ -83,20 +87,4 @@ enum class AppDestinations(
     HOME("Home", Icons.Filled.Home),
     FAVORITES("Favorites", Icons.Filled.Favorite),
     PROFILE("Profile", Icons.Filled.AccountBox),
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FlotMandTheme {
-        Greeting("Android")
-    }
 }
