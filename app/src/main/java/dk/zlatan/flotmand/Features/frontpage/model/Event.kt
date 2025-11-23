@@ -8,4 +8,14 @@ data class Event(
 ) {
     // No-arg constructor for Firebase
     constructor() : this(null, null, null, null)
+
+     fun previewEvent() = Event(
+        eventId = "event123",
+        user = User(
+            uid = "user123",
+            email = ""
+        ),
+        eventDate = "2024-06-15",
+        eventTime = "18:00"
+    )
 }
