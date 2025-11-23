@@ -2,6 +2,8 @@ package dk.zlatan.flotmand.Features.frontpage
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -35,19 +37,15 @@ fun FrontPageScreen(
 fun FrontpageContent(
     modifier: Modifier = Modifier,
     eventList: List<Event> = emptyList(),
+) {
+    LazyColumn(
+        modifier = modifier,
     ) {
-    val scrollState = rememberScrollState()
-    Column(
-        modifier = modifier.verticalScroll(scrollState),
-    ) {
-        FrontPageHeader(
-
-        )
-
-
-        VSpacer(12.dp)
-
-        eventList.forEach { eventDetails ->
+        item {
+            FrontPageHeader()
+            VSpacer(12.dp)
+        }
+        items(eventList) { eventDetails ->
             EventCard(
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
                 userName = eventDetails.user?.name.orEmpty(),
@@ -56,7 +54,6 @@ fun FrontpageContent(
                 eventTime = eventDetails.eventTime.orEmpty(),
             )
         }
-
 
     }
 }
