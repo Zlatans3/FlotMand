@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,6 +20,7 @@ import dk.zlatan.flotmand.Features.frontpage.ui.EventCard
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageHeader
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
+import dk.zlatan.flotmand.model.User
 
 @Composable
 fun FrontPageRoute(
@@ -40,6 +42,7 @@ fun FrontPageScreen(
 fun FrontpageContent(
     modifier: Modifier = Modifier,
     eventList: List<Event> = emptyList(),
+    user: User? = null,
 ) {
     LazyColumn(
         modifier = modifier
@@ -48,6 +51,14 @@ fun FrontpageContent(
         item {
             FrontPageHeader()
             VSpacer(12.dp)
+            if (user != null) {
+                Text(
+                    "Bruger: ${user.displayName} (${user.email})",
+                    style = MaterialTheme.typography.displayMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                VSpacer(8.dp)
+            }
         }
         items(eventList) { eventDetails ->
             EventCard(
