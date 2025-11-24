@@ -33,7 +33,7 @@ internal fun EventCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.onPrimary
+            containerColor = MaterialTheme.colorScheme.inverseOnSurface
         ), // find nogle farver der passer bedre
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {

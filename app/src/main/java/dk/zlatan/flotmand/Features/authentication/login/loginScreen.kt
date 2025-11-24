@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -96,7 +97,7 @@ internal fun LoginContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceTint)
+                .background(MaterialTheme.colorScheme.surfaceContainer)
         ) {
 
             Header(
@@ -111,8 +112,9 @@ internal fun LoginContent(
                     .padding(24.dp)
                     .clickable(enabled = !uiState.isLoading, onClick = onGoogleLoginClick),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Row(
@@ -124,11 +126,11 @@ internal fun LoginContent(
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.onPrimary)
+                                .background(MaterialTheme.colorScheme.onPrimaryContainer)
                                 .padding(6.dp)
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.google__g__logo),
+                                painter = painterResource(id = R.drawable.google_g_logo),
                                 contentDescription = "Google Logo",
                                 modifier = Modifier.size(24.dp)
                             )
@@ -166,6 +168,7 @@ internal fun LoginContent(
 }
 
 @Preview(showBackground = true, showSystemUi = true)
+@PreviewLightDark
 @Composable
 private fun loginScreenPreview() {
     FlotMandTheme() {

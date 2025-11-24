@@ -44,16 +44,6 @@ fun FlotMandApp() {
     val loginViewModel: LoginViewModel = hiltViewModel()
     val uiState by loginViewModel.uiState.collectAsState(initial = LoginUiState())
 
-    if (!uiState.isLoggedIn) {
-        // Only show the login screen, no top bar or navigation
-        AppNavGraph(
-            navController = navController,
-            isLoggedIn = false,
-            modifier = Modifier.fillMaxSize()
-        )
-        return
-    }
-
     val bottomNavItems = listOf(Screen.Home, Screen.AddEvent, Screen.Profile)
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -77,7 +67,7 @@ fun FlotMandApp() {
         ) { innerPadding ->
             AppNavGraph(
                 navController = navController,
-                isLoggedIn = true,
+                isLoggedIn = uiState.isLoggedIn,
                 modifier = Modifier.fillMaxSize().padding(innerPadding)
             )
         }
