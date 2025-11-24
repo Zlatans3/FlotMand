@@ -68,6 +68,7 @@ fun FlotMandApp() {
                 navController = navController,
                 user = uiState.user,
                 dinnerEvents = uiState.dinnerEvents,
+                isAuthChecked = uiState.isLoading,
                 modifier = Modifier.fillMaxSize().padding(innerPadding)
             )
         }

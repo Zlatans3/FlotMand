@@ -1,5 +1,7 @@
 package dk.zlatan.flotmand.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -72,12 +74,27 @@ object AppNav {
 }
 
 @Composable
+fun LoadingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        androidx.compose.material3.CircularProgressIndicator()
+    }
+}
+
+@Composable
 fun AppNavGraph(
     navController: NavHostController,
     user: User?,
+    isAuthChecked: Boolean,
     dinnerEvents: List<DinnerEvent>,
     modifier: Modifier = Modifier
 ) {
+    if (!isAuthChecked) {
+        LoadingScreen()
+        return
+    }
     val startDestination = if (user != null) AppNav.HOME_ROUTE else AppNav.LOGIN_ROUTE
     NavHost(
         navController = navController,
