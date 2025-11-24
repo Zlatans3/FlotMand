@@ -6,12 +6,70 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavOptions
 import dk.zlatan.flotmand.Features.authentication.login.LoginScreen
 import dk.zlatan.flotmand.Features.frontpage.FrontpageContent
 import dk.zlatan.flotmand.Features.profile.ProfileScreen
-import androidx.hilt.navigation.compose.hiltViewModel
 import dk.zlatan.flotmand.model.DinnerEvent
 import dk.zlatan.flotmand.model.User
+
+object AppNav {
+    const val HOME_ROUTE = "home"
+    const val LOGIN_ROUTE = "login"
+    const val ADD_EVENT_ROUTE = "add_event"
+    const val PROFILE_ROUTE = "profile"
+
+    fun NavGraphBuilder.homeScreen(
+        user: User?,
+        dinnerEvents: List<DinnerEvent>
+    ) {
+        composable(HOME_ROUTE) {
+            if (user != null) {
+                FrontpageContent(modifier = Modifier)
+            }
+        }
+    }
+
+    fun NavGraphBuilder.loginScreen() {
+        composable(LOGIN_ROUTE) {
+            LoginScreen()
+        }
+    }
+
+    fun NavGraphBuilder.addEventScreen(user: User?) {
+        composable(ADD_EVENT_ROUTE) {
+            if (user != null) {
+                Text("Add Event screen coming soon", modifier = Modifier)
+            }
+        }
+    }
+
+    fun NavGraphBuilder.profileScreen(user: User?) {
+        composable(PROFILE_ROUTE) {
+            if (user != null) {
+                ProfileScreen(
+                    modifier = Modifier,
+                    userImage = null,
+                    userName = user.displayName
+                )
+            }
+        }
+    }
+
+    fun NavHostController.navigateToHome(navOptions: NavOptions? = null) {
+        this.navigate(HOME_ROUTE, navOptions)
+    }
+    fun NavHostController.navigateToLogin(navOptions: NavOptions? = null) {
+        this.navigate(LOGIN_ROUTE, navOptions)
+    }
+    fun NavHostController.navigateToAddEvent(navOptions: NavOptions? = null) {
+        this.navigate(ADD_EVENT_ROUTE, navOptions)
+    }
+    fun NavHostController.navigateToProfile(navOptions: NavOptions? = null) {
+        this.navigate(PROFILE_ROUTE, navOptions)
+    }
+}
 
 @Composable
 fun AppNavGraph(
@@ -20,44 +78,17 @@ fun AppNavGraph(
     dinnerEvents: List<DinnerEvent>,
     modifier: Modifier = Modifier
 ) {
-    val isLoggedIn = user != null
+    val startDestination = if (user != null) AppNav.HOME_ROUTE else AppNav.LOGIN_ROUTE
     NavHost(
         navController = navController,
-        startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route,
+        startDestination = startDestination,
         modifier = modifier
     ) {
-        composable(Screen.Login.route) {
-            if (!isLoggedIn) {
-                LoginScreen(
-                    viewModel = hiltViewModel(),
-                    modifier = Modifier,
-                    onLoginSuccess = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    }
-                )
-            }
-        }
-        composable(Screen.Home.route) {
-            if (isLoggedIn) {
-                FrontpageContent(modifier = Modifier)
-            }
-        }
-        composable(Screen.AddEvent.route) {
-            if (isLoggedIn) {
-                Text("Add Event screen coming soon", modifier = Modifier)
-            }
-        }
-        composable(Screen.Profile.route) {
-            if (isLoggedIn) {
-                ProfileScreen(
-                    modifier = Modifier,
-                    userImage = null, // Remember to provide user image if available
-                    userName = user.displayName
-                )
-            }
+        with(AppNav) {
+            loginScreen()
+            homeScreen(user, dinnerEvents)
+            addEventScreen(user)
+            profileScreen(user)
         }
     }
 }
