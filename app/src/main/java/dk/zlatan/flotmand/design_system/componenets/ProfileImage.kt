@@ -4,10 +4,8 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,7 +23,7 @@ internal fun ProfileImage(
     modifier: Modifier = Modifier,
     @DrawableRes profilePic: Int? = null,
     profileSize: Dp = 40.dp,
-    userNameInitials: String = "ZS",
+    userName: String = "Zlatan Stadler",
     ) {
     if (profilePic != null) {
         Image(
@@ -43,7 +41,7 @@ internal fun ProfileImage(
             contentAlignment = Alignment.Center
         ){
             Text(
-                text = userNameInitials,
+                text = getInitials(userName),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.tertiary,
                 fontSize = (profileSize.value / 2).sp
@@ -56,4 +54,15 @@ internal fun ProfileImage(
 @Composable
 private fun ProfileImagePreview() {
     ProfileImage(modifier = Modifier)
+}
+
+// Helper function to extract initials from userName
+private fun getInitials(userName: String): String {
+    val parts = userName.trim().split(" ").filter { it.isNotEmpty() }
+    return when {
+        parts.size >= 2 -> (parts[0].firstOrNull()?.toString() ?: "") + (parts[1].firstOrNull()?.toString() ?: "")
+        parts.size == 1 && parts[0].length >= 2 -> parts[0].substring(0, 2)
+        parts.size == 1 && parts[0].isNotEmpty() -> parts[0].substring(0, 1)
+        else -> "--"
+    }.uppercase()
 }

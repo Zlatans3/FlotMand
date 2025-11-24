@@ -52,7 +52,11 @@ fun AppNavGraph(
         }
         composable(Screen.Profile.route) {
             if (isLoggedIn) {
-                ProfileScreen(modifier = Modifier)
+                ProfileScreen(
+                    modifier = Modifier,
+                    userImage = null, // Remember to provide user image if available
+                    userName = user.displayName
+                )
             }
         }
     }

@@ -48,7 +48,7 @@ internal fun EventCard(
             ProfileImage(
                 modifier = Modifier,
                 profilePic = userProfilePic,
-                userNameInitials = userName
+                userName = userName
                     .split(" ")
                     .mapNotNull { it.firstOrNull()?.toString() }
                     .take(2)

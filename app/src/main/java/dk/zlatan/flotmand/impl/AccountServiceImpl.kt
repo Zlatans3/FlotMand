@@ -76,7 +76,13 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     }
 
     private fun FirebaseUser?.toNotesUser(): User {
-        return if (this == null) User() else User(
+        return if (this == null) User(
+            id = "",
+            email = "",
+            provider = "",
+            displayName = "",
+            isAnonymous = true
+        ) else User(
             id = this.uid,
             email = this.email ?: "",
             provider = this.providerId,

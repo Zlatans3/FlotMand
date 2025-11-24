@@ -21,6 +21,10 @@ data class Event(
                     eventId = "event${index + 1}",
                     user = User(
                         displayName = name,
+                        email = "",
+                        id = "user${index + 1}",
+                        isAnonymous = false,
+                        provider = "preview"
                     ),
                     eventName = "Middag hos $name",
                     eventDate = "2024-06-15",
