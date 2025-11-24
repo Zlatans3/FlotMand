@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import dk.zlatan.flotmand.design_system.componenets.HeaderContainer
 
 @Composable
 internal fun ProfileScreen(
@@ -11,6 +12,12 @@ internal fun ProfileScreen(
 
 ) {
     Column() {
+        HeaderContainer(
+            modifier = Modifier
+        ) {
+            // Add profile header content here
+        }
+
 
     }
 }

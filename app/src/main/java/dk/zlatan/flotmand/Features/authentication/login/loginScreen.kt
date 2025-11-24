@@ -1,8 +1,7 @@
 package dk.zlatan.flotmand.Features.authentication.login
 
-import android.app.Activity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,7 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,26 +34,40 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.credentials.Credential
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import dk.zlatan.flotmand.R
-import dk.zlatan.flotmand.design_system.componenets.Header
+import dk.zlatan.flotmand.design_system.componenets.FlotHeader
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
-    onLoginSuccess: () -> Unit = {}
+    onLoginSuccess: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState(initial = LoginUiState())
+    val scope = rememberCoroutineScope()
 
     LoginContent(
         modifier = modifier.fillMaxSize(),
         onGoogleLoginClick = {
+            scope.launch {
+                launchCredManButtonUI(
+                    context = context,
+                    onRequestResult = { credential ->
+                        viewModel.onSignInWithGoogle(credential)
+                    }
+                )
+            }
         },
         uiState = uiState
     )
@@ -73,7 +86,7 @@ internal fun LoginContent(
                 .background(MaterialTheme.colorScheme.surfaceContainer)
         ) {
 
-            Header(
+            FlotHeader(
                 modifier = Modifier.fillMaxWidth(),
                 headerTitle = "Log ind",
                 headerTopPadding = 200.dp
@@ -81,43 +94,10 @@ internal fun LoginContent(
 
             VSpacer(20.dp)
 
-            // Login card
-            Card(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .clickable(enabled = !uiState.isLoading, onClick = onGoogleLoginClick),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.onPrimaryContainer)
-                            .padding(6.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.google_g_logo),
-                            contentDescription = "Google Logo",
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "Login med din google konto",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
+            LoginCard(
+                isLoading = uiState.isLoading,
+                onGoogleLoginClick = onGoogleLoginClick
+            )
 
             VSpacer(20.dp)
 
@@ -154,6 +134,77 @@ internal fun LoginContent(
                 CircularProgressIndicator()
             }
         }
+    }
+}
+
+// TODO: Zlatan 24/11/2025 Refactor into generic card
+@Composable
+fun LoginCard(
+    isLoading: Boolean,
+    onGoogleLoginClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 20.dp)
+            .clickable(enabled = !isLoading, onClick = onGoogleLoginClick),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.onPrimaryContainer)
+                    .padding(6.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.google_g_logo),
+                    contentDescription = "Google Logo",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "Login med din google konto",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+    }
+}
+
+private suspend fun launchCredManButtonUI(
+    context: Context,
+    onRequestResult: (Credential) -> Unit
+) {
+    try {
+        val signInWithGoogleOption = GetSignInWithGoogleOption
+            .Builder(serverClientId = context.getString(R.string.default_web_client_id))
+            .build()
+
+        val request = GetCredentialRequest.Builder()
+            .addCredentialOption(signInWithGoogleOption)
+            .build()
+
+        val result = CredentialManager.create(context).getCredential(
+            request = request,
+            context = context
+        )
+
+        onRequestResult(result.credential)
+    } catch (e: NoCredentialException) {
+        Log.e("ERROR_TAG", e.message.orEmpty())
+//        SnackbarManager.showMessage(context.getString(R.string.no_accounts_error))
+    } catch (e: GetCredentialException) {
+        Log.d("ERROR_TAG", e.message.orEmpty())
     }
 }
 

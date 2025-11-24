@@ -5,6 +5,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
@@ -63,6 +64,11 @@ class AccountServiceImpl @Inject constructor() : AccountService {
 
         // Sign the user back in anonymously.
         createAnonymousAccount()
+    }
+
+    override suspend fun signInWithGoogle(idToken: String) {
+        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+        Firebase.auth.signInWithCredential(firebaseCredential).await()
     }
 
     override suspend fun deleteAccount() {
