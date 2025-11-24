@@ -52,7 +52,7 @@ fun FrontpageContent(
         items(eventList) { eventDetails ->
             EventCard(
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
-                userName = eventDetails.user?.name.orEmpty(),
+                userName = eventDetails.user?.displayName.orEmpty(),
                 eventName = eventDetails.eventName.orEmpty(),
                 eventDate = eventDetails.eventDate.orEmpty(),
                 eventTime = eventDetails.eventTime.orEmpty(),

@@ -1,5 +1,7 @@
 package dk.zlatan.flotmand.Features.frontpage.model
 
+import dk.zlatan.flotmand.model.User
+
 data class Event(
     val eventId: String? = null,
     val user: User? = null,
@@ -18,9 +20,7 @@ data class Event(
                 Event(
                     eventId = "event${index + 1}",
                     user = User(
-                        uid = "user${index + 1}",
-                        name = name,
-                        email = ""
+                        displayName = name,
                     ),
                     eventName = "Middag hos $name",
                     eventDate = "2024-06-15",

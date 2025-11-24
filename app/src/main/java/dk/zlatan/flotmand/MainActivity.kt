@@ -18,8 +18,6 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import dk.zlatan.flotmand.Features.authentication.login.LoginUiState
-import dk.zlatan.flotmand.Features.authentication.login.LoginViewModel
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.navigation.AppNavGraph
 import dk.zlatan.flotmand.navigation.Screen
@@ -40,9 +38,10 @@ class MainActivity : ComponentActivity() {
 @PreviewScreenSizes
 @Composable
 fun FlotMandApp() {
+    val viewModel: MainActivityViewModel = hiltViewModel()
     val navController = rememberNavController()
-    val loginViewModel: LoginViewModel = hiltViewModel()
-    val uiState by loginViewModel.uiState.collectAsState(initial = LoginUiState())
+
+    val uiState by viewModel.uiState.collectAsState()
 
     val bottomNavItems = listOf(Screen.Home, Screen.AddEvent, Screen.Profile)
     NavigationSuiteScaffold(
@@ -67,7 +66,8 @@ fun FlotMandApp() {
         ) { innerPadding ->
             AppNavGraph(
                 navController = navController,
-                isLoggedIn = uiState.isLoggedIn,
+                user = uiState.user,
+                dinnerEvents = uiState.dinnerEvents,
                 modifier = Modifier.fillMaxSize().padding(innerPadding)
             )
         }

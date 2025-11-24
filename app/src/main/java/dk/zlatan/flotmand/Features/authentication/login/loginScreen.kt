@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -39,6 +40,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.Header
+import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 
 @Composable
@@ -50,38 +52,9 @@ fun LoginScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState(initial = LoginUiState())
 
-    // Call onLoginSuccess when login is successful
-    if (uiState.isLoggedIn) {
-        onLoginSuccess()
-        return
-    }
-
-    // Configure GoogleSignInClient
-    val gso = remember {
-        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id)) // Make sure this matches your google-services.json
-            .requestEmail()
-            .build()
-    }
-    val googleSignInClient = remember { GoogleSignIn.getClient(context, gso) }
-
-    // Launcher for Google Sign-In
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            val account = task.result
-            val idToken = account?.idToken
-            if (idToken != null) {
-                viewModel.onGoogleLogin(idToken)
-            }
-        }
-    }
-
     LoginContent(
         modifier = modifier.fillMaxSize(),
         onGoogleLoginClick = {
-            val signInIntent = googleSignInClient.signInIntent
-            launcher.launch(signInIntent)
         },
         uiState = uiState
     )
@@ -106,44 +79,61 @@ internal fun LoginContent(
                 headerTopPadding = 200.dp
             )
 
+            VSpacer(20.dp)
+
             // Login card
             Card(
                 modifier = Modifier
-                    .padding(24.dp)
+                    .padding(horizontal = 20.dp)
                     .clickable(enabled = !uiState.isLoading, onClick = onGoogleLoginClick),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Row(
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Box(
                         modifier = Modifier
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.onPrimaryContainer)
+                            .padding(6.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.onPrimaryContainer)
-                                .padding(6.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.google_g_logo),
-                                contentDescription = "Google Logo",
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text(
-                            text = "Login med din google konto",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        Image(
+                            painter = painterResource(id = R.drawable.google_g_logo),
+                            contentDescription = "Google Logo",
+                            modifier = Modifier.size(24.dp)
                         )
                     }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "Login med din google konto",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 }
             }
+
+            VSpacer(20.dp)
+
+            // TODO: Zlatan 24/11/2025 Maybe not needed
+            Text(
+                text = "Første gang? tryk her for at oprette dig",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        onClick = {}
+                    )
+                    .padding(horizontal = 20.dp)
+            )
             // Optionally show error
             uiState.errorMessage?.let {
                 Text(

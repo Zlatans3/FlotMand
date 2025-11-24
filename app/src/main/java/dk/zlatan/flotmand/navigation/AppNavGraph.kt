@@ -10,13 +10,17 @@ import dk.zlatan.flotmand.Features.authentication.login.LoginScreen
 import dk.zlatan.flotmand.Features.frontpage.FrontpageContent
 import dk.zlatan.flotmand.Features.profile.ProfileScreen
 import androidx.hilt.navigation.compose.hiltViewModel
+import dk.zlatan.flotmand.model.DinnerEvent
+import dk.zlatan.flotmand.model.User
 
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    isLoggedIn: Boolean,
+    user: User?,
+    dinnerEvents: List<DinnerEvent>,
     modifier: Modifier = Modifier
 ) {
+    val isLoggedIn = user != null
     NavHost(
         navController = navController,
         startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route,
