@@ -13,6 +13,7 @@ import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.util.GoogleAuthUiClient
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,14 +34,11 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     // State for login result
-    private val _loginState = MutableStateFlow<Boolean?>(null)
-    val loginState: StateFlow<Boolean?> = _loginState.asStateFlow()
+    private val loginState: MutableStateFlow<Boolean?> = MutableStateFlow<Boolean?>(null)
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private val isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+    private val errorMessage: MutableStateFlow<String?> = MutableStateFlow<String?>(null)
 
     // Combined UI state (example)
     val uiState = combine(
@@ -61,13 +59,13 @@ class LoginViewModel @Inject constructor(
 
     // Listen to FirebaseAuth state changes
     private val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-        _loginState.value = auth.currentUser != null
+        loginState.value = auth.currentUser != null
     }
 
     init {
         firebaseAuth.addAuthStateListener(authStateListener)
         // Set initial state
-        _loginState.value = firebaseAuth.currentUser != null
+        loginState.value = firebaseAuth.currentUser != null
     }
 
     override fun onCleared() {
