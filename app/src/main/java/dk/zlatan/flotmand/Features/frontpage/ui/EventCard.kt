@@ -1,6 +1,7 @@
 package dk.zlatan.flotmand.Features.frontpage.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,10 +29,10 @@ internal fun EventCard(
     eventName: String,
     eventDate: String,
     eventTime: String,
-
+    onClick: () -> Unit,
     ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.inverseOnSurface
@@ -97,6 +98,7 @@ private fun EventCardPreview() {
         userName = "Zlatan Stadler",
         eventDate = "06-15",
         eventTime = "18:00",
-        eventName = "Middag hos Zlatan"
+        eventName = "Middag hos Zlatan",
+        onClick = {}
     )
 }

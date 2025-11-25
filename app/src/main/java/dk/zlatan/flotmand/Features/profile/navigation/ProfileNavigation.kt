@@ -2,23 +2,31 @@ package dk.zlatan.flotmand.Features.profile.navigation
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.navigation
 import dk.zlatan.flotmand.Features.profile.ProfileScreenRoute
+import kotlinx.serialization.Serializable
 
-object ProfileNavigation {
-    const val PROFILE_ROUTE = "profile"
+@Serializable data object ProfileRoute
+const val ProfileGraphRoute = "profile_graph"
 
-    fun NavGraphBuilder.profileScreen(
-        onNavigateBack: () -> Unit = {},
-        onSignOut: () -> Unit = {}
-    ) {
-        composable(route = PROFILE_ROUTE) {
-            ProfileScreenRoute()
+fun NavHostController.navigateToProfile(builder: NavOptionsBuilder.() -> Unit = {}) {
+    navigate(ProfileGraphRoute, builder)
+}
+
+fun NavGraphBuilder.profileScreen(
+    onNavigateBack: () -> Unit = {},
+    onSignOut: () -> Unit = {},
+    profileDestination: NavGraphBuilder.() -> Unit = {}
+) {
+    navigation(startDestination = ProfileRoute.toString(), route = ProfileGraphRoute) {
+        composable(ProfileRoute.toString()) {
+            ProfileScreenRoute(
+                onNavigateBack = onNavigateBack,
+                onSignOut = onSignOut,
+            )
         }
-    }
-
-    fun NavHostController.navigateToProfile(navOptions: NavOptions? = null) {
-        this.navigate(PROFILE_ROUTE, navOptions)
+        profileDestination()
     }
 }

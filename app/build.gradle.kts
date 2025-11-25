@@ -80,6 +80,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation(libs.androidx.compose.runtime)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation("androidx.navigation:navigation-compose:2.7.7")

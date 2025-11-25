@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">FlotMand</string>
+
+
+    <string name="home_title">Hjem</string>
+    <string name="my_event_title">Mine events</string>
+    <string name="profile_title">Profil</string>
 </resources>

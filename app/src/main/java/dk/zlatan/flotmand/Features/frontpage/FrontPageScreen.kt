@@ -1,12 +1,9 @@
 package dk.zlatan.flotmand.Features.frontpage
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import dk.zlatan.flotmand.Features.frontpage.model.Event
 import dk.zlatan.flotmand.Features.frontpage.model.Event.Companion.previewEvents
 import dk.zlatan.flotmand.Features.frontpage.ui.EventCard
@@ -25,24 +23,24 @@ import dk.zlatan.flotmand.model.User
 @Composable
 fun FrontPageRoute(
     modifier: Modifier = Modifier,
-
+    onClickEvent: (String) -> Unit,
+    viewModel: FrontPageViewModel = hiltViewModel(),
     ) {
 
-}
-
-@Composable
-fun FrontPageScreen(
-    modifier: Modifier = Modifier,
-
-    ) {
-
+    FrontpageContent(
+        modifier = modifier,
+        onClickEvent = onClickEvent,
+        eventList = viewModel.eventList,
+        user = null
+    )
 }
 
 @Composable
 fun FrontpageContent(
     modifier: Modifier = Modifier,
     eventList: List<Event> = emptyList(),
-    user: User? = null,
+    onClickEvent: (String) -> Unit,
+    user: User?,
 ) {
     LazyColumn(
         modifier = modifier
@@ -67,6 +65,9 @@ fun FrontpageContent(
                 eventName = eventDetails.eventName.orEmpty(),
                 eventDate = eventDetails.eventDate.orEmpty(),
                 eventTime = eventDetails.eventTime.orEmpty(),
+                onClick = {
+                    onClickEvent(eventDetails.eventId.orEmpty())
+                }
             )
         }
 
@@ -82,6 +83,8 @@ private fun FrontpageContentPreview() {
         FrontpageContent(
             modifier = Modifier,
             eventList = events,
+            onClickEvent = {},
+            user = null
         )
     }
 }
