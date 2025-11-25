@@ -1,7 +1,6 @@
-package dk.zlatan.flotmand.Features.frontpage.dinner_event
+package dk.zlatan.flotmand.Features.my_events
 
 import androidx.lifecycle.ViewModel
-import dagger.assisted.AssistedFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

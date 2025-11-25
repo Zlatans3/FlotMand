@@ -1,10 +1,10 @@
-package dk.zlatan.flotmand.Features.MyEvents
+package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class MyEventsViewmodel @Inject constructor() : ViewModel() {
+class EventDetailViewModel @Inject constructor() : ViewModel() {
 
 }

@@ -18,7 +18,7 @@ data class Event(
             return List(count) { index ->
                 val name = names.random()
                 Event(
-                    eventId = "event${index + 1}",
+                    eventId = "event$name${index + 1}",
                     user = User(
                         displayName = name,
                         email = "",

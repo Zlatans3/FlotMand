@@ -3,10 +3,9 @@ package dk.zlatan.flotmand.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
-import dk.zlatan.flotmand.Features.frontpage.dinner_event.navigaiton.myEventScreen
-import dk.zlatan.flotmand.Features.frontpage.dinner_event.navigaiton.navigateToMyEvents
-import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageDestination
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.navigation.EventDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.navigation.frontPageSection
+import dk.zlatan.flotmand.Features.my_events.navigaiton.myEventScreen
 import dk.zlatan.flotmand.Features.profile.navigation.profileScreen
 import dk.zlatan.flotmand.ui.FmAppState
 
@@ -23,14 +22,14 @@ fun FmNavHost(
         modifier = modifier,
     ) {
         frontPageSection(
-            onEventClicked = { navController.navigateToMyEvents() }
-        ) {
-            myEventScreen(
-                showBackButton = true,
-                onBackClick = navController::popBackStack,
-                onMyEventClick = { navController.navigateToMyEvents() },
-            )
-        }
+            onEventClicked = {
+                navController.navigate("$EventDetailRoute/$it")
+            }
+        )
+
+        myEventScreen(
+        )
+
         profileScreen(
             onNavigateBack = navController::popBackStack,
             onSignOut = { }

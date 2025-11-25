@@ -8,6 +8,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.navigation.eventDetailScreen
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.navigation.navigateToEventDetail
 
 object FrontPageDestination {
     const val route = "front_page"
@@ -16,12 +18,11 @@ object FrontPageDestination {
 }
 
 fun NavController.navigateToFrontPage(builder: NavOptionsBuilder.() -> Unit = {}) {
-    navigate(FrontPageDestination.route, builder)
+    navigate("front_page_graph", builder)
 }
 
 fun NavGraphBuilder.frontPageSection(
     onEventClicked: (String) -> Unit,
-    topicDestination: NavGraphBuilder.() -> Unit,
 ) {
     navigation(
         startDestination = FrontPageDestination.routeWithArgs,
@@ -33,10 +34,8 @@ fun NavGraphBuilder.frontPageSection(
         ) { backStackEntry ->
             FrontPageRoute(
                 onClickEvent = onEventClicked,
-
             )
         }
-
-        topicDestination()
+        eventDetailScreen()
     }
 }

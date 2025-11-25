@@ -11,8 +11,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navOptions
-import dk.zlatan.flotmand.Features.frontpage.dinner_event.navigaiton.navigateToMyEvents
+import dk.zlatan.flotmand.Features.my_events.navigaiton.navigateToMyEvents
 import dk.zlatan.flotmand.Features.frontpage.navigation.navigateToFrontPage
 import dk.zlatan.flotmand.Features.profile.navigation.navigateToProfile
 import dk.zlatan.flotmand.navigation.TopLevelDestination
