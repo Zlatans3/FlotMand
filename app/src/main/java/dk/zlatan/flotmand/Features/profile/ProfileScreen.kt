@@ -3,8 +3,8 @@ package dk.zlatan.flotmand.Features.profile
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,18 +22,29 @@ import dk.zlatan.flotmand.design_system.componenets.dialogs.FmAlertDialog
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
+import okhttp3.internal.wait
 
 private const val set_name = "opsæt navn"
 
 @Composable
 fun ProfileScreenRoute(
     modifier: Modifier = Modifier,
-    onSignOut: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
+    navigateToLogin: () -> Unit = {},
 ) {
     val user by viewModel.user.collectAsState(initial = User(displayName = set_name))
+    val signedOut by viewModel.signedOut.collectAsState()
+    val isLoading by viewModel.signOutLoading.collectAsState()
     var sinOutDialogState by remember { mutableStateOf(false) }
     var newDisplayName by remember { mutableStateOf(user.displayName) }
+
+    // Navigate to login when signed out
+    if (signedOut) {
+        LaunchedEffect(signedOut) {
+            navigateToLogin()
+        }
+    }
+
     ProfileScreen(
         modifier = modifier,
         userName = user.displayName,
@@ -48,11 +59,14 @@ fun ProfileScreenRoute(
 
     if (sinOutDialogState)
     FmAlertDialog(
+        isLoading = isLoading,
         onDismiss = {
             sinOutDialogState = false
         },
         onSignOutClick = {
             viewModel.signOut()
+            sinOutDialogState = false
+            navigateToLogin()
         }
     )
 }
@@ -64,7 +78,7 @@ internal fun ProfileScreen(
     userName: String,
     onUpdateDisplayNameClick: (String) -> Unit,
     onLogoutClicked: () -> Unit = {},
-    ) {
+) {
     Column(modifier = modifier.fillMaxWidth()) {
         HeaderContainer(
             modifier = Modifier
@@ -78,8 +92,8 @@ internal fun ProfileScreen(
             )
             VSpacer(20.dp)
             DisplayName(
-                modifier = Modifier,
                 displayName = userName,
+                isLoading = false,
                 onUpdateDisplayNameClick = { updatedName ->
                     onUpdateDisplayNameClick(updatedName)
                 }
@@ -108,7 +122,7 @@ private fun ProfileScreenPreview() {
         ProfileScreen(
             modifier = Modifier,
             userName = "Oliver Payne",
-            onUpdateDisplayNameClick = {}
+            onUpdateDisplayNameClick = {},
         )
     }
 }
