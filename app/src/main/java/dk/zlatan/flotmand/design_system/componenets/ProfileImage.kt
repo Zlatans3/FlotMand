@@ -21,7 +21,7 @@ internal fun ProfileImage(
     modifier: Modifier = Modifier,
     profilePic: String? = null,
     profileSize: Dp = 40.dp,
-    userName: String = "Zlatan Stadler",
+    userName: String,
 ) {
     if (profilePic != null) {
         AsyncImage(
@@ -52,7 +52,11 @@ internal fun ProfileImage(
 @Preview
 @Composable
 private fun ProfileImagePreview() {
-    ProfileImage(modifier = Modifier)
+    ProfileImage(
+        modifier = Modifier,
+        profilePic = null,
+        userName = "Oliver Pain"
+    )
 }
 
 // Helper function to extract initials from userName
