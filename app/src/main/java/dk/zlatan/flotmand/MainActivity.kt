@@ -66,34 +66,69 @@ fun FlotMandApp(
 ) {
     val viewModel: MainActivityViewModel = hiltViewModel()
     val currentDestination = appState.currentDestination
+    val loginRoutes = setOf(
+        dk.zlatan.flotmand.Features.authentication.login.navigation.LoginGraphRoute,
+        dk.zlatan.flotmand.Features.authentication.login.navigation.LoginRoute.toString()
+    )
+    val showBottomBar = currentDestination?.route !in loginRoutes
 
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            appState.topLevelDestinations.forEach {  destination ->
-                val selected = currentDestination?.hierarchy?.any {
-                    it.route == destination.route
-                } == true
+    if (showBottomBar) {
+        NavigationSuiteScaffold(
+            navigationSuiteItems = {
+                appState.topLevelDestinations.forEach {  destination ->
+                    val selected = currentDestination?.hierarchy?.any {
+                        it.route == destination.route
+                    } == true
 
-                item(
-                    selected = selected,
-                    onClick = { appState.navigateToTopLevelDestination(destination) },
-                    icon = {
-                        Icon(
-                            imageVector = destination.unselectedIcon,
-                            contentDescription = null,
-                        )
-                    },
-                    label = { Text(stringResource(destination.iconTextId)) },
-                    modifier = Modifier
-                        .testTag("FmNavItem")
-                    // TODO: Zlatan 25/11/2025 Maybe some day
+                    item(
+                        selected = selected,
+                        onClick = { appState.navigateToTopLevelDestination(destination) },
+                        icon = {
+                            Icon(
+                                imageVector = destination.unselectedIcon,
+                                contentDescription = null,
+                            )
+                        },
+                        label = { Text(stringResource(destination.iconTextId)) },
+                        modifier = Modifier
+                            .testTag("FmNavItem")
+                        // TODO: Zlatan 25/11/2025 Maybe some day
 //                        .then(if (hasUnread) Modifier.notificationDot() else Modifier),
+                    )
+                }
+            }
+        ) {
+            Scaffold(
+                modifier = Modifier.fillMaxSize()
+            ) { innerPadding ->
+                val snackbarHostState = remember { SnackbarHostState() }
+                val isOffline by appState.isOffline.collectAsStateWithLifecycle()
+
+                // Show snackbar when offline
+                LaunchedEffect(isOffline) {
+                    if (isOffline) {
+                        snackbarHostState.showSnackbar(
+                            message = getRandomOfflineMessage(),
+                            duration = Indefinite,
+                        )
+                    }
+                }
+
+                FmNavHost(
+                    appState = appState,
+                    onShowSnackBar = { message, action ->
+                        snackbarHostState.showSnackbar(
+                            message = message,
+                            actionLabel = action,
+                            duration = SnackbarDuration.Short,
+                        ) == ActionPerformed
+                    },
+                    modifier = Modifier.padding(innerPadding)
                 )
             }
         }
-    ) {
-
-
+    } else {
+        // No bottom bar for login
         Scaffold(
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->

@@ -77,12 +77,24 @@ class LoginViewModel @Inject constructor(
             block = block
         )
     fun onSignInWithGoogle(credential: Credential) {
+        Log.d("LOGIN_DEBUG", "Credential class: ${credential::class.java.name}")
+        isLoading.value = true
         launchCatching {
-            if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                accountService.signInWithGoogle(googleIdTokenCredential.idToken)
-            } else {
-                Log.e("ERROR_TAG", "UNEXPECTED_CREDENTIAL")
+            try {
+                if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                    accountService.signInWithGoogle(googleIdTokenCredential.idToken)
+                    errorMessage.value = null
+                } else {
+                    // Log the credential type and details for debugging
+                    errorMessage.value = "Unexpected credential type: ${credential::class.java.simpleName}"
+                    Log.e("ERROR_TAG", "UNEXPECTED_CREDENTIAL: $credential")
+                }
+            } catch (e: Exception) {
+                errorMessage.value = e.localizedMessage ?: "Something went wrong during sign in."
+                Log.e("ERROR_TAG", errorMessage.value!!, e)
+            } finally {
+                isLoading.value = false
             }
         }
     }

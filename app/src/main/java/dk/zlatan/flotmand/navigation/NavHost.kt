@@ -8,6 +8,8 @@ import dk.zlatan.flotmand.Features.frontpage.navigation.frontPageSection
 import dk.zlatan.flotmand.Features.my_events.navigaiton.myEventScreen
 import dk.zlatan.flotmand.Features.profile.navigation.profileScreen
 import dk.zlatan.flotmand.ui.FmAppState
+import dk.zlatan.flotmand.Features.authentication.login.navigation.loginSection
+import dk.zlatan.flotmand.Features.authentication.login.navigation.LoginGraphRoute
 
 @Composable
 fun FmNavHost(
@@ -18,9 +20,17 @@ fun FmNavHost(
     val navController = appState.navController
     NavHost(
         navController = navController,
-        startDestination = "front_page_graph",
+        startDestination = LoginGraphRoute, // Set login as start destination
         modifier = modifier,
     ) {
+        loginSection(
+            onLoginSuccess = {
+                navController.navigate("front_page_graph") {
+                    popUpTo(LoginGraphRoute) { inclusive = true }
+                }
+            }
+        )
+
         frontPageSection(
             onEventClicked = {
                 navController.navigate("$EventDetailRoute/$it")
