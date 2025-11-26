@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -26,14 +27,13 @@ import kotlinx.coroutines.launch
 fun DisplayName(
     modifier: Modifier = Modifier,
     displayName: String,
+    isLoading: Boolean,
     onUpdateDisplayNameClick: (String) -> Unit
     ) {
     var showDisplayNameDialog by remember { mutableStateOf(false) }
     var newDisplayName by remember { mutableStateOf(displayName) }
 
     val scope = rememberCoroutineScope()
-
-    val cardTitle = displayName.ifBlank { stringResource(R.string.profile_name) }
 
     Text(
         text = "Hej!\n$displayName",
@@ -57,12 +57,13 @@ fun DisplayName(
                 Column {
                     TextField(
                         value = newDisplayName,
-                        onValueChange = { newDisplayName = it }
+                        onValueChange = { newDisplayName = it },
+                        enabled = !isLoading
                     )
                 }
             },
             dismissButton = {
-                Button(onClick = { showDisplayNameDialog = false }) {
+                Button(onClick = { showDisplayNameDialog = false }, enabled = !isLoading) {
                     Text(text = stringResource(R.string.cancel))
                 }
             },
@@ -72,11 +73,15 @@ fun DisplayName(
                         onUpdateDisplayNameClick(newDisplayName)
                         showDisplayNameDialog = false
                     }
-                }) {
-                    Text(text = stringResource(R.string.update))
+                }, enabled = !isLoading) {
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.padding(4.dp))
+                    } else {
+                        Text(text = stringResource(R.string.update))
+                    }
                 }
             },
-            onDismissRequest = { showDisplayNameDialog = false }
+            onDismissRequest = { if (!isLoading) showDisplayNameDialog = false }
         )
     }
 }

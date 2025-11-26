@@ -21,6 +21,12 @@ class ProfileViewModel @Inject constructor(
     private val _user = MutableStateFlow(User())
     val user: StateFlow<User> = _user.asStateFlow()
 
+    private val _signedOut = MutableStateFlow(false)
+    val signedOut: StateFlow<Boolean> = _signedOut.asStateFlow()
+
+    private val _signOutLoading = MutableStateFlow(false)
+    val signOutLoading: StateFlow<Boolean> = _signOutLoading.asStateFlow()
+
     init {
         launchCatching {
             _user.value = accountService.getUserProfile()
@@ -35,8 +41,11 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun signOut() {
-        viewModelScope.launch {
-            accountService.signOut()
+        launchCatching {
+            _signOutLoading.value = true
+            accountService.signOut() // This should be a suspend function that completes when sign out is done
+            _signedOut.value = true
+            _signOutLoading.value = false
         }
     }
 }

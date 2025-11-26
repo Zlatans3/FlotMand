@@ -10,6 +10,7 @@ import dk.zlatan.flotmand.Features.profile.navigation.profileScreen
 import dk.zlatan.flotmand.ui.FmAppState
 import dk.zlatan.flotmand.Features.authentication.login.navigation.loginSection
 import dk.zlatan.flotmand.Features.authentication.login.navigation.LoginGraphRoute
+import dk.zlatan.flotmand.Features.authentication.login.navigation.LoginRoute
 
 @Composable
 fun FmNavHost(
@@ -37,11 +38,12 @@ fun FmNavHost(
             }
         )
 
-        myEventScreen(
-        )
+        myEventScreen()
 
-        profileScreen(
-            onSignOut = { }
-        )
+        profileScreen(onNavigateToLogin = {
+            navController.navigate(LoginRoute.toString()) {
+                popUpTo(0) { inclusive = true }
+            }
+        })
     }
 }

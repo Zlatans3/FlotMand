@@ -2,6 +2,7 @@ package dk.zlatan.flotmand.design_system.componenets.dialogs
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +14,7 @@ import androidx.compose.ui.window.Dialog
 fun FmAlertDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
+    isLoading: Boolean = false,
     onSignOutClick: () -> Unit,
 
     ) {
@@ -20,15 +22,17 @@ fun FmAlertDialog(
         title = { Text("Er du sikker på du vil logge ud?") },
         text = { Text("Hvis du logger ud, kan du ikke se de flotte mænds beskeder") },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            Button(onClick = onDismiss, enabled = !isLoading) {
                 Text(text = "Annuller")
             }
         },
         confirmButton = {
-            Button(onClick = {
-                onSignOutClick()
-            }) {
-                Text(text = "Log ud")
+            Button(onClick = onSignOutClick, enabled = !isLoading) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier)
+                } else {
+                    Text(text = "Log ud")
+                }
             }
         },
         onDismissRequest = onDismiss

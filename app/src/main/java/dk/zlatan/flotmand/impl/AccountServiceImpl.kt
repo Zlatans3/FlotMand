@@ -61,9 +61,6 @@ class AccountServiceImpl @Inject constructor() : AccountService {
 
     override suspend fun signOut() {
         Firebase.auth.signOut()
-
-        // Sign the user back in anonymously.
-        createAnonymousAccount()
     }
 
     override suspend fun signInWithGoogle(idToken: String) {

@@ -15,14 +15,10 @@ fun NavHostController.navigateToProfile(builder: NavOptionsBuilder.() -> Unit = 
     navigate(ProfileGraphRoute, builder)
 }
 
-fun NavGraphBuilder.profileScreen(
-    onSignOut: () -> Unit = {},
-) {
+fun NavGraphBuilder.profileScreen(onNavigateToLogin: () -> Unit) {
     navigation(startDestination = ProfileRoute.toString(), route = ProfileGraphRoute) {
         composable(ProfileRoute.toString()) {
-            ProfileScreenRoute(
-                onSignOut = onSignOut,
-            )
+            ProfileScreenRoute(navigateToLogin = onNavigateToLogin)
         }
     }
 }
