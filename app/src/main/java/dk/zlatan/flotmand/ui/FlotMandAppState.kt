@@ -10,6 +10,7 @@ import androidx.compose.ui.util.trace
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.rememberNavController
 import dk.zlatan.flotmand.Features.my_events.navigaiton.navigateToMyEvents
 import dk.zlatan.flotmand.Features.frontpage.navigation.navigateToFrontPage
@@ -79,7 +80,7 @@ class FmAppState(
 
     fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
         trace("Navigation: ${topLevelDestination.name}") {
-            val topLevelNavOptions: androidx.navigation.NavOptionsBuilder.() -> Unit = {
+            val topLevelNavOptions: NavOptionsBuilder.() -> Unit = {
                 // Pop up to the start destination of the graph to
                 // avoid building up a large stack of destinations
                 // on the back stack as users select items

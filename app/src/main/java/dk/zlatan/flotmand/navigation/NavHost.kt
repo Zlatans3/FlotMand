@@ -31,7 +31,6 @@ fun FmNavHost(
         )
 
         profileScreen(
-            onNavigateBack = navController::popBackStack,
             onSignOut = { }
         )
     }

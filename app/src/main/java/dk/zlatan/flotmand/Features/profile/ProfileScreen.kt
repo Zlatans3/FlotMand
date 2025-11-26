@@ -22,7 +22,6 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 @Composable
 fun ProfileScreenRoute(
     modifier: Modifier = Modifier,
-    onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {

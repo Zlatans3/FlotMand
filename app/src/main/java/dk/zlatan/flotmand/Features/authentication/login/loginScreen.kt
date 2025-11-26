@@ -58,15 +58,8 @@ fun LoginScreen(
 
     LoginContent(
         modifier = modifier.fillMaxSize(),
-        onGoogleLoginClick = {
-            scope.launch {
-                launchCredManButtonUI(
-                    context = context,
-                    onRequestResult = { credential ->
-                        viewModel.onSignInWithGoogle(credential)
-                    }
-                )
-            }
+        onGoogleLoginClick = { credential ->
+           viewModel.onSignInWithGoogle(credential)
         },
         uiState = uiState
     )
@@ -75,7 +68,7 @@ fun LoginScreen(
 @Composable
 internal fun LoginContent(
     modifier: Modifier = Modifier,
-    onGoogleLoginClick: () -> Unit = {},
+    onGoogleLoginClick: (Credential) -> Unit = {},
     uiState: LoginUiState = LoginUiState()
 ) {
     Box(modifier = modifier) {
@@ -140,12 +133,19 @@ internal fun LoginContent(
 @Composable
 fun LoginCard(
     isLoading: Boolean,
-    onGoogleLoginClick: () -> Unit,
+    onGoogleLoginClick: (Credential) -> Unit,
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     Card(
         modifier = Modifier
             .padding(horizontal = 20.dp)
-            .clickable(enabled = !isLoading, onClick = onGoogleLoginClick),
+            .clickable(enabled = !isLoading, onClick = {  scope.launch {
+                launchCredManButtonUI(
+                    context,
+                    onGoogleLoginClick
+                )
+            }}),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
