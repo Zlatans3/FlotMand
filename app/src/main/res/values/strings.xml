@@ -1,8 +1,15 @@
 <resources>
     <string name="app_name">FlotMand</string>
 
-
+    <!-- TOP DESTINATION-->
     <string name="home_title">Hjem</string>
     <string name="my_event_title">Mine events</string>
     <string name="profile_title">Profil</string>
+
+
+<!--    PROFILE SCREEN-->
+    <string name="profile_name">Profil navn</string>
+    <string name="cancel">Annuller</string>
+    <string name="update">Opdater</string>
+
 </resources>

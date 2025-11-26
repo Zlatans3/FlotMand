@@ -24,7 +24,7 @@ import kotlin.String
 @Composable
 internal fun EventCard(
     modifier: Modifier = Modifier,
-    @DrawableRes userProfilePic: Int? = null,
+    userProfilePic: String? = null,
     userName: String,
     eventName: String,
     eventDate: String,

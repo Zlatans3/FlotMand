@@ -93,4 +93,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation(libs.javapoet)
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }

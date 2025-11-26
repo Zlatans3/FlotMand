@@ -81,12 +81,14 @@ class AccountServiceImpl @Inject constructor() : AccountService {
             email = "",
             provider = "",
             displayName = "",
+            photoUrl = "",
             isAnonymous = true
         ) else User(
             id = this.uid,
             email = this.email ?: "",
             provider = this.providerId,
             displayName = this.displayName ?: "",
+            photoUrl = this.photoUrl?.toString() ?: "",
             isAnonymous = this.isAnonymous
         )
     }

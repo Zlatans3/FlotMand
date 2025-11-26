@@ -3,18 +3,14 @@ package dk.zlatan.flotmand.Features.authentication.login
 import android.util.Log
 import androidx.credentials.Credential
 import androidx.credentials.CustomCredential
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.zlatan.flotmand.Features.NotesAppViewModel
 import dk.zlatan.flotmand.model.service.AccountService
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 // UI state data class for Compose
@@ -27,7 +23,7 @@ data class LoginUiState(
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val accountService: AccountService
-) : ViewModel() {
+) : NotesAppViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     // State for login result
     private val loginState: MutableStateFlow<Boolean?> = MutableStateFlow<Boolean?>(null)
@@ -68,14 +64,6 @@ class LoginViewModel @Inject constructor(
         super.onCleared()
         firebaseAuth.removeAuthStateListener(authStateListener)
     }
-
-    fun launchCatching(block: suspend CoroutineScope.() -> Unit) =
-        viewModelScope.launch(
-            CoroutineExceptionHandler { _, throwable ->
-                Log.d("ERROR_TAG", throwable.message.orEmpty())
-            },
-            block = block
-        )
     fun onSignInWithGoogle(credential: Credential) {
         Log.d("LOGIN_DEBUG", "Credential class: ${credential::class.java.name}")
         isLoading.value = true
