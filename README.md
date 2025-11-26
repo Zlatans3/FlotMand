@@ -8,7 +8,7 @@ This app is for 6 friends who month after month has celabrated eachtothers compo
 
 The purpose of this app is to collect everything we need into one little pakage. 
 
-<img height="600" alt="image" src="https://github.com/user-attachments/assets/64c3ca3f-d475-424f-b0c1-25eddeb0be19" />
+
 
 <img height="600" alt="image" src="https://github.com/user-attachments/assets/e1132550-821b-4a74-8449-5faea1c65933" />
 
