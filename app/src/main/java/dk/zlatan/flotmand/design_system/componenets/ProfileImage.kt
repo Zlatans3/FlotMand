@@ -23,7 +23,7 @@ internal fun ProfileImage(
     profileSize: Dp = 40.dp,
     userName: String,
 ) {
-    if (profilePic != null) {
+    if (!profilePic.isNullOrBlank()) {
         AsyncImage(
             model = profilePic,
             contentDescription = "Profile Image",

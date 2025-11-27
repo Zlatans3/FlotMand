@@ -59,7 +59,8 @@ data class Event(
                 eventName = "Middag hos Zlatan",
                 location = "Fortuna alle 1, 2000 Frederiksberg",
                 eventDate = LocalDate.parse("2024-12-01"),
-                eventStartTime = LocalTime.parse("19:00")
+                eventStartTime = LocalTime.parse("19:00"),
+                participants = User.mockUserWithCounter(5),
             ),
             Event(
                 eventId = "event2",
@@ -73,7 +74,8 @@ data class Event(
                 eventName = "Frokost med Gustav",
                 location = "Nørrebrogade 2, 2200 København N",
                 eventDate = LocalDate.parse("2024-12-05"),
-                eventStartTime = LocalTime.parse("12:30")
+                eventStartTime = LocalTime.parse("12:30"),
+                participants = User.mockUserWithCounter(4),
             ),
             Event(
                 eventId = "event3",

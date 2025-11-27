@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,18 +19,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCard
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
 import dk.zlatan.flotmand.Features.frontpage.model.Event
 import dk.zlatan.flotmand.Features.frontpage.model.EventStatus
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun EventDetailScreenRoute(
     modifier: Modifier = Modifier,
     viewModel: EventDetailViewModel = hiltViewModel()
 ) {
     val event by viewModel.event.collectAsStateWithLifecycle()
+    val showParticipationBottomSheet by viewModel.showParticipationBottomSheet.collectAsStateWithLifecycle()
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -44,16 +48,27 @@ internal fun EventDetailScreenRoute(
             }
         } else {
             EventDetailScreenContent(
-                event = event!!
+                event = event!!,
+                onParticipantsClick = {
+                    viewModel.showParticipants()
+                },
             )
         }
+    }
+
+    if (!showParticipationBottomSheet.isNullOrEmpty()) {
+        ParticipantsBottomSheet(
+            onDismiss = {
+                viewModel.onDismissParticipantsSheet()
+            },
+            participants = event?.participants ?: emptyList()
+        )
     }
 }
 
 @Composable
 private fun EventDetailScreenContent(
     modifier: Modifier = Modifier,
-    onParticipateClick: () -> Unit = {},
     onParticipantsClick: () -> Unit = {},
     event: Event
 ) {
@@ -62,9 +77,9 @@ private fun EventDetailScreenContent(
             .fillMaxWidth()
     ) {
         DetailHeader(
-            modifier = Modifier,
             eventStatus = event.status ?: EventStatus.entries.first(),
-            name = event.eventName.orEmpty()
+            name = event.publisher?.displayName.orEmpty(),
+            eventTitle = event.eventName.orEmpty(),
         )
         VSpacer(20.dp)
         SectionItem(
