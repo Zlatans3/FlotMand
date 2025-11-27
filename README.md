@@ -10,8 +10,12 @@ The purpose of this app is to collect everything we need into one little pakage.
 
 
 
-<img height="600" alt="image" src="https://github.com/user-attachments/assets/e1132550-821b-4a74-8449-5faea1c65933" />
+<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/ddca9786-783e-440b-99b4-a9a0ce0ab0d4" />
 
+
+<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/f28a1108-59ea-407d-9fd6-c7237bd67473" />
+
+<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/678a480e-da89-430b-a448-b2ffdc618636" />
 
 
 
