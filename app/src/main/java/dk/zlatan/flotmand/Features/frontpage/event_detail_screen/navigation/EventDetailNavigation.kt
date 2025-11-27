@@ -19,10 +19,7 @@ fun NavGraphBuilder.eventDetailScreen() {
     composable(
         route = EventDetailRouteWithArgs,
         arguments = listOf(navArgument(EventDetailEventIdArg) { type = NavType.StringType })
-    ) { backStackEntry ->
-        val eventId = backStackEntry.arguments?.getString(EventDetailEventIdArg)
-        EventDetailScreenRoute(
-            eventId = eventId
-        )
+    ) {
+        EventDetailScreenRoute()
     }
 }
