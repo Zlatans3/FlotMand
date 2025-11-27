@@ -21,7 +21,7 @@ fun FmNavHost(
     val navController = appState.navController
     NavHost(
         navController = navController,
-        startDestination = LoginGraphRoute, // Set login as start destination
+        startDestination = LoginGraphRoute,
         modifier = modifier,
     ) {
         loginSection(
@@ -33,8 +33,8 @@ fun FmNavHost(
         )
 
         frontPageSection(
-            onEventClicked = {
-                navController.navigate("$EventDetailRoute/$it")
+            onEventClicked = { eventId ->
+                navController.navigate("$EventDetailRoute/$eventId")
             }
         )
 

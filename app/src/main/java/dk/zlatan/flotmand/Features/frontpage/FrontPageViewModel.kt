@@ -8,5 +8,5 @@ import javax.inject.Inject
 @HiltViewModel
 class FrontPageViewModel @Inject constructor() : ViewModel() {
 
-    val eventList: List<Event> = Event.previewEvents(10)
+    val eventList: List<Event> = Event.staticTestEvents
 }
