@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 internal fun MyEventScreen(
@@ -20,10 +21,14 @@ internal fun MyEventScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
-        Text(
-            text = "My Event Screen"
-        )
+        val events = viewModel.myDinnerEvents.collectAsStateWithLifecycle()
+        if (events.value.isEmpty()) {
+            Text(text = "No events found.")
+        } else {
+            events.value.forEach { event ->
+                Text(text = event.eventId.orEmpty())
+            }
+        }
     }
 }
 

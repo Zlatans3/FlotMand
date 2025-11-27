@@ -3,7 +3,7 @@ package dk.zlatan.flotmand
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.zlatan.flotmand.model.DinnerEvent
+import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
@@ -18,7 +18,7 @@ import javax.inject.Inject
 data class MainUiState(
     val isLoggedIn: Boolean = false,
     val user: User? = null,
-    val dinnerEvents: List<DinnerEvent> = emptyList(),
+    val dinnerEvents: List<Event> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null
 )

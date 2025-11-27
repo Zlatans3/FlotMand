@@ -12,11 +12,17 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,10 +31,11 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCa
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
-import dk.zlatan.flotmand.Features.frontpage.model.Event
-import dk.zlatan.flotmand.Features.frontpage.model.EventStatus
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
+import dk.zlatan.flotmand.model.Event
+import dk.zlatan.flotmand.model.EventStatus
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +45,8 @@ internal fun EventDetailScreenRoute(
 ) {
     val event by viewModel.event.collectAsStateWithLifecycle()
     val showParticipationBottomSheet by viewModel.showParticipationBottomSheet.collectAsStateWithLifecycle()
+    val clipboardManager = LocalClipboardManager.current
+    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -56,6 +65,20 @@ internal fun EventDetailScreenRoute(
                 onParticipantsClick = {
                     viewModel.showParticipants()
                 },
+                onDateClick = {
+                    val currentEvent = event!!
+                    val dateTimeString = "${currentEvent.eventDate?.toString().orEmpty()} ${currentEvent.eventStartTime.toString()}"
+                    coroutineScope.launch {
+                        clipboardManager.setText(AnnotatedString(dateTimeString))
+                    }
+                },
+                onLocationLongClick = {
+                    val currentEvent = event!!
+                    val locationString = currentEvent.location.orEmpty()
+                    coroutineScope.launch {
+                        clipboardManager.setText(AnnotatedString(locationString))
+                    }
+                }
             )
         }
     }
@@ -74,7 +97,9 @@ internal fun EventDetailScreenRoute(
 private fun EventDetailScreenContent(
     modifier: Modifier = Modifier,
     onParticipantsClick: () -> Unit = {},
-    event: Event
+    event: Event,
+    onDateClick: () -> Unit = {},
+    onLocationLongClick: () -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -91,7 +116,7 @@ private fun EventDetailScreenContent(
             modifier = Modifier,
             leadingIcon = FmIcons.Calendar,
             title = "${event.eventDate?.toString().orEmpty()} ${event.eventStartTime.toString()}",
-            onClick = {}
+            onClick = onDateClick
         )
 
         SectionItem(
@@ -106,7 +131,7 @@ private fun EventDetailScreenContent(
             modifier = Modifier,
             leadingIcon = FmIcons.mapPin,
             title = event.location.orEmpty(),
-            onClick = {}
+            onLongClick = onLocationLongClick
         )
 
         VSpacer(20.dp)
@@ -144,7 +169,8 @@ private fun EventDetailScreenContent(
 private fun EventDetailScreenPreview() {
     EventDetailScreenContent(
         modifier = Modifier,
-        event = Event.staticTestEvents.first()
+        event = Event.staticTestEvents.first(),
+        onLocationLongClick = {}
     )
 }
 

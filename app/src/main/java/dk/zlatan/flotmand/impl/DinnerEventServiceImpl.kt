@@ -4,7 +4,7 @@ import com.google.firebase.firestore.dataObjects
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.Firebase
-import dk.zlatan.flotmand.model.DinnerEvent
+import dk.zlatan.flotmand.model.Event
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -16,7 +16,7 @@ import jakarta.inject.Inject
 class DinnerEventServiceImpl @Inject constructor(private val auth: AccountService) : DinnerEventService {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override val dinnerEvents: Flow<List<DinnerEvent>>
+    override val dinnerEvents: Flow<List<Event>>
         get() =
             auth.currentUser.flatMapLatest { note ->
                 Firebase.firestore
@@ -25,23 +25,24 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
                     .dataObjects()
             }
 
-    override suspend fun createDinnerEvent(note: DinnerEvent) {
-        val noteWithUserId = note.copy(userId = auth.currentUserId)
+    override suspend fun createDinnerEvent(event: Event) {
+        val eventWithUserId = event.copy(publisherId = auth.currentUserId)
         Firebase.firestore
             .collection(NOTES_COLLECTION)
-            .add(noteWithUserId).await()
+            .add(eventWithUserId).await()
     }
 
-    override suspend fun readDinnerEvent(noteId: String): DinnerEvent? {
+    override suspend fun readDinnerEvent(noteId: String): Event? {
         return Firebase.firestore
             .collection(NOTES_COLLECTION)
             .document(noteId).get().await().toObject()
     }
 
-    override suspend fun updateDinnerEvent(note: DinnerEvent) {
+    override suspend fun updateDinnerEvent(event: Event) {
         Firebase.firestore
             .collection(NOTES_COLLECTION)
-            .document(note.id).set(note).await()
+            // TODO: Zlatan 27/11/2025 Probably wrong .orEmpty()
+            .document(event.eventId.orEmpty()).set(event).await()
     }
 
     override suspend fun deleteDinnerEvent(dinnerEventId: String) {

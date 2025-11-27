@@ -21,7 +21,7 @@ fun SectionItem(
     leadingIcon: ImageVector,
     trailingIcon: ImageVector? = null,
     title: String,
-    onClick: () -> Unit,
+    onClick: () -> Unit = { },
     onLongClick: () -> Unit = { }
 ) {
     Row(
