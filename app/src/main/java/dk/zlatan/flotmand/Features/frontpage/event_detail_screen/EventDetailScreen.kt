@@ -6,8 +6,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -75,6 +79,7 @@ private fun EventDetailScreenContent(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .fillMaxSize()
     ) {
         DetailHeader(
             eventStatus = event.status ?: EventStatus.entries.first(),
@@ -112,6 +117,25 @@ private fun EventDetailScreenContent(
         )
 
         Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = {
+                // TODO: Zlatan 27/11/2025 Should probably do something
+            },
+            shape = RoundedCornerShape(8.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 2.dp
+            ),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(text = "Deltag")
+        }
     }
 }
 

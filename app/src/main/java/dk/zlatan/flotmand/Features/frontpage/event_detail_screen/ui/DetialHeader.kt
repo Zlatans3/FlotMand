@@ -46,6 +46,7 @@ internal fun DetailHeader(
     ) {
         VSpacer(120.dp)
         Row(
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             ProfileImage(
@@ -54,7 +55,9 @@ internal fun DetailHeader(
                 profileSize = 64.dp,
             )
             HSpacer(12.dp)
-            Column() {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Row(
                     modifier = Modifier.height(IntrinsicSize.Min),
                     verticalAlignment = Alignment.Bottom
