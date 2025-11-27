@@ -12,7 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import dk.zlatan.flotmand.Features.frontpage.ui.EventCard
+import dk.zlatan.flotmand.design_system.componenets.EventCard
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageHeader
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
