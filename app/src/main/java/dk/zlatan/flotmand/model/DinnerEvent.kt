@@ -80,6 +80,7 @@ data class Event(
             ),
             Event(
                 eventId = "event3",
+                publisherId = "3",
                 publisher = User(
                     displayName = "Mikkel Rahbek",
                     email = "mikkel@example.com",
@@ -94,6 +95,7 @@ data class Event(
             ),
             Event(
                 eventId = "event4",
+                publisherId = "3",
                 publisher = User(
                     displayName = "Mikkel Rahbek",
                     email = "mikkel@example.com",
@@ -108,6 +110,7 @@ data class Event(
             ),
             Event(
                 eventId = "event5",
+                publisherId = "3",
                 publisher = User(
                     displayName = "Mikkel Rahbek",
                     email = "mikkel@example.com",

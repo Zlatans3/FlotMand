@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.model.Event
 
 @Composable
 internal fun MyEventScreen(
@@ -22,10 +23,26 @@ internal fun MyEventScreen(
         verticalArrangement = Arrangement.Center
     ) {
         val events = viewModel.myDinnerEvents.collectAsStateWithLifecycle()
-        if (events.value.isEmpty()) {
+        val currentUserId = viewModel.currentUserId
+        val filteredEvents = events.value.filter { it.publisherId == currentUserId }
+        MyEventContent(
+            modifier = modifier,
+            filteredEvents = filteredEvents,
+        )
+    }
+}
+
+@Composable
+fun MyEventContent(
+    modifier: Modifier = Modifier,
+    filteredEvents: List<Event>,
+
+    ) {
+    Column(modifier = Modifier) {
+        if (filteredEvents.isEmpty()) {
             Text(text = "No events found.")
         } else {
-            events.value.forEach { event ->
+            filteredEvents.forEach { event ->
                 Text(text = event.eventId.orEmpty())
             }
         }
