@@ -19,6 +19,8 @@ if you are interested in following the roadmap, i made a poorly public [Trello b
 Unlike many other vibe coded app, I strove for consistent and concise architecture. I also make sure to follow the best practices whether it is state handling navigation and logic in general. 
 This is very loosely based on the Now in Android Repo. 
 
+The aim is to make my little hobby project look like enterprice quality app material. 
+
 
 # What am I learning from this project?
 
