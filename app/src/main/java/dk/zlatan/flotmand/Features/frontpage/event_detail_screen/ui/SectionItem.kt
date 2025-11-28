@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
@@ -22,7 +23,9 @@ fun SectionItem(
     trailingIcon: ImageVector? = null,
     title: String,
     onClick: () -> Unit = { },
-    onLongClick: () -> Unit = { }
+    onLongClick: () -> Unit = { },
+    iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Row(
         modifier = modifier
@@ -41,11 +44,13 @@ fun SectionItem(
     ) {
         Icon(
             imageVector = leadingIcon,
-            contentDescription = null
+            contentDescription = null,
+            tint = iconTint
         )
         HSpacer(15.dp)
         Text(
             text = title,
+            color = textColor,
             style = MaterialTheme.typography.bodyLarge,
         )
 
@@ -54,7 +59,8 @@ fun SectionItem(
         if (trailingIcon != null){
             Icon(
                 imageVector = trailingIcon,
-                contentDescription = null
+                contentDescription = null,
+                tint = iconTint
             )
         }
     }

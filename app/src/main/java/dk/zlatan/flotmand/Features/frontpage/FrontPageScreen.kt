@@ -44,7 +44,7 @@ fun FrontpageContent(
 ) {
     LazyColumn(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceContainer),
+            .background(MaterialTheme.colorScheme.background), // Use background for main surface
     ) {
         item {
             FrontPageHeader()
@@ -60,11 +60,13 @@ fun FrontpageContent(
         }
         items(eventList) { eventDetails ->
             EventCard(
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+                modifier = Modifier
+                    .padding(vertical = 8.dp, horizontal = 12.dp),
                 userName = eventDetails.publisher?.displayName.orEmpty(),
                 eventName = eventDetails.eventName.orEmpty(),
                 eventDate = eventDetails.eventDate.toString(),
                 eventTime = eventDetails.eventStartTime.toString(),
+                // If EventCard supports color parameters, pass theme colors here
                 onClick = {
                     onClickEvent(eventDetails.eventId.orEmpty())
                 }

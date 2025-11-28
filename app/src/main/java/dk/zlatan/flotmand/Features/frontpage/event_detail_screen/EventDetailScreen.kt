@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -105,18 +106,22 @@ private fun EventDetailScreenContent(
         modifier = modifier
             .fillMaxWidth()
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background) // Use background color
     ) {
         DetailHeader(
             eventStatus = event.status ?: EventStatus.entries.first(),
             name = event.publisher?.displayName.orEmpty(),
             eventTitle = event.eventName.orEmpty(),
+            // Optionally, update DetailHeader to use onSurface for text if not already
         )
         VSpacer(20.dp)
         SectionItem(
             modifier = Modifier,
             leadingIcon = FmIcons.Calendar,
             title = "${event.eventDate?.toString().orEmpty()} ${event.eventStartTime.toString()}",
-            onClick = onDateClick
+            onClick = onDateClick,
+            iconTint = MaterialTheme.colorScheme.primary,
+            textColor = MaterialTheme.colorScheme.onSurface
         )
 
         SectionItem(
@@ -124,14 +129,18 @@ private fun EventDetailScreenContent(
             leadingIcon = FmIcons.Person,
             trailingIcon = FmIcons.chevronRight,
             title = "Deltagere: ${event.participants?.size ?: 0}/6",
-            onClick = onParticipantsClick
+            onClick = onParticipantsClick,
+            iconTint = MaterialTheme.colorScheme.secondary,
+            textColor = MaterialTheme.colorScheme.onSurface
         )
 
         SectionItem(
             modifier = Modifier,
             leadingIcon = FmIcons.mapPin,
             title = event.location.orEmpty(),
-            onLongClick = onLocationLongClick
+            onLongClick = onLocationLongClick,
+            iconTint = MaterialTheme.colorScheme.tertiary,
+            textColor = MaterialTheme.colorScheme.onSurface
         )
 
         VSpacer(20.dp)
@@ -139,6 +148,7 @@ private fun EventDetailScreenContent(
         AddressMapCard(
             modifier = Modifier
                 .padding(horizontal = 20.dp),
+            backgroundColor = MaterialTheme.colorScheme.surfaceVariant
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -152,8 +162,8 @@ private fun EventDetailScreenContent(
                 defaultElevation = 2.dp
             ),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ),
             modifier = Modifier
                 .fillMaxWidth()

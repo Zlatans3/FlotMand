@@ -27,15 +27,11 @@ internal fun MyEventScreen(
     modifier: Modifier = Modifier,
     viewModel: MyEventViewModel = hiltViewModel()
 ) {
-    Column(
+    val events by viewModel.myDinnerEvents.collectAsStateWithLifecycle()
+    MyEventContent(
         modifier = modifier.fillMaxSize(),
-    ) {
-        val events by viewModel.myDinnerEvents.collectAsStateWithLifecycle()
-        MyEventContent(
-            modifier = modifier.fillMaxSize(),
-            filteredEvents = events,
-        )
-    }
+        filteredEvents = events,
+    )
 }
 
 @Composable
