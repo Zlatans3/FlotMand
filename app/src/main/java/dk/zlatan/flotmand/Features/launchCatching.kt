@@ -7,7 +7,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-open class NotesAppViewModel : ViewModel() {
+open class FmAppViewModel : ViewModel() {
     fun launchCatching(block: suspend CoroutineScope.() -> Unit) =
         viewModelScope.launch(
             CoroutineExceptionHandler { _, throwable ->

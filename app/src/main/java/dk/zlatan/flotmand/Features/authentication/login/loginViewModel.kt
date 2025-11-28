@@ -7,7 +7,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.zlatan.flotmand.Features.NotesAppViewModel
+import dk.zlatan.flotmand.Features.FmAppViewModel
 import dk.zlatan.flotmand.model.service.AccountService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -23,7 +23,7 @@ data class LoginUiState(
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val accountService: AccountService
-) : NotesAppViewModel() {
+) : FmAppViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     // State for login result
     private val loginState: MutableStateFlow<Boolean?> = MutableStateFlow<Boolean?>(null)
