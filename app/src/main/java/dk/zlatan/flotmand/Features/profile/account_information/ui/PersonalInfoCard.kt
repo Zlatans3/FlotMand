@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import dk.zlatan.flotmand.Features.profile.account_information.model.EditableInfoItem
 import dk.zlatan.flotmand.model.User
 
@@ -61,7 +63,6 @@ internal fun PersonalInfoCard(
                     EditableInfoItem(
                         label = "Email",
                         value = user.email,
-                        isEditing = false,
                         canEdit = false
                     )
                 )
@@ -82,7 +83,8 @@ internal fun PersonalInfoCard(
                         editedPhoneNumber = user.phoneNumber
                         isEditingPhoneNumber = false
                     },
-                    placeholder = "Tilføj telefonnummer"
+                    placeholder = "Tilføj telefonnummer",
+                    keyboardType = KeyboardType.Phone
                 )
             )
         },
@@ -90,3 +92,12 @@ internal fun PersonalInfoCard(
     )
 }
 
+@Preview
+@Composable
+private fun PersonalInfoCardPreview() {
+    val user = User.mockUserWithCounter(1).first()
+    PersonalInfoCard(
+        user = user,
+        isLoading = false,
+    )
+}

@@ -1,5 +1,7 @@
 package dk.zlatan.flotmand.Features.profile.account_information.model
 
+import androidx.compose.ui.text.input.KeyboardType
+
 /**
  * Data model for an editable information field in the account information screen.
  *
@@ -13,6 +15,7 @@ package dk.zlatan.flotmand.Features.profile.account_information.model
  * @param onCancel Callback when cancel button is clicked
  * @param canEdit Whether this field can be edited
  * @param placeholder Placeholder text to show when the field is empty
+ * @param keyboardType The type of keyboard to show when editing
  */
 internal data class EditableInfoItem(
     val label: String,
@@ -24,5 +27,6 @@ internal data class EditableInfoItem(
     val onSave: () -> Unit = {},
     val onCancel: () -> Unit = {},
     val canEdit: Boolean = true,
-    val placeholder: String = ""
+    val placeholder: String = "",
+    val keyboardType: KeyboardType = KeyboardType.Text
 )

@@ -17,6 +17,7 @@ data class User(
                     email = "user${index}@gmail.com",
                             provider = "mockProvider",
                     displayName = "Mock User ${index + 1}",
+                    phoneNumber = "12345678",
                     isAnonymous = false
                 )
             }
