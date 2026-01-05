@@ -58,6 +58,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
@@ -69,18 +70,19 @@ internal fun AccountInformationScreenRoute(
     viewModel: AccountInformationViewModel = hiltViewModel(),
     onDismiss: () -> Unit = {}
 ) {
-    val user by viewModel.user.collectAsState(initial = null)
-    val isLoading by viewModel.isLoading.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AccountInformationScreenContent(
         modifier = modifier,
-        user = user ?: User(),
-        isLoading = isLoading,
-        errorMessage = errorMessage,
+        user = uiState.user ?: User(),
+        isLoading = uiState.isLoading,
+        errorMessage = uiState.errorMessage,
         onDismiss = onDismiss,
         onUpdateDisplayName = { newName ->
             viewModel.updateDisplayName(newName)
+        },
+        onUpdatePhoneNumber = { newPhone ->
+            viewModel.updatePhoneNumber(newPhone)
         },
         onClearError = {
             viewModel.clearError()
@@ -97,6 +99,7 @@ private fun AccountInformationScreenContent(
     errorMessage: String? = null,
     onDismiss: () -> Unit = {},
     onUpdateDisplayName: (String) -> Unit = {},
+    onUpdatePhoneNumber: (String) -> Unit = {},
     onClearError: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -196,9 +199,7 @@ private fun AccountInformationScreenContent(
                             onEditClick = { isEditingPhoneNumber = true },
                             onValueChange = { editedPhoneNumber = it },
                             onSave = {
-                                // Phone number update would require Firebase phone auth
-                                // For now, just show a message
-                                snackbarHostState.currentSnackbarData?.dismiss()
+                                onUpdatePhoneNumber(editedPhoneNumber)
                                 isEditingPhoneNumber = false
                             },
                             onCancel = {
@@ -517,8 +518,8 @@ private fun EditableInfoRow(
             visible = !item.isEditing,
             enter = fadeIn() + expandVertically(
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessMedium
                 )
             ),
             exit = fadeOut() + shrinkVertically(
