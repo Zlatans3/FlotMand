@@ -1,28 +1,37 @@
 package dk.zlatan.flotmand.Features.profile.account_information.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import dk.zlatan.flotmand.Features.profile.account_information.model.EditableInfoItem
 import dk.zlatan.flotmand.model.User
 
+/**
+ * A card component that displays personal information (display name, email, phone number).
+ * Provides inline editing capabilities for editable fields. Manages editing state internally.
+ *
+ * @param modifier Modifier for the card
+ * @param user The user whose information to display
+ * @param isLoading Whether the card is in a loading state
+ * @param onUpdateDisplayName Callback to save updated display name
+ * @param onUpdatePhoneNumber Callback to save updated phone number
+ */
 @Composable
 internal fun PersonalInfoCard(
     modifier: Modifier = Modifier,
     user: User,
-    isEditingDisplayName: Boolean,
-    editedDisplayName: String,
-    isEditingPhoneNumber: Boolean,
-    editedPhoneNumber: String,
-    isLoading: Boolean,
-    onEditDisplayName: () -> Unit,
-    onDisplayNameChange: (String) -> Unit,
-    onSaveDisplayName: () -> Unit,
-    onCancelDisplayName: () -> Unit,
-    onEditPhoneNumber: () -> Unit,
-    onPhoneNumberChange: (String) -> Unit,
-    onSavePhoneNumber: () -> Unit,
-    onCancelPhoneNumber: () -> Unit
+    isLoading: Boolean = false,
+    onUpdateDisplayName: (String) -> Unit = {},
+    onUpdatePhoneNumber: (String) -> Unit = {}
 ) {
+    var isEditingDisplayName by remember { mutableStateOf(false) }
+    var editedDisplayName by remember(user.displayName) { mutableStateOf(user.displayName) }
+    var isEditingPhoneNumber by remember { mutableStateOf(false) }
+    var editedPhoneNumber by remember(user.phoneNumber) { mutableStateOf(user.phoneNumber) }
+
     EditableInfoCard(
         modifier = modifier,
         title = "Personlige Oplysninger",
@@ -34,10 +43,16 @@ internal fun PersonalInfoCard(
                         value = user.displayName,
                         isEditing = isEditingDisplayName,
                         editedValue = editedDisplayName,
-                        onEditClick = onEditDisplayName,
-                        onValueChange = onDisplayNameChange,
-                        onSave = onSaveDisplayName,
-                        onCancel = onCancelDisplayName
+                        onEditClick = { isEditingDisplayName = true },
+                        onValueChange = { editedDisplayName = it },
+                        onSave = {
+                            onUpdateDisplayName(editedDisplayName)
+                            isEditingDisplayName = false
+                        },
+                        onCancel = {
+                            editedDisplayName = user.displayName
+                            isEditingDisplayName = false
+                        }
                     )
                 )
             }
@@ -57,10 +72,16 @@ internal fun PersonalInfoCard(
                     value = user.phoneNumber,
                     isEditing = isEditingPhoneNumber,
                     editedValue = editedPhoneNumber,
-                    onEditClick = onEditPhoneNumber,
-                    onValueChange = onPhoneNumberChange,
-                    onSave = onSavePhoneNumber,
-                    onCancel = onCancelPhoneNumber,
+                    onEditClick = { isEditingPhoneNumber = true },
+                    onValueChange = { editedPhoneNumber = it },
+                    onSave = {
+                        onUpdatePhoneNumber(editedPhoneNumber)
+                        isEditingPhoneNumber = false
+                    },
+                    onCancel = {
+                        editedPhoneNumber = user.phoneNumber
+                        isEditingPhoneNumber = false
+                    },
                     placeholder = "Tilføj telefonnummer"
                 )
             )
@@ -68,3 +89,4 @@ internal fun PersonalInfoCard(
         isLoading = isLoading
     )
 }
+

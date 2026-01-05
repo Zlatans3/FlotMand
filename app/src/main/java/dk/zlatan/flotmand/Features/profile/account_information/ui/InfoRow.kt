@@ -7,9 +7,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 
+/**
+ * A simple composable that displays a label-value pair in a column layout.
+ * Used for displaying read-only information.
+ *
+ * @param label The label text to display
+ * @param value The value text to display
+ */
 @Composable
 internal fun InfoRow(
     label: String,
@@ -32,4 +40,13 @@ internal fun InfoRow(
             color = MaterialTheme.colorScheme.onSurface
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun InfoRowPreview() {
+    InfoRow(
+        label = "Bruger ID",
+        value = "1234567890"
+    )
 }

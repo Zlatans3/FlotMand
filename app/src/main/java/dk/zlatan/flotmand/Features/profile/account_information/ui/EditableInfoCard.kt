@@ -34,8 +34,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.Features.profile.account_information.model.EditableInfoItem
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
-import kotlin.text.ifEmpty
 
+/**
+ * A card component that displays a list of editable information fields.
+ * Supports inline editing with save/cancel actions and loading states.
+ *
+ * @param title The title displayed at the top of the card
+ * @param items List of editable information items to display
+ * @param isLoading Whether the card is in a loading state
+ */
 @Composable
 internal fun EditableInfoCard(
     modifier: Modifier = Modifier,
