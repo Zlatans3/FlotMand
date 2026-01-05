@@ -6,19 +6,18 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
+import dk.zlatan.flotmand.util.combine
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
 
 data class AddEventUiState(
-    val eventName: String = "",
-    val location: String = "",
-    val eventDate: LocalDate? = null,
-    val eventTime: LocalTime? = null,
+    val event: Event = Event(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val isEventCreated: Boolean = false,
@@ -32,103 +31,121 @@ class AddEventViewModel @Inject constructor(
     private val accountService: AccountService
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AddEventUiState())
-    val uiState = _uiState.asStateFlow()
+    private val _event = MutableStateFlow(Event())
+    private val _isLoading = MutableStateFlow(false)
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    private val _isEventCreated = MutableStateFlow(false)
+    private val _showDatePicker = MutableStateFlow(false)
+    private val _showTimePicker = MutableStateFlow(false)
+
+    val uiState: StateFlow<AddEventUiState> = combine(
+        _event,
+        _isLoading,
+        _errorMessage,
+        _isEventCreated,
+        _showDatePicker,
+        _showTimePicker
+    ) { event: Event, isLoading: Boolean, errorMessage: String?, isEventCreated: Boolean, showDatePicker: Boolean, showTimePicker: Boolean ->
+        AddEventUiState(
+            event = event,
+            isLoading = isLoading,
+            errorMessage = errorMessage,
+            isEventCreated = isEventCreated,
+            showDatePicker = showDatePicker,
+            showTimePicker = showTimePicker
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = AddEventUiState()
+    )
 
     fun onEventNameChange(name: String) {
-        _uiState.update { it.copy(eventName = name, errorMessage = null) }
+        _event.value = _event.value.copy(eventName = name)
+        _errorMessage.value = null
     }
 
     fun onLocationChange(location: String) {
-        _uiState.update { it.copy(location = location, errorMessage = null) }
+        _event.value = _event.value.copy(location = location)
+        _errorMessage.value = null
     }
 
     fun onEventDateChange(date: LocalDate) {
-        _uiState.update { it.copy(eventDate = date, errorMessage = null) }
+        _event.value = _event.value.copy(eventDate = date)
+        _errorMessage.value = null
     }
 
     fun onEventTimeChange(time: LocalTime) {
-        _uiState.update { it.copy(eventTime = time, errorMessage = null) }
+        _event.value = _event.value.copy(eventStartTime = time)
+        _errorMessage.value = null
     }
 
     fun showDatePicker() {
-        _uiState.update { it.copy(showDatePicker = true) }
+        _showDatePicker.value = true
     }
 
     fun hideDatePicker() {
-        _uiState.update { it.copy(showDatePicker = false) }
+        _showDatePicker.value = false
     }
 
     fun showTimePicker() {
-        _uiState.update { it.copy(showTimePicker = true) }
+        _showTimePicker.value = true
     }
 
     fun hideTimePicker() {
-        _uiState.update { it.copy(showTimePicker = false) }
+        _showTimePicker.value = false
     }
 
     fun createEvent() {
         viewModelScope.launch {
-            val state = _uiState.value
+            val event = _event.value
 
             // Validate fields
-            if (state.eventName.isBlank()) {
-                _uiState.update { it.copy(errorMessage = "Event navn er påkrævet") }
+            if (event.eventName.isNullOrBlank()) {
+                _errorMessage.value = "Event navn er påkrævet"
                 return@launch
             }
 
-            if (state.location.isBlank()) {
-                _uiState.update { it.copy(errorMessage = "Lokation er påkrævet") }
+            if (event.location.isNullOrBlank()) {
+                _errorMessage.value = "Lokation er påkrævet"
                 return@launch
             }
 
-            if (state.eventDate == null) {
-                _uiState.update { it.copy(errorMessage = "Dato er påkrævet") }
+            if (event.eventDate == null) {
+                _errorMessage.value = "Dato er påkrævet"
                 return@launch
             }
 
-            if (state.eventTime == null) {
-                _uiState.update { it.copy(errorMessage = "Tidspunkt er påkrævet") }
+            if (event.eventStartTime == null) {
+                _errorMessage.value = "Tidspunkt er påkrævet"
                 return@launch
             }
 
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _isLoading.value = true
+            _errorMessage.value = null
 
             try {
                 val currentUser = accountService.getUserProfile()
 
-                val newEvent = Event(
+                val newEvent = event.copy(
                     publisherId = accountService.currentUserId,
                     publisher = currentUser,
-                    eventName = state.eventName,
-                    location = state.location,
-                    eventDate = state.eventDate,
-                    eventStartTime = state.eventTime,
                     participants = emptyList()
                 )
 
                 dinnerEventService.createDinnerEvent(newEvent)
 
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        isEventCreated = true,
-                        errorMessage = null
-                    )
-                }
+                _isLoading.value = false
+                _isEventCreated.value = true
+                _errorMessage.value = null
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        errorMessage = "Kunne ikke oprette event: ${e.message}"
-                    )
-                }
+                _isLoading.value = false
+                _errorMessage.value = "Kunne ikke oprette event: ${e.message}"
             }
         }
     }
 
-
     fun clearError() {
-        _uiState.update { it.copy(errorMessage = null) }
+        _errorMessage.value = null
     }
 }

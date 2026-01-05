@@ -43,6 +43,7 @@ import androidx.compose.foundation.layout.size
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.EventTextField
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
+import dk.zlatan.flotmand.model.Event
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -85,18 +86,18 @@ internal fun AddEventScreenRoute(
 @Composable
 private fun AddEventScreenContent(
     modifier: Modifier = Modifier,
-    uiState: AddEventUiState = AddEventUiState(),
-    onEventNameChange: (String) -> Unit = {},
-    onLocationChange: (String) -> Unit = {},
-    onEventDateChange: (LocalDate) -> Unit = {},
-    onEventTimeChange: (LocalTime) -> Unit = {},
-    onShowDatePicker: () -> Unit = {},
-    onHideDatePicker: () -> Unit = {},
-    onShowTimePicker: () -> Unit = {},
-    onHideTimePicker: () -> Unit = {},
-    onCreateEvent: () -> Unit = {},
-    onDismiss: () -> Unit = {},
-    onClearError: () -> Unit = {}
+    uiState: AddEventUiState,
+    onEventNameChange: (String) -> Unit,
+    onLocationChange: (String) -> Unit,
+    onEventDateChange: (LocalDate) -> Unit,
+    onEventTimeChange: (LocalTime) -> Unit,
+    onShowDatePicker: () -> Unit,
+    onHideDatePicker: () -> Unit,
+    onShowTimePicker: () -> Unit,
+    onHideTimePicker: () -> Unit,
+    onCreateEvent: () -> Unit,
+    onDismiss: () -> Unit,
+    onClearError: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -150,7 +151,7 @@ private fun AddEventScreenContent(
             // Event Name
             EventTextField(
                 label = "Event navn",
-                value = uiState.eventName,
+                value = uiState.event.eventName.orEmpty(),
                 onValueChange = onEventNameChange,
                 placeholder = "Fx. Middag hos Gustav"
             )
@@ -160,7 +161,7 @@ private fun AddEventScreenContent(
             // Location
             EventTextField(
                 label = "Lokation",
-                value = uiState.location,
+                value = uiState.event.location.orEmpty(),
                 onValueChange = onLocationChange,
                 placeholder = "Fx. flotmand alle 4"
             )
@@ -170,7 +171,7 @@ private fun AddEventScreenContent(
             // Event Date - Clickable field that opens DatePicker
             EventTextField(
                 label = "Dato",
-                value = uiState.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
+                value = uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
                 onValueChange = { }, // Read-only
                 placeholder = "Vælg dato",
                 onClick = onShowDatePicker
@@ -181,7 +182,7 @@ private fun AddEventScreenContent(
             // Event Time - Clickable field that opens TimePicker
             EventTextField(
                 label = "Tidspunkt",
-                value = uiState.eventTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
+                value = uiState.event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
                 onValueChange = { }, // Read-only
                 placeholder = "Vælg tidspunkt",
                 onClick = onShowTimePicker
@@ -228,7 +229,7 @@ private fun AddEventScreenContent(
     // DatePicker Dialog
     if (uiState.showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = uiState.eventDate?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
+            initialSelectedDateMillis = uiState.event.eventDate?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
         )
 
         DatePickerDialog(
@@ -260,8 +261,8 @@ private fun AddEventScreenContent(
     if (uiState.showTimePicker) {
         @OptIn(ExperimentalMaterial3Api::class)
         val timePickerState = rememberTimePickerState(
-            initialHour = uiState.eventTime?.hour ?: 18,
-            initialMinute = uiState.eventTime?.minute ?: 0,
+            initialHour = uiState.event.eventStartTime?.hour ?: 18,
+            initialMinute = uiState.event.eventStartTime?.minute ?: 0,
             is24Hour = true
         )
 
@@ -311,8 +312,25 @@ private fun AddEventScreenPreview() {
     FlotMandTheme {
         AddEventScreenContent(
             modifier = Modifier,
+            uiState = AddEventUiState(
+                event = Event(
+                    eventName = "Fødselsdagsfest hos Zlatan",
+                    location = "Zlatans hus, Flotmand Alle 4",
+                    eventDate = LocalDate.now().plusDays(5),
+                    eventStartTime = LocalTime.of(19, 30)
+                )
+            ),
             onDismiss = {},
-            onCreateEvent = {}
+            onCreateEvent = {},
+            onEventNameChange = {},
+            onLocationChange = {},
+            onEventDateChange = {},
+            onEventTimeChange = {},
+            onShowDatePicker = {},
+            onHideDatePicker = {},
+            onShowTimePicker = {},
+            onHideTimePicker = {},
+            onClearError = {}
         )
     }
 }
