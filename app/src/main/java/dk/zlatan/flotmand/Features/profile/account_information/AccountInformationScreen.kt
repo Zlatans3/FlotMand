@@ -1,5 +1,13 @@
 package dk.zlatan.flotmand.Features.profile.account_information
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -438,7 +446,14 @@ private fun EditableInfoRow(
     isLoading: Boolean = false
 ) {
     Column(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
     ) {
         Text(
             text = item.label,
@@ -448,39 +463,71 @@ private fun EditableInfoRow(
         )
         VSpacer(4.dp)
 
-        if (item.isEditing) {
-            OutlinedTextField(
-                value = item.editedValue,
-                onValueChange = item.onValueChange,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    if (item.placeholder.isNotEmpty()) {
-                        Text(item.placeholder)
-                    }
-                },
-                enabled = !isLoading,
-                singleLine = true
+        AnimatedVisibility(
+            visible = item.isEditing,
+            enter = fadeIn() + expandVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ),
+            exit = fadeOut() + shrinkVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
             )
-            VSpacer(8.dp)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(
-                    onClick = item.onCancel,
-                    enabled = !isLoading
-                ) {
-                    Text("Annuller")
-                }
-                Button(
-                    onClick = item.onSave,
+        ) {
+            Column {
+                OutlinedTextField(
+                    value = item.editedValue,
+                    onValueChange = item.onValueChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = {
+                        if (item.placeholder.isNotEmpty()) {
+                            Text(item.placeholder)
+                        }
+                    },
                     enabled = !isLoading,
-                    modifier = Modifier.padding(start = 8.dp)
+                    singleLine = true
+                )
+                VSpacer(8.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Text("Gem")
+                    TextButton(
+                        onClick = item.onCancel,
+                        enabled = !isLoading
+                    ) {
+                        Text("Annuller")
+                    }
+                    Button(
+                        onClick = item.onSave,
+                        enabled = !isLoading,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Text("Gem")
+                    }
                 }
             }
-        } else {
+        }
+
+        AnimatedVisibility(
+            visible = !item.isEditing,
+            enter = fadeIn() + expandVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ),
+            exit = fadeOut() + shrinkVertically(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            )
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
