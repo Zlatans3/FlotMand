@@ -17,12 +17,23 @@ fun NavController.navigateToMyEvents(builder: NavOptionsBuilder.() -> Unit = {})
 }
 
 fun NavGraphBuilder.myEventScreen(
+    onAddEventClick: () -> Unit,
+    navController: NavController
 ) {
     navigation(startDestination = MyEventsDestinationRoute.toString(), route = MyEventsGraphRoute) {
         composable(
             route = MyEventsDestinationRoute.toString()
         ) {
-            MyEventScreen()
+            MyEventScreen(
+                onAddEventClick = onAddEventClick
+            )
         }
+
+        addEventScreen(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
     }
 }
+

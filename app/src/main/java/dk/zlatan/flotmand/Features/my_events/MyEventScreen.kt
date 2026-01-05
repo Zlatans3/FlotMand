@@ -1,14 +1,10 @@
 package dk.zlatan.flotmand.Features.my_events
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -17,21 +13,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageHeader
 import dk.zlatan.flotmand.design_system.componenets.EventCard
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
 
 @Composable
 internal fun MyEventScreen(
     modifier: Modifier = Modifier,
-    viewModel: MyEventViewModel = hiltViewModel()
+    viewModel: MyEventViewModel = hiltViewModel(),
+    onAddEventClick: () -> Unit = {} // Add callback for FAB
 ) {
     val events by viewModel.myDinnerEvents.collectAsStateWithLifecycle()
-    MyEventContent(
-        modifier = modifier.fillMaxSize(),
-        filteredEvents = events,
-    )
+    Box(modifier = modifier.fillMaxSize()) {
+        MyEventContent(
+            modifier = Modifier.matchParentSize(),
+            filteredEvents = events,
+        )
+        ExtendedFloatingActionButton(
+            onClick = onAddEventClick,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+        ) {
+            Icon(FmIcons.Add, contentDescription = "Add Event")
+            Spacer(Modifier.width(8.dp))
+            Text("Tilføj event", style = MaterialTheme.typography.labelLarge)
+        }
+    }
 }
 
 @Composable
@@ -71,6 +82,6 @@ fun MyEventContent(
 private fun MyEventScreenPreview() {
     MyEventContent(
         modifier = Modifier,
-        filteredEvents = Event.previewEvents(6)
+        filteredEvents = Event.previewEvents(2)
     )
 }

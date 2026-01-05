@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.navigation.EventDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.navigation.frontPageSection
 import dk.zlatan.flotmand.Features.my_events.navigaiton.myEventScreen
+import dk.zlatan.flotmand.Features.my_events.navigaiton.navigateToAddEvent
 import dk.zlatan.flotmand.Features.profile.navigation.profileScreen
 import dk.zlatan.flotmand.ui.FmAppState
 import dk.zlatan.flotmand.Features.authentication.login.navigation.loginSection
@@ -38,7 +39,12 @@ fun FmNavHost(
             }
         )
 
-        myEventScreen()
+        myEventScreen(
+            onAddEventClick = {
+                navController.navigateToAddEvent()
+            },
+            navController = navController
+        )
 
         profileScreen(onNavigateToLogin = {
             navController.navigate(LoginRoute.toString()) {
@@ -47,3 +53,4 @@ fun FmNavHost(
         })
     }
 }
+
