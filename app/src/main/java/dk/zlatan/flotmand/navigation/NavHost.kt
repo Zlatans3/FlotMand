@@ -46,11 +46,14 @@ fun FmNavHost(
             navController = navController
         )
 
-        profileScreen(onNavigateToLogin = {
-            navController.navigate(LoginRoute.toString()) {
-                popUpTo(0) { inclusive = true }
+        profileScreen(
+            navController = navController,
+            onNavigateToLogin = {
+                navController.navigate(LoginRoute.toString()) {
+                    popUpTo(0) { inclusive = true }
+                }
             }
-        })
+        )
     }
 }
 
