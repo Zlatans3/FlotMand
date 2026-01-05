@@ -473,7 +473,7 @@ private fun EditableInfoRow(
             ),
             exit = fadeOut() + shrinkVertically(
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    dampingRatio = Spring.DampingRatioLowBouncy,
                     stiffness = Spring.StiffnessLow
                 )
             )
