@@ -1,13 +1,5 @@
 package dk.zlatan.flotmand.Features.profile.account_information
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -23,28 +15,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +45,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.Features.profile.account_information.model.InfoItem
+import dk.zlatan.flotmand.Features.profile.account_information.ui.InfoRow
+import dk.zlatan.flotmand.Features.profile.account_information.ui.PersonalInfoCard
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
@@ -97,10 +86,10 @@ private fun AccountInformationScreenContent(
     user: User = User(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
-    onDismiss: () -> Unit = {},
-    onUpdateDisplayName: (String) -> Unit = {},
-    onUpdatePhoneNumber: (String) -> Unit = {},
-    onClearError: () -> Unit = {}
+    onDismiss: () -> Unit,
+    onUpdateDisplayName: (String) -> Unit,
+    onUpdatePhoneNumber: (String) -> Unit,
+    onClearError: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val clipboardManager = LocalClipboardManager.current
@@ -157,60 +146,33 @@ private fun AccountInformationScreenContent(
             VSpacer(8.dp)
 
             // Personal Information Card (Editable)
-            EditableInfoCard(
-                title = "Personlige Oplysninger",
-                items = buildList {
-                    if (user.displayName.isNotEmpty() || isEditingDisplayName) {
-                        add(
-                            EditableInfoItem(
-                                label = "Navn",
-                                value = user.displayName,
-                                isEditing = isEditingDisplayName,
-                                editedValue = editedDisplayName,
-                                onEditClick = { isEditingDisplayName = true },
-                                onValueChange = { editedDisplayName = it },
-                                onSave = {
-                                    onUpdateDisplayName(editedDisplayName)
-                                    isEditingDisplayName = false
-                                },
-                                onCancel = {
-                                    editedDisplayName = user.displayName
-                                    isEditingDisplayName = false
-                                }
-                            )
-                        )
-                    }
-                    if (user.email.isNotEmpty()) {
-                        add(
-                            EditableInfoItem(
-                                label = "Email",
-                                value = user.email,
-                                isEditing = false,
-                                canEdit = false
-                            )
-                        )
-                    }
-                    add(
-                        EditableInfoItem(
-                            label = "Telefon",
-                            value = user.phoneNumber,
-                            isEditing = isEditingPhoneNumber,
-                            editedValue = editedPhoneNumber,
-                            onEditClick = { isEditingPhoneNumber = true },
-                            onValueChange = { editedPhoneNumber = it },
-                            onSave = {
-                                onUpdatePhoneNumber(editedPhoneNumber)
-                                isEditingPhoneNumber = false
-                            },
-                            onCancel = {
-                                editedPhoneNumber = user.phoneNumber
-                                isEditingPhoneNumber = false
-                            },
-                            placeholder = "Tilføj telefonnummer"
-                        )
-                    )
+            PersonalInfoCard(
+                user = user,
+                isEditingDisplayName = isEditingDisplayName,
+                editedDisplayName = editedDisplayName,
+                isEditingPhoneNumber = isEditingPhoneNumber,
+                editedPhoneNumber = editedPhoneNumber,
+                isLoading = isLoading,
+                onEditDisplayName = { isEditingDisplayName = true },
+                onDisplayNameChange = { editedDisplayName = it },
+                onSaveDisplayName = {
+                    onUpdateDisplayName(editedDisplayName)
+                    isEditingDisplayName = false
                 },
-                isLoading = isLoading
+                onCancelDisplayName = {
+                    editedDisplayName = user.displayName
+                    isEditingDisplayName = false
+                },
+                onEditPhoneNumber = { isEditingPhoneNumber = true },
+                onPhoneNumberChange = { editedPhoneNumber = it },
+                onSavePhoneNumber = {
+                    onUpdatePhoneNumber(editedPhoneNumber)
+                    isEditingPhoneNumber = false
+                },
+                onCancelPhoneNumber = {
+                    editedPhoneNumber = user.phoneNumber
+                    isEditingPhoneNumber = false
+                }
             )
 
             // Account Details Card
@@ -343,226 +305,6 @@ private fun InfoCard(
     }
 }
 
-@Composable
-private fun InfoRow(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Medium
-        )
-        VSpacer(4.dp)
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-private data class InfoItem(
-    val label: String,
-    val value: String
-)
-
-private data class EditableInfoItem(
-    val label: String,
-    val value: String,
-    val isEditing: Boolean = false,
-    val editedValue: String = "",
-    val onEditClick: () -> Unit = {},
-    val onValueChange: (String) -> Unit = {},
-    val onSave: () -> Unit = {},
-    val onCancel: () -> Unit = {},
-    val canEdit: Boolean = true,
-    val placeholder: String = ""
-)
-
-@Composable
-private fun EditableInfoCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    items: List<EditableInfoItem>,
-    isLoading: Boolean = false
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.padding(4.dp),
-                        strokeWidth = 2.dp
-                    )
-                }
-            }
-            VSpacer(12.dp)
-
-            items.forEachIndexed { index, item ->
-                EditableInfoRow(
-                    item = item,
-                    isLoading = isLoading
-                )
-                if (index < items.size - 1) {
-                    VSpacer(12.dp)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun EditableInfoRow(
-    modifier: Modifier = Modifier,
-    item: EditableInfoItem,
-    isLoading: Boolean = false
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
-    ) {
-        Text(
-            text = item.label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Medium
-        )
-        VSpacer(4.dp)
-
-        AnimatedVisibility(
-            visible = item.isEditing,
-            enter = fadeIn() + expandVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ),
-            exit = fadeOut() + shrinkVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
-        ) {
-            Column {
-                OutlinedTextField(
-                    value = item.editedValue,
-                    onValueChange = item.onValueChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = {
-                        if (item.placeholder.isNotEmpty()) {
-                            Text(item.placeholder)
-                        }
-                    },
-                    enabled = !isLoading,
-                    singleLine = true
-                )
-                VSpacer(8.dp)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = item.onCancel,
-                        enabled = !isLoading
-                    ) {
-                        Text("Annuller")
-                    }
-                    Button(
-                        onClick = item.onSave,
-                        enabled = !isLoading,
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) {
-                        Text("Gem")
-                    }
-                }
-            }
-        }
-
-        AnimatedVisibility(
-            visible = !item.isEditing,
-            enter = fadeIn() + expandVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMedium
-                )
-            ),
-            exit = fadeOut() + shrinkVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = item.value.ifEmpty { "Ikke angivet" },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (item.value.isEmpty()) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-                if (item.canEdit) {
-                    IconButton(
-                        onClick = item.onEditClick,
-                        enabled = !isLoading,
-                        modifier = Modifier.padding(0.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Rediger ${item.label}",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
 @Preview
 @Composable
 private fun AccountInformationScreenPreview() {
@@ -577,7 +319,12 @@ private fun AccountInformationScreenPreview() {
                 displayName = "Oliver Payne",
                 isAnonymous = false
             ),
-            onDismiss = {}
+            onDismiss = {},
+            isLoading = false,
+            errorMessage = null,
+            onUpdateDisplayName = {},
+            onUpdatePhoneNumber = {},
+            onClearError = {},
         )
     }
 }
