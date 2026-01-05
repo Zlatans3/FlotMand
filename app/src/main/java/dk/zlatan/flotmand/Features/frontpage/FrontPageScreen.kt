@@ -12,12 +12,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import dk.zlatan.flotmand.Features.frontpage.model.Event
-import dk.zlatan.flotmand.Features.frontpage.model.Event.Companion.previewEvents
-import dk.zlatan.flotmand.Features.frontpage.ui.EventCard
+import dk.zlatan.flotmand.design_system.componenets.EventCard
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageHeader
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
+import dk.zlatan.flotmand.model.Event
+import dk.zlatan.flotmand.model.Event.Companion.previewEvents
 import dk.zlatan.flotmand.model.User
 
 @Composable
@@ -44,7 +44,7 @@ fun FrontpageContent(
 ) {
     LazyColumn(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceContainer),
+            .background(MaterialTheme.colorScheme.background), // Use background for main surface
     ) {
         item {
             FrontPageHeader()
@@ -60,11 +60,13 @@ fun FrontpageContent(
         }
         items(eventList) { eventDetails ->
             EventCard(
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
+                modifier = Modifier
+                    .padding(vertical = 8.dp, horizontal = 12.dp),
                 userName = eventDetails.publisher?.displayName.orEmpty(),
                 eventName = eventDetails.eventName.orEmpty(),
                 eventDate = eventDetails.eventDate.toString(),
                 eventTime = eventDetails.eventStartTime.toString(),
+                // If EventCard supports color parameters, pass theme colors here
                 onClick = {
                     onClickEvent(eventDetails.eventId.orEmpty())
                 }

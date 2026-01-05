@@ -1,13 +1,13 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import dk.zlatan.flotmand.Features.frontpage.model.Event
+import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 @HiltViewModel
 class EventDetailViewModel @Inject constructor(

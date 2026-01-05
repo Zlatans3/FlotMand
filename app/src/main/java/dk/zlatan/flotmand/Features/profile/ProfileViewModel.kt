@@ -1,23 +1,18 @@
 package dk.zlatan.flotmand.Features.profile
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.zlatan.flotmand.Features.NotesAppViewModel
+import dk.zlatan.flotmand.Features.FmAppViewModel
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     val accountService: AccountService
-) : NotesAppViewModel() {
+) : FmAppViewModel() {
     private val _user = MutableStateFlow(User())
     val user: StateFlow<User> = _user.asStateFlow()
 
@@ -43,7 +38,7 @@ class ProfileViewModel @Inject constructor(
     fun signOut() {
         launchCatching {
             _signOutLoading.value = true
-            accountService.signOut() // This should be a suspend function that completes when sign out is done
+            accountService.signOut()
             _signedOut.value = true
             _signOutLoading.value = false
         }

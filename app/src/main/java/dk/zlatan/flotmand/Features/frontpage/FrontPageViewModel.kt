@@ -2,7 +2,7 @@ package dk.zlatan.flotmand.Features.frontpage
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.zlatan.flotmand.Features.frontpage.model.Event
+import dk.zlatan.flotmand.model.Event
 import javax.inject.Inject
 
 @HiltViewModel

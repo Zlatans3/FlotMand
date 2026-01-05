@@ -18,14 +18,15 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun AddressMapCard(
     modifier: Modifier = Modifier,
-    coordinates: Pair<Double, Double> = Pair(55.6761, 12.5683)
+    coordinates: Pair<Double, Double> = Pair(55.6761, 12.5683),
+    backgroundColor: Color = Color(0xFFE0E0E0)
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .height(160.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE0E0E0))
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Box(
             modifier = Modifier.fillMaxWidth().height(160.dp),
