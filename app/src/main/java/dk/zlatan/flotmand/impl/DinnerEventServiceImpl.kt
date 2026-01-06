@@ -18,12 +18,12 @@ import jakarta.inject.Inject
 
 class DinnerEventServiceImpl @Inject constructor(private val auth: AccountService) : DinnerEventService {
 
-    // Fetch all dinner events (for front page)
+    // Fetch all dinner events
     override val allDinnerEvents: Flow<List<Event>>
         get() = callbackFlow {
             Log.d(TAG, "Starting to listen for events")
             val listenerRegistration = Firebase.firestore
-                .collection(NOTES_COLLECTION)
+                .collection(DINNER_EVENTS_COLLECTION)
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
                         Log.e(TAG, "Error fetching events", error)
@@ -59,7 +59,7 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
         get() = auth.currentUser.flatMapLatest { user ->
             callbackFlow {
                 val listenerRegistration = Firebase.firestore
-                    .collection(NOTES_COLLECTION)
+                    .collection(DINNER_EVENTS_COLLECTION)
                     .whereEqualTo(USER_ID_FIELD, user?.id)
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
@@ -119,7 +119,7 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
     override suspend fun createDinnerEvent(event: Event) {
         val eventWithUserId = event.copy(publisherId = auth.currentUserId)
         Firebase.firestore
-            .collection(NOTES_COLLECTION)
+            .collection(DINNER_EVENTS_COLLECTION)
             .add(eventWithUserId).await()
         // Note: eventId is not stored in the document, it's auto-populated via @DocumentId annotation
     }
@@ -128,7 +128,7 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
         Log.d(TAG, "Fetching event with ID: $noteId")
         return try {
             val doc = Firebase.firestore
-                .collection(NOTES_COLLECTION)
+                .collection(DINNER_EVENTS_COLLECTION)
                 .document(noteId).get().await()
 
             Log.d(TAG, "Document exists: ${doc.exists()}")
@@ -161,14 +161,14 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
 
     override suspend fun updateDinnerEvent(event: Event) {
         Firebase.firestore
-            .collection(NOTES_COLLECTION)
+            .collection(DINNER_EVENTS_COLLECTION)
             // TODO: Zlatan 27/11/2025 Probably wrong .orEmpty()
             .document(event.eventId.orEmpty()).set(event).await()
     }
 
     override suspend fun deleteDinnerEvent(dinnerEventId: String) {
         Firebase.firestore
-            .collection(NOTES_COLLECTION)
+            .collection(DINNER_EVENTS_COLLECTION)
             .document(dinnerEventId).delete().await()
     }
 
@@ -181,7 +181,7 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
         try {
             Log.d(TAG, "Starting migration to remove eventId field from documents")
             val querySnapshot = Firebase.firestore
-                .collection(NOTES_COLLECTION)
+                .collection(DINNER_EVENTS_COLLECTION)
                 .get()
                 .await()
 
@@ -202,7 +202,7 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
 
     companion object {
         private const val TAG = "DinnerEventService"
-        private const val USER_ID_FIELD = "userId"
-        private const val NOTES_COLLECTION = "notes"
+        private const val USER_ID_FIELD = "publisherId"
+        private const val DINNER_EVENTS_COLLECTION = "dinnerEvents"
     }
 }

@@ -70,58 +70,41 @@ internal class EventDetailViewModel @AssistedInject constructor(
 
     private fun loadEvent() {
         viewModelScope.launch {
-            _isLoading.value = true
+            setLoading(true)
             try {
-                Log.d(TAG, "Loading event with ID: $eventId")
+                Log.d(TAG, "Load event: id=$eventId")
                 val event = dinnerEventService.readDinnerEvent(eventId)
-
                 if (event == null) {
-                    Log.w(TAG, "Event not found for ID: $eventId")
-                    clearEventData()
+                    Log.w(TAG, "Event not found: id=$eventId")
+                    clearAll()
                     return@launch
                 }
 
-                Log.d(TAG, "Event loaded: ${event.eventName}")
-                Log.d(TAG, "Event publisherId: ${event.publisherId}")
-                Log.d(TAG, "Event participantIds: ${event.participantIds}")
                 _event.value = event
-
-                // Load publisher separately
+                // Publisher
                 loadPublisher(event.publisherId)
-
-                // Load participants, excluding the publisher
-                val participantIdsWithoutPublisher = event.participantIds?.filter { it != event.publisherId }
-                loadParticipants(participantIdsWithoutPublisher)
+                // Participants (exclude publisher)
+                val participantIds = event.participantIds?.filterNot { it == event.publisherId }
+                loadParticipants(participantIds)
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading event: ${e.message}", e)
-                clearEventData()
+                Log.e(TAG, "Failed to load event: ${e.message}", e)
+                clearAll()
             } finally {
-                _isLoading.value = false
+                setLoading(false)
             }
         }
     }
 
     private suspend fun loadPublisher(publisherId: String?) {
-        if (publisherId.isNullOrEmpty()) {
-            Log.w(TAG, "Publisher ID is null or empty")
+        if (publisherId.isNullOrBlank()) {
             _publisher.value = null
             return
         }
-
-        Log.d(TAG, "Loading publisher with ID: $publisherId")
         try {
             val users = accountService.getUsersByIds(listOf(publisherId))
-            Log.d(TAG, "Fetched ${users.size} users for publisher")
-
-            if (users.isEmpty()) {
-                Log.w(TAG, "No user found for publisher ID: $publisherId")
-                _publisher.value = null
-            } else {
-                _publisher.value = users.first()
-                Log.d(TAG, "Publisher loaded: ${users.first().displayName}")
-            }
+            _publisher.value = users.firstOrNull()
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading publisher: ${e.message}", e)
+            Log.e(TAG, "Failed to load publisher: ${e.message}", e)
             _publisher.value = null
         }
     }
@@ -131,26 +114,24 @@ internal class EventDetailViewModel @AssistedInject constructor(
             _participants.value = emptyList()
             return
         }
-
-        Log.d(TAG, "Loading ${participantIds.size} participants")
-        _participants.value = accountService.getUsersByIds(participantIds)
+        try {
+            _participants.value = accountService.getUsersByIds(participantIds)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load participants: ${e.message}", e)
+            _participants.value = emptyList()
+        }
     }
 
-    private fun clearEventData() {
+    private fun clearAll() {
         _event.value = null
         _publisher.value = null
         _participants.value = emptyList()
     }
 
-    fun onDismissParticipantsSheet() {
-        _showParticipationBottomSheet.value = false
-    }
+    private fun setLoading(isLoading: Boolean) { _isLoading.value = isLoading }
 
-    fun showParticipants() {
-        _showParticipationBottomSheet.value = true
-    }
+    fun onDismissParticipantsSheet() { _showParticipationBottomSheet.value = false }
+    fun showParticipants() { _showParticipationBottomSheet.value = true }
 
-    companion object {
-        private const val TAG = "EventDetailViewModel"
-    }
+    companion object { private const val TAG = "EventDetailViewModel" }
 }

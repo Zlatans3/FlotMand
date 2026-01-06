@@ -34,22 +34,28 @@ class FrontPageViewModel @Inject constructor(
 
             // Extract unique publisher IDs
             val publisherIds = events.mapNotNull { it.publisherId }.distinct()
-            Log.d(TAG, "Fetching ${publisherIds.size} unique publishers")
+            Log.d(TAG, "Publisher IDs from events: $publisherIds")
 
             // Fetch all publishers in one batch
             val publishersList = if (publisherIds.isNotEmpty()) {
+                Log.d(TAG, "Fetching ${publisherIds.size} unique publishers")
                 accountService.getUsersByIds(publisherIds)
             } else {
+                Log.w(TAG, "No publisher IDs found in events!")
                 emptyList()
             }
 
             // Create map of publisherId -> User
             val publishersMap = publishersList.associateBy { it.id }
             Log.d(TAG, "Loaded ${publishersMap.size} publishers")
+            Log.d(TAG, "Publishers map keys: ${publishersMap.keys}")
+            publishersMap.forEach { (id, user) ->
+                Log.d(TAG, "Publisher: id=$id, name=${user.displayName}, email=${user.email}")
+            }
 
             events.forEach { event ->
                 val publisherName = publishersMap[event.publisherId]?.displayName ?: "Unknown"
-                Log.d(TAG, "Event: ${event.eventName}, Publisher: $publisherName")
+                Log.d(TAG, "Event: ${event.eventName}, publisherId: ${event.publisherId}, Publisher: $publisherName")
             }
 
             FrontPageUiState(

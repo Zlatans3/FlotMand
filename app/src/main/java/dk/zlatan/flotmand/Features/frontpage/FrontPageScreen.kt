@@ -157,10 +157,11 @@ fun FrontpageContent(
             }
         }
         items(eventList) { eventDetails ->
+            val publisher = publishers[eventDetails.publisherId]
             EventCard(
                 modifier = Modifier
                     .padding(vertical = 8.dp, horizontal = 12.dp),
-                userName = publishers[eventDetails.publisherId]?.displayName ?: "Ukendt bruger",
+                userName = publisher?.displayName ?: "Ukendt bruger",
                 eventName = eventDetails.eventName.orEmpty(),
                 eventDate = eventDetails.eventDate.toString(),
                 eventTime = eventDetails.eventStartTime.toString(),

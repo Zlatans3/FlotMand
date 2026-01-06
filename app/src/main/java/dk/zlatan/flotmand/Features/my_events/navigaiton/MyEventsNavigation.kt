@@ -56,10 +56,7 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                 )
             )
         },
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-//            rememberViewModelStoreNavEntryDecorator()
-        )
+        entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator())
     )
 }
 

@@ -94,6 +94,34 @@ class AccountServiceImpl @Inject constructor() : AccountService {
 
     override suspend fun createAnonymousAccount() {
         Firebase.auth.signInAnonymously().await()
+        saveUserToFirestore()
+    }
+
+    private suspend fun saveUserToFirestore() {
+        val currentUser = Firebase.auth.currentUser ?: return
+
+        android.util.Log.d("AccountService", "Saving user to Firestore: ${currentUser.uid}")
+
+        val user = User(
+            id = currentUser.uid,
+            email = currentUser.email ?: "",
+            provider = currentUser.providerId,
+            phoneNumber = currentUser.phoneNumber ?: "",
+            displayName = currentUser.displayName ?: "",
+            photoUrl = currentUser.photoUrl?.toString() ?: "",
+            isAnonymous = currentUser.isAnonymous
+        )
+
+        try {
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(currentUser.uid)
+                .set(user)
+                .await()
+            android.util.Log.d("AccountService", "User saved successfully to Firestore")
+        } catch (e: Exception) {
+            android.util.Log.e("AccountService", "Failed to save user to Firestore: ${e.message}", e)
+        }
     }
 
     override suspend fun updateDisplayName(newDisplayName: String) {
@@ -102,6 +130,7 @@ class AccountServiceImpl @Inject constructor() : AccountService {
         }
 
         Firebase.auth.currentUser!!.updateProfile(profileUpdates).await()
+        saveUserToFirestore()
     }
 
     override suspend fun updatePhoneNumber(newPhoneNumber: String) {
@@ -123,10 +152,12 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     override suspend fun linkAccount(email: String, password: String) {
         val credential = EmailAuthProvider.getCredential(email, password)
         Firebase.auth.currentUser!!.linkWithCredential(credential).await()
+        saveUserToFirestore()
     }
 
     override suspend fun signIn(email: String, password: String) {
         Firebase.auth.signInWithEmailAndPassword(email, password).await()
+        saveUserToFirestore()
     }
 
     override suspend fun signOut() {
@@ -136,6 +167,7 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     override suspend fun signInWithGoogle(idToken: String) {
         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
         Firebase.auth.signInWithCredential(firebaseCredential).await()
+        saveUserToFirestore()
     }
 
     override suspend fun deleteAccount() {
