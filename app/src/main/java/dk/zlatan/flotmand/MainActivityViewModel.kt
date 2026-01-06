@@ -20,14 +20,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
-sealed class MainRoute {
-    object FrontPage : MainRoute()
-    object MyEvents : MainRoute()
-    object Profile : MainRoute()
-    object Authentication : MainRoute()
-}
-
 // UI state data class
 data class MainUiState(
     val isLoggedIn: Boolean = false,
@@ -42,15 +34,6 @@ class MainActivityViewModel @Inject constructor(
     private val accountService: AccountService,
     private val dinnerEventService: DinnerEventService
 ) : ViewModel() {
-
-    val items: List<MainRoute> by lazy {
-        listOf(
-            MainRoute.FrontPage,
-            MainRoute.MyEvents,
-            MainRoute.Profile,
-            MainRoute.Authentication
-        )
-    }
 
     // Combine all relevant state into a single StateFlow
     val uiState: StateFlow<MainUiState> = combine(
@@ -67,27 +50,6 @@ class MainActivityViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(5000),
         MainUiState()
     )
-
-    @Composable
-    fun ItemContent(
-        item: MainRoute,
-        modifier: Modifier = Modifier
-    ) {
-        when (item) {
-            is MainRoute.FrontPage -> {
-                FrontPageNavigation()
-            }
-            is MainRoute.MyEvents -> {
-                MyEventsNavigation()
-            }
-            is MainRoute.Profile -> {
-                ProfileNavigation()
-            }
-            is MainRoute.Authentication -> {
-                AuthenticationNavigation()
-            }
-        }
-    }
 
     // Login and logout actions
     fun login(email: String, password: String) {
