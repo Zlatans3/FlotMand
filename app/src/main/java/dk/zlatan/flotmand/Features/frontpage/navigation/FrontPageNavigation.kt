@@ -34,7 +34,8 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
 
                 is FrontPageDestination.EventDetail -> NavEntry(key) {
                     EventDetailScreenRoute(
-                        eventId = key.eventId
+                        eventId = key.eventId,
+                        onDismiss = { viewModel.pop() }
                     )
                 }
             }

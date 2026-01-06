@@ -166,7 +166,6 @@ fun FrontpageContent(
                 eventDate = eventDetails.eventDate.toString(),
                 eventTime = eventDetails.eventStartTime.toString(),
                 userProfilePic = publisher?.photoUrl,
-                // If EventCard supports color parameters, pass theme colors here
                 onClick = {
                     onClickEvent(eventDetails.eventId.orEmpty())
                 }

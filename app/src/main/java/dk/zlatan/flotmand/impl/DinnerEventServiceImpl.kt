@@ -162,7 +162,6 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
     override suspend fun updateDinnerEvent(event: Event) {
         Firebase.firestore
             .collection(DINNER_EVENTS_COLLECTION)
-            // TODO: Zlatan 27/11/2025 Probably wrong .orEmpty()
             .document(event.eventId.orEmpty()).set(event).await()
     }
 

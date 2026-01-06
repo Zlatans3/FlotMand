@@ -31,7 +31,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -62,7 +61,7 @@ fun LoginRoute(
 }
 
 @Composable
-fun LoginScreen(
+private fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
     onLoginSuccess: () -> Unit = {},
@@ -86,7 +85,7 @@ fun LoginScreen(
 }
 
 @Composable
-internal fun LoginContent(
+private fun LoginContent(
     modifier: Modifier = Modifier,
     onGoogleLoginClick: (Credential) -> Unit = {},
     uiState: LoginUiState = LoginUiState()
@@ -113,19 +112,6 @@ internal fun LoginContent(
 
             VSpacer(20.dp)
 
-            // TODO: Zlatan 24/11/2025 Maybe not needed
-            Text(
-                text = "Første gang? tryk her for at oprette dig",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.End,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(
-                        onClick = {}
-                    )
-                    .padding(horizontal = 20.dp)
-            )
             // Optionally show error
             uiState.errorMessage?.let {
                 Text(
@@ -149,9 +135,8 @@ internal fun LoginContent(
     }
 }
 
-// TODO: Zlatan 24/11/2025 Refactor into generic card
 @Composable
-fun LoginCard(
+private fun LoginCard(
     isLoading: Boolean,
     onGoogleLoginClick: (Credential) -> Unit,
 ) {
@@ -200,6 +185,7 @@ fun LoginCard(
     }
 }
 
+// Launches the Credential Manager UI for Google Sign-In
 private suspend fun launchCredManButtonUI(
     context: Context,
     onRequestResult: (Credential) -> Unit
@@ -230,7 +216,7 @@ private suspend fun launchCredManButtonUI(
 @Preview(showBackground = true, showSystemUi = true)
 @PreviewLightDark
 @Composable
-private fun loginScreenPreview() {
+private fun LoginScreenPreview() {
     FlotMandTheme() {
         LoginContent(modifier = Modifier)
     }

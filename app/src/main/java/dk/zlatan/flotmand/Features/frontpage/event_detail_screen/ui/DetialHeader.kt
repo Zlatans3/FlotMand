@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,10 +34,11 @@ internal fun DetailHeader(
     eventStatus: EventStatus,
     name: String,
     eventTitle: String,
-    publisherProfileImageUrl: String? = null,
     modifier: Modifier = Modifier,
+    publisherProfileImageUrl: String? = null,
     isPublisher: Boolean = false,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
 ) {
     val (statusText, statusColor) = when (eventStatus) {
         EventStatus.UPCOMING -> "Kommende" to Color(0xFF4CAF50) // Green
@@ -49,19 +51,28 @@ internal fun DetailHeader(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.primaryContainer)
     ) {
-        // Top-right edit icon when publisher
+        // Top-right action icons when publisher: Edit + Delete
         if (isPublisher) {
-            IconButton(
-                onClick = onEditClick,
+            Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 12.dp, end = 12.dp)
+                    .padding(top = 12.dp, end = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Rediger event",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                IconButton(onClick = onEditClick) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Rediger event",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                IconButton(onClick = onDeleteClick) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Slet event",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
             }
         }
 
@@ -128,6 +139,7 @@ private fun DetailHeaderPreview() {
         name = "Mikkel",
         eventTitle = "Lækker sejlads på Øresund",
         isPublisher = true,
-        onEditClick = {}
+        onEditClick = {},
+        onDeleteClick = {}
     )
 }

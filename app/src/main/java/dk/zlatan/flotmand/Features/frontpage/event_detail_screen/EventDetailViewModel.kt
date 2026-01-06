@@ -15,6 +15,7 @@ import dk.zlatan.flotmand.util.combine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -45,6 +46,7 @@ internal class EventDetailViewModel @AssistedInject constructor(
     private val _isLoading = MutableStateFlow(false)
     private val _showParticipationBottomSheet = MutableStateFlow(false)
     private val _isPublisher = MutableStateFlow(false)
+    private val _isDeleted = MutableStateFlow(false)
 
     val uiState: StateFlow<EventDetailUiState> = combine(
         _event,
@@ -67,6 +69,8 @@ internal class EventDetailViewModel @AssistedInject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = EventDetailUiState()
     )
+
+    val isDeleted: StateFlow<Boolean> = _isDeleted.asStateFlow()
 
     init {
         loadEvent()
@@ -142,6 +146,19 @@ internal class EventDetailViewModel @AssistedInject constructor(
 
     fun onDismissParticipantsSheet() { _showParticipationBottomSheet.value = false }
     fun showParticipants() { _showParticipationBottomSheet.value = true }
+
+    fun deleteEvent(eventId: String) {
+        viewModelScope.launch {
+            try {
+                dinnerEventService.deleteDinnerEvent(eventId)
+                // Clear UI state after deletion
+                clearAll()
+                _isDeleted.value = true
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to delete event: ${e.message}", e)
+            }
+        }
+    }
 
     companion object { private const val TAG = "EventDetailViewModel" }
 }

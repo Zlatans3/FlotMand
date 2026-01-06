@@ -15,7 +15,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -28,6 +32,7 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCa
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
+import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
@@ -38,6 +43,7 @@ import dk.zlatan.flotmand.model.User
 internal fun EventDetailScreenRoute(
     eventId: String,
     modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
     viewModel: EventDetailViewModel = hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
         key = eventId,
         creationCallback = { factory ->
@@ -46,7 +52,13 @@ internal fun EventDetailScreenRoute(
     )
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isDeleted by viewModel.isDeleted.collectAsState(initial = false)
     val clipboardManager = LocalClipboardManager.current
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (isDeleted) {
+        onDismiss()
+    }
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -63,6 +75,7 @@ internal fun EventDetailScreenRoute(
                     Text(text = "Henter et flot event...")
                 }
             }
+
             uiState.event == null -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -82,12 +95,15 @@ internal fun EventDetailScreenRoute(
                     )
                 }
             }
+
             else -> {
                 EventDetailScreenContent(
                     event = uiState.event!!,
                     publisher = uiState.publisher,
                     onParticipantsClick = {
-                        viewModel.showParticipants()
+                        if (!uiState.event!!.participantIds.isNullOrEmpty()) {
+                            viewModel.showParticipants()
+                        }
                     },
                     onDateClick = {
                         val dateTimeString = "${
@@ -100,8 +116,10 @@ internal fun EventDetailScreenRoute(
                         clipboardManager.setText(AnnotatedString(locationString))
                     },
                     onEditEvent = {
-                        
-                    }
+                        // TODO: Zlatan 06/01/2026 WILL BE ADDED IN LATER PATCH
+                    },
+                    onDeleteEvent = { showDeleteDialog = true },
+                    isPublisher = uiState.isPublisher
                 )
             }
         }
@@ -115,6 +133,19 @@ internal fun EventDetailScreenRoute(
             participants = uiState.participants
         )
     }
+
+    if (showDeleteDialog) {
+        FmConfirmDialog(
+            title = "Slet event?",
+            message = "Denne handling kan ikke fortrydes.",
+            confirmText = "Slet",
+            onDismiss = { showDeleteDialog = false },
+            onConfirmClick = {
+                showDeleteDialog = false
+                viewModel.deleteEvent(eventId)
+            }
+        )
+    }
 }
 
 @Composable
@@ -123,7 +154,9 @@ private fun EventDetailScreenContent(
     onParticipantsClick: () -> Unit = {},
     event: Event,
     publisher: User?,
+    isPublisher: Boolean,
     onEditEvent: () -> Unit,
+    onDeleteEvent: () -> Unit,
     onDateClick: () -> Unit,
     onLocationLongClick: () -> Unit,
 ) {
@@ -138,7 +171,9 @@ private fun EventDetailScreenContent(
             name = publisher?.displayName.orEmpty(),
             eventTitle = event.eventName.orEmpty(),
             publisherProfileImageUrl = publisher?.photoUrl,
-            onEditClick = onEditEvent
+            isPublisher = isPublisher,
+            onEditClick = onEditEvent,
+            onDeleteClick = onDeleteEvent
         )
         VSpacer(20.dp)
         SectionItem(
@@ -214,7 +249,9 @@ private fun EventDetailScreenPreview() {
         ),
         onLocationLongClick = {},
         onDateClick = {},
-        onEditEvent = {}
+        onEditEvent = {},
+        onDeleteEvent = {},
+        isPublisher = true,
     )
 }
 
