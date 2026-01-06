@@ -18,7 +18,6 @@ data class Event(
     val eventId: String? = null,
     val publisherId: String? = null,
     val participantIds: List<String>? = null,
-    val publisher: User? = null,
     val eventName: String? = null,
     val location: String? = null,
     // Firestore-compatible fields (stored as Strings)
@@ -45,7 +44,6 @@ data class Event(
         eventId: String? = this.eventId,
         publisherId: String? = this.publisherId,
         participantIds: List<String>? = this.participantIds,
-        publisher: User? = this.publisher,
         eventName: String? = this.eventName,
         location: String? = this.location,
         eventDate: LocalDate? = this.eventDate,
@@ -55,7 +53,6 @@ data class Event(
             eventId = eventId,
             publisherId = publisherId,
             participantIds = participantIds,
-            publisher = publisher,
             eventName = eventName,
             location = location,
             eventDateString = eventDate?.toString() ?: this.eventDateString,
@@ -97,7 +94,6 @@ data class Event(
             eventId: String? = null,
             publisherId: String? = null,
             participantIds: List<String>? = null,
-            publisher: User? = null,
             eventName: String? = null,
             location: String? = null,
             eventDate: LocalDate? = null,
@@ -107,7 +103,6 @@ data class Event(
                 eventId = eventId,
                 publisherId = publisherId,
                 participantIds = participantIds,
-                publisher = publisher,
                 eventName = eventName,
                 location = location,
                 eventDateString = eventDate?.toString(),
@@ -123,13 +118,6 @@ data class Event(
                 val name = names.random()
                 create(
                     eventId = "event$name${index + 1}",
-                    publisher = User(
-                        displayName = name,
-                        email = "",
-                        id = "user${index + 1}",
-                        isAnonymous = false,
-                        provider = "preview"
-                    ),
                     location = "Fortuna alle $index",
                     eventName = "Middag hos $name",
                     eventDate = LocalDate.parse("2024-06-15"),
@@ -142,13 +130,6 @@ data class Event(
         val staticTestEvents: List<Event> = listOf(
             create(
                 eventId = "event1",
-                publisher = User(
-                    displayName = "Zlatan Stadler",
-                    email = "zlatan@example.com",
-                    id = "user1",
-                    isAnonymous = false,
-                    provider = "test"
-                ),
                 eventName = "Middag hos Zlatan",
                 location = "Fortuna alle 1, 2000 Frederiksberg",
                 eventDate = LocalDate.parse("2024-12-01"),
@@ -157,13 +138,6 @@ data class Event(
             ),
             create(
                 eventId = "event2",
-                publisher = User(
-                    displayName = "Gustav Rasslan",
-                    email = "gustav@example.com",
-                    id = "user2",
-                    isAnonymous = false,
-                    provider = "test"
-                ),
                 eventName = "Frokost med Gustav",
                 location = "Nørrebrogade 2, 2200 København N",
                 eventDate = LocalDate.parse("2024-12-05"),
@@ -173,13 +147,6 @@ data class Event(
             create(
                 eventId = "event3",
                 publisherId = "3",
-                publisher = User(
-                    displayName = "Mikkel1 Rahbek",
-                    email = "mikkel@example.com",
-                    id = "user3",
-                    isAnonymous = false,
-                    provider = "test"
-                ),
                 eventName = "Brunch hos Mikkel",
                 location = "Østerbrogade 3, 2100 København Ø",
                 eventDate = LocalDate.parse("2024-12-10"),
@@ -188,13 +155,6 @@ data class Event(
             create(
                 eventId = "event4",
                 publisherId = "3",
-                publisher = User(
-                    displayName = "Mikkel2 Rahbek",
-                    email = "mikkel@example.com",
-                    id = "user3",
-                    isAnonymous = false,
-                    provider = "test"
-                ),
                 eventName = "Brunch hos Mikkel",
                 location = "Amagerbrogade 4, 2300 København S",
                 eventDate = LocalDate.parse("2024-12-10"),
@@ -203,13 +163,6 @@ data class Event(
             create(
                 eventId = "event5",
                 publisherId = "3",
-                publisher = User(
-                    displayName = "Mikkel3 Rahbek",
-                    email = "mikkel@example.com",
-                    id = "user3",
-                    isAnonymous = false,
-                    provider = "test"
-                ),
                 eventName = "Brunch hos Mikkel",
                 location = "Vesterbrogade 5, 1620 København V",
                 eventDate = LocalDate.parse("2024-12-10"),

@@ -106,7 +106,6 @@ class AddEventViewModel @Inject constructor(
 
                 val newEvent = event.copyWithDates(
                     publisherId = accountService.currentUserId,
-                    publisher = currentUser,
                     participantIds = emptyList()
                 )
 

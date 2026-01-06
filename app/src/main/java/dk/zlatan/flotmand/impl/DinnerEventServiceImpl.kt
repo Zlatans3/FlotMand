@@ -21,23 +21,36 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
     // Fetch all dinner events (for front page)
     override val allDinnerEvents: Flow<List<Event>>
         get() = callbackFlow {
+            Log.d(TAG, "Starting to listen for events")
             val listenerRegistration = Firebase.firestore
                 .collection(NOTES_COLLECTION)
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
                         Log.e(TAG, "Error fetching events", error)
-                        trySend(emptyList())
+                        close(error) // Close the flow with error instead of sending empty list
                         return@addSnapshotListener
                     }
 
+                    Log.d(TAG, "Snapshot received with ${snapshot?.documents?.size ?: 0} documents")
                     val events = snapshot?.documents?.mapNotNull { doc ->
-                        safeParseEvent(doc)
+                        Log.d(TAG, "Processing document: ${doc.id}, exists: ${doc.exists()}")
+                        val event = safeParseEvent(doc)
+                        if (event == null) {
+                            Log.w(TAG, "Failed to parse document ${doc.id}")
+                        } else {
+                            Log.d(TAG, "Successfully parsed event: ${event.eventName}")
+                        }
+                        event
                     } ?: emptyList()
 
+                    Log.d(TAG, "Sending ${events.size} events to flow")
                     trySend(events)
                 }
 
-            awaitClose { listenerRegistration.remove() }
+            awaitClose {
+                Log.d(TAG, "Closing events listener")
+                listenerRegistration.remove()
+            }
         }
 
     // Fetch only current user's dinner events (for my events page)
@@ -51,7 +64,7 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
                             Log.e(TAG, "Error fetching user events", error)
-                            trySend(emptyList())
+                            close(error) // Close the flow with error instead of sending empty list
                             return@addSnapshotListener
                         }
 
@@ -73,23 +86,29 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
     @Suppress("UNCHECKED_CAST")
     private fun safeParseEvent(doc: DocumentSnapshot): Event? {
         return try {
+            Log.d(TAG, "Parsing document ${doc.id}, data: ${doc.data}")
+
             // Check if eventId field exists in the document
             if (doc.contains("eventId")) {
                 Log.w(TAG, "Document ${doc.id} has eventId field, parsing manually")
                 // Parse manually to avoid @DocumentId conflict
-                Event(
+                val event = Event(
                     eventId = doc.id, // Use document ID, not the field
                     publisherId = doc.getString("publisherId"),
                     participantIds = doc.get("participantIds") as? List<String>,
-                    publisher = null, // This would need separate fetch
                     eventName = doc.getString("eventName"),
                     location = doc.getString("location"),
                     eventDateString = doc.getString("eventDateString"),
                     eventStartTimeString = doc.getString("eventStartTimeString")
                 )
+                Log.d(TAG, "Manually parsed event: ${event.eventName}, date: ${event.eventDateString}")
+                event
             } else {
                 // Normal parsing with @DocumentId
-                doc.toObject<Event>()
+                Log.d(TAG, "Parsing with toObject for document ${doc.id}")
+                val event = doc.toObject<Event>()
+                Log.d(TAG, "toObject parsed event: ${event?.eventName}, eventId: ${event?.eventId}")
+                event
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing event from document ${doc.id}: ${e.message}", e)

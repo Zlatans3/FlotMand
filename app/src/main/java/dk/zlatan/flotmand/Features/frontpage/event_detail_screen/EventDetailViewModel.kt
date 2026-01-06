@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 
 data class EventDetailUiState(
     val event: Event? = null,
+    val publisher: User? = null,
     val participants: List<User> = emptyList(),
     val isLoading: Boolean = false,
     val showParticipationBottomSheet: Boolean = false
@@ -38,18 +39,21 @@ internal class EventDetailViewModel @AssistedInject constructor(
     }
 
     private val _event = MutableStateFlow<Event?>(null)
+    private val _publisher = MutableStateFlow<User?>(null)
     private val _participants = MutableStateFlow<List<User>>(emptyList())
     private val _isLoading = MutableStateFlow(false)
     private val _showParticipationBottomSheet = MutableStateFlow(false)
 
     val uiState: StateFlow<EventDetailUiState> = combine(
         _event,
+        _publisher,
         _participants,
         _isLoading,
         _showParticipationBottomSheet
-    ) { event, participants, isLoading, showBottomSheet ->
+    ) { event, publisher, participants, isLoading, showBottomSheet ->
         EventDetailUiState(
             event = event,
+            publisher = publisher,
             participants = participants,
             isLoading = isLoading,
             showParticipationBottomSheet = showBottomSheet
@@ -73,37 +77,69 @@ internal class EventDetailViewModel @AssistedInject constructor(
 
                 if (event == null) {
                     Log.w(TAG, "Event not found for ID: $eventId")
-                    _event.value = null
-                    _participants.value = emptyList()
-                } else {
-                    Log.d(TAG, "Event loaded successfully: ${event.eventName}")
-                    _event.value = event
-
-                    // Load participants based on participantIds
-                    event.participantIds?.let { participantIds ->
-                        if (participantIds.isNotEmpty()) {
-                            Log.d(TAG, "Loading ${participantIds.size} participants")
-                            val users = accountService.getUsersByIds(participantIds)
-                            _participants.value = users
-                            Log.d(TAG, "Loaded ${users.size} participants")
-                        } else {
-                            Log.d(TAG, "No participants for this event")
-                            _participants.value = emptyList()
-                        }
-                    } ?: run {
-                        Log.d(TAG, "participantIds is null")
-                        _participants.value = emptyList()
-                    }
+                    clearEventData()
+                    return@launch
                 }
+
+                Log.d(TAG, "Event loaded: ${event.eventName}")
+                Log.d(TAG, "Event publisherId: ${event.publisherId}")
+                Log.d(TAG, "Event participantIds: ${event.participantIds}")
+                _event.value = event
+
+                // Load publisher separately
+                loadPublisher(event.publisherId)
+
+                // Load participants, excluding the publisher
+                val participantIdsWithoutPublisher = event.participantIds?.filter { it != event.publisherId }
+                loadParticipants(participantIdsWithoutPublisher)
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading event: ${e.message}", e)
-                _event.value = null
-                _participants.value = emptyList()
+                clearEventData()
             } finally {
                 _isLoading.value = false
-                Log.d(TAG, "Loading complete. isLoading set to false")
             }
         }
+    }
+
+    private suspend fun loadPublisher(publisherId: String?) {
+        if (publisherId.isNullOrEmpty()) {
+            Log.w(TAG, "Publisher ID is null or empty")
+            _publisher.value = null
+            return
+        }
+
+        Log.d(TAG, "Loading publisher with ID: $publisherId")
+        try {
+            val users = accountService.getUsersByIds(listOf(publisherId))
+            Log.d(TAG, "Fetched ${users.size} users for publisher")
+
+            if (users.isEmpty()) {
+                Log.w(TAG, "No user found for publisher ID: $publisherId")
+                _publisher.value = null
+            } else {
+                _publisher.value = users.first()
+                Log.d(TAG, "Publisher loaded: ${users.first().displayName}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading publisher: ${e.message}", e)
+            _publisher.value = null
+        }
+    }
+
+    private suspend fun loadParticipants(participantIds: List<String>?) {
+        if (participantIds.isNullOrEmpty()) {
+            _participants.value = emptyList()
+            return
+        }
+
+        Log.d(TAG, "Loading ${participantIds.size} participants")
+        _participants.value = accountService.getUsersByIds(participantIds)
+    }
+
+    private fun clearEventData() {
+        _event.value = null
+        _publisher.value = null
+        _participants.value = emptyList()
     }
 
     fun onDismissParticipantsSheet() {

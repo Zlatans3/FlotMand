@@ -31,6 +31,7 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
+import dk.zlatan.flotmand.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,21 +84,22 @@ internal fun EventDetailScreenRoute(
             }
             else -> {
                 EventDetailScreenContent(
-                event = uiState.event!!,
-                onParticipantsClick = {
-                    viewModel.showParticipants()
-                },
-                onDateClick = {
-                    val dateTimeString = "${
-                        uiState.event!!.eventDate?.toString().orEmpty()
-                    } ${uiState.event!!.eventStartTime.toString()}"
-                    clipboardManager.setText(AnnotatedString(dateTimeString))
-                },
-                onLocationLongClick = {
-                    val locationString = uiState.event!!.location.orEmpty()
-                    clipboardManager.setText(AnnotatedString(locationString))
-                }
-            )
+                    event = uiState.event!!,
+                    publisher = uiState.publisher,
+                    onParticipantsClick = {
+                        viewModel.showParticipants()
+                    },
+                    onDateClick = {
+                        val dateTimeString = "${
+                            uiState.event!!.eventDate?.toString().orEmpty()
+                        } ${uiState.event!!.eventStartTime.toString()}"
+                        clipboardManager.setText(AnnotatedString(dateTimeString))
+                    },
+                    onLocationLongClick = {
+                        val locationString = uiState.event!!.location.orEmpty()
+                        clipboardManager.setText(AnnotatedString(locationString))
+                    }
+                )
             }
         }
     }
@@ -117,6 +119,7 @@ private fun EventDetailScreenContent(
     modifier: Modifier = Modifier,
     onParticipantsClick: () -> Unit = {},
     event: Event,
+    publisher: User?,
     onDateClick: () -> Unit = {},
     onLocationLongClick: () -> Unit,
 ) {
@@ -128,7 +131,7 @@ private fun EventDetailScreenContent(
     ) {
         DetailHeader(
             eventStatus = event.status,
-            name = event.publisher?.displayName.orEmpty(),
+            name = publisher?.displayName.orEmpty(),
             eventTitle = event.eventName.orEmpty(),
             // Optionally, update DetailHeader to use onSurface for text if not already
         )
@@ -195,9 +198,15 @@ private fun EventDetailScreenContent(
 @Preview(showBackground = true)
 @Composable
 private fun EventDetailScreenPreview() {
+    val event = Event.staticTestEvents.first()
     EventDetailScreenContent(
         modifier = Modifier,
-        event = Event.staticTestEvents.first(),
+        event = event,
+        publisher = User(
+            id = "test-publisher",
+            displayName = "Test Publisher",
+            email = "publisher@test.com"
+        ),
         onLocationLongClick = {}
     )
 }
@@ -206,13 +215,18 @@ private fun EventDetailScreenPreview() {
 @Composable
 private fun PrintListPreview() {
     val event = Event.staticTestEvents.first()
+    val publisher = User(
+        id = "test-publisher",
+        displayName = "Test Publisher",
+        email = "publisher@test.com"
+    )
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Event: ${event.eventName}\nDate: ${event.eventDate}\nTime: ${event.eventStartTime}\nHost: ${event.publisher?.displayName}"
+            text = "Event: ${event.eventName}\nDate: ${event.eventDate}\nTime: ${event.eventStartTime}\nHost: ${publisher.displayName}"
         )
     }
 }

@@ -1,11 +1,13 @@
 package dk.zlatan.flotmand.Features.my_events
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +19,7 @@ import dk.zlatan.flotmand.design_system.componenets.EventCard
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
+import dk.zlatan.flotmand.model.User
 
 @Composable
 fun MyEventScreenRoute(
@@ -24,25 +27,119 @@ fun MyEventScreenRoute(
     viewModel: MyEventViewModel = hiltViewModel(),
     onAddEventClick: () -> Unit = {}
 ) {
-    val events by viewModel.myDinnerEvents.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    MyEventScreen(
-        modifier = modifier,
-        filteredEvents = events,
-        onAddEventClick = onAddEventClick
-    )
+    LaunchedEffect(uiState) {
+        Log.d("MyEventScreenRoute", "UI State - isLoading: ${uiState.isLoading}, eventCount: ${uiState.eventList.size}, error: ${uiState.errorMessage}")
+    }
+
+    when {
+        uiState.isLoading -> {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = "Henter dine events...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+
+        uiState.errorMessage != null -> {
+            Box(
+                modifier = modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "😕",
+                        style = MaterialTheme.typography.displayLarge
+                    )
+                    Text(
+                        text = uiState.errorMessage!!,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+
+        uiState.eventList.isEmpty() -> {
+            Box(modifier = modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "📅",
+                        style = MaterialTheme.typography.displayLarge
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Ingen events endnu",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Opret dit første event!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                ExtendedFloatingActionButton(
+                    onClick = onAddEventClick,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(24.dp)
+                ) {
+                    Icon(FmIcons.Add, contentDescription = "Add Event")
+                    Spacer(Modifier.width(8.dp))
+                    Text("Tilføj event", style = MaterialTheme.typography.labelLarge)
+                }
+            }
+        }
+
+        else -> {
+            MyEventScreen(
+                modifier = modifier,
+                eventList = uiState.eventList,
+                publishers = uiState.publishers,
+                onAddEventClick = onAddEventClick
+            )
+        }
+    }
 }
 
 @Composable
 internal fun MyEventScreen(
     modifier: Modifier = Modifier,
-    filteredEvents: List<Event>,
+    eventList: List<Event>,
+    publishers: Map<String, User>,
     onAddEventClick: () -> Unit = {}
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         MyEventContent(
             modifier = Modifier.matchParentSize(),
-            filteredEvents = filteredEvents,
+            eventList = eventList,
+            publishers = publishers,
         )
         ExtendedFloatingActionButton(
             onClick = onAddEventClick,
@@ -62,7 +159,8 @@ internal fun MyEventScreen(
 @Composable
 fun MyEventContent(
     modifier: Modifier = Modifier,
-    filteredEvents: List<Event>,
+    eventList: List<Event>,
+    publishers: Map<String, User> = emptyMap(),
 ) {
     LazyColumn(
         modifier = modifier
@@ -77,12 +175,13 @@ fun MyEventContent(
                 modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
             )
         }
-        items(filteredEvents) { event ->
+        items(eventList) { event ->
+            val publisher = publishers[event.publisherId]
             EventCard(
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp),
-                userProfilePic = event.publisher?.photoUrl,
-                userName = event.publisher?.displayName ?: "Unknown",
-                eventName = event.eventName ?: "No name",
+                userProfilePic = publisher?.photoUrl,
+                userName = publisher?.displayName ?: "Ukendt bruger",
+                eventName = event.eventName ?: "Intet navn",
                 eventDate = event.eventDate?.toString() ?: "",
                 eventTime = event.eventStartTime?.toString() ?: "",
                 onClick = {}
@@ -94,8 +193,16 @@ fun MyEventContent(
 @Preview(showBackground = true)
 @Composable
 private fun MyEventScreenPreview() {
+    val mockPublishers = mapOf(
+        "publisher1" to User(
+            id = "publisher1",
+            displayName = "John Doe",
+            email = "john@example.com"
+        )
+    )
     MyEventContent(
         modifier = Modifier,
-        filteredEvents = Event.previewEvents(2)
+        eventList = Event.previewEvents(2),
+        publishers = mockPublishers
     )
 }

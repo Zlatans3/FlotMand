@@ -1,6 +1,9 @@
 package dk.zlatan.flotmand.model
 
+import com.google.firebase.firestore.DocumentId
+
 data class User(
+    @DocumentId
     val id: String = "",
     val email: String = "",
     val phoneNumber: String = "",

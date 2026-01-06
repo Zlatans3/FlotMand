@@ -64,6 +64,7 @@ class AccountServiceImpl @Inject constructor() : AccountService {
         if (userIds.isEmpty()) return emptyList()
 
         return try {
+            android.util.Log.d("AccountService", "Fetching users for IDs: $userIds")
             // Firestore 'in' query supports up to 10 items
             // If we have more, we need to batch the requests
             val users = mutableListOf<User>()
@@ -74,12 +75,19 @@ class AccountServiceImpl @Inject constructor() : AccountService {
                     .get()
                     .await()
 
+                android.util.Log.d("AccountService", "Query returned ${querySnapshot.documents.size} documents for chunk: $chunk")
                 querySnapshot.documents.forEach { document ->
-                    document.toObject<User>()?.let { users.add(it) }
+                    android.util.Log.d("AccountService", "Document: ${document.id}, exists: ${document.exists()}")
+                    document.toObject<User>()?.let {
+                        users.add(it)
+                        android.util.Log.d("AccountService", "Parsed user: ${it.displayName}")
+                    } ?: android.util.Log.w("AccountService", "Failed to parse user from document ${document.id}")
                 }
             }
+            android.util.Log.d("AccountService", "Total users fetched: ${users.size}")
             users
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.e("AccountService", "Error fetching users: ${e.message}", e)
             emptyList()
         }
     }

@@ -25,7 +25,7 @@ import dk.zlatan.flotmand.design_system.icon.FmIcons
 internal fun SectionCard(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
-    @DrawableRes iconRes: ImageVector = FmIcons.Person,
+    iconRes: ImageVector = FmIcons.Person,
     title: String,
     onClick: () -> Unit,
 ) {
