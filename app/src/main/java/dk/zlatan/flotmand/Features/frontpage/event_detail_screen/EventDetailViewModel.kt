@@ -3,6 +3,9 @@ package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
@@ -23,13 +26,17 @@ data class EventDetailUiState(
     val showParticipationBottomSheet: Boolean = false
 )
 
-@HiltViewModel
-class EventDetailViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+@HiltViewModel(assistedFactory = EventDetailViewModel.Factory::class)
+internal class EventDetailViewModel @AssistedInject constructor(
+    @Assisted private val eventId: String,
     private val dinnerEventService: DinnerEventService,
     private val accountService: AccountService
 ) : ViewModel() {
-    private val eventId: String? = savedStateHandle["eventId"]
+
+    @AssistedFactory
+    interface Factory {
+        fun create(eventId: String): EventDetailViewModel
+    }
 
     private val _event = MutableStateFlow<Event?>(null)
     private val _participants = MutableStateFlow<List<User>>(emptyList())
@@ -62,15 +69,13 @@ class EventDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                eventId?.let { id ->
-                    val event = dinnerEventService.readDinnerEvent(id)
-                    _event.value = event
+                val event = dinnerEventService.readDinnerEvent(eventId)
+                _event.value = event
 
-                    // Load participants based on participantIds
-                    event?.participantIds?.let { participantIds ->
-                        val users = accountService.getUsersByIds(participantIds)
-                        _participants.value = users
-                    }
+                // Load participants based on participantIds
+                event?.participantIds?.let { participantIds ->
+                    val users = accountService.getUsersByIds(participantIds)
+                    _participants.value = users
                 }
             } catch (_: Exception) {
                 // Handle error - could emit error state

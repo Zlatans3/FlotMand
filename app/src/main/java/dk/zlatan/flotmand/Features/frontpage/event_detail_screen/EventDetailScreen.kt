@@ -16,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -32,17 +31,21 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun EventDetailScreenRoute(
+    eventId: String,
     modifier: Modifier = Modifier,
-    viewModel: EventDetailViewModel = hiltViewModel()
+    viewModel: EventDetailViewModel = hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
+        key = eventId,
+        creationCallback = { factory ->
+            factory.create(eventId)
+        }
+    )
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val clipboardManager = LocalClipboardManager.current
-    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -64,16 +67,14 @@ internal fun EventDetailScreenRoute(
                     viewModel.showParticipants()
                 },
                 onDateClick = {
-                    val dateTimeString = "${uiState.event!!.eventDate?.toString().orEmpty()} ${uiState.event!!.eventStartTime.toString()}"
-                    coroutineScope.launch {
-                        clipboardManager.setText(AnnotatedString(dateTimeString))
-                    }
+                    val dateTimeString = "${
+                        uiState.event!!.eventDate?.toString().orEmpty()
+                    } ${uiState.event!!.eventStartTime.toString()}"
+                    clipboardManager.setText(AnnotatedString(dateTimeString))
                 },
                 onLocationLongClick = {
                     val locationString = uiState.event!!.location.orEmpty()
-                    coroutineScope.launch {
-                        clipboardManager.setText(AnnotatedString(locationString))
-                    }
+                    clipboardManager.setText(AnnotatedString(locationString))
                 }
             )
         }

@@ -1,14 +1,8 @@
 package dk.zlatan.flotmand
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.zlatan.flotmand.Features.authentication.di.AuthenticationNavigation
-import dk.zlatan.flotmand.Features.frontpage.di.FrontPageNavigation
-import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigation
-import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigation
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
@@ -41,7 +35,7 @@ class MainActivityViewModel @Inject constructor(
         dinnerEventService.dinnerEventsByUserId
     ) { user, events ->
         MainUiState(
-            isLoggedIn = user != null,
+            isLoggedIn = user != null && user.id.isNotEmpty() && !user.isAnonymous,
             user = user,
             dinnerEvents = events
         )

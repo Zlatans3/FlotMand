@@ -25,45 +25,39 @@ fun AuthenticationNavigation(
 ) {
     val navigationStack: List<AuthenticationDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Main Login screen
-        LoginRoute(
-            onLoginSuccess = onLoginSuccess
-        )
-
-        // Navigation overlay for sub-screens (e.g., Register, ForgotPassword)
-        NavDisplay(
-            backStack = navigationStack,
-            onBack = { viewModel.pop() },
-            entryProvider = { key ->
-                when (key) {
-                    is AuthenticationDestination.Login -> NavEntry(key) {
-                        LoginRoute(onLoginSuccess = onLoginSuccess)
-                    }
-                    // Add more authentication destinations here as needed
-                    // e.g., Register, ForgotPassword screens
-                }
-            },
-            transitionSpec = {
-                ContentTransform(
-                    slideIntoContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Left
-                    ),
-                    ExitTransition.None
-                )
-            },
-            popTransitionSpec = {
-                ContentTransform(
-                    EnterTransition.None,
-                    slideOutOfContainer(
-                        towards = AnimatedContentTransitionScope.SlideDirection.Right
+    NavDisplay(
+        backStack = navigationStack,
+        onBack = { viewModel.pop() },
+        entryProvider = { key ->
+            when (key) {
+                AuthenticationDestination.Login -> NavEntry(key) {
+                    LoginRoute(
+                        modifier = Modifier.fillMaxSize(),
+                        onLoginSuccess = { onLoginSuccess() }
                     )
-                )
-            },
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator()
+                }
+            }
+        },
+        transitionSpec = {
+            ContentTransform(
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left
+                ),
+                ExitTransition.None
             )
+        },
+        popTransitionSpec = {
+            ContentTransform(
+                EnterTransition.None,
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right
+                )
+            )
+        },
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator()
         )
-    }
+    )
 }
+
 

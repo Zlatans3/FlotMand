@@ -1,0 +1,122 @@
+package dk.zlatan.flotmand.navigation
+
+import android.view.WindowManager
+import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
+import dk.zlatan.flotmand.Features.authentication.di.AuthenticationNavigation
+import dk.zlatan.flotmand.Features.bottomnavigation.FmBottomNavigationBar
+import dk.zlatan.flotmand.Features.bottomnavigation.TopLevelDestination
+import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigation
+import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigation
+import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigation
+
+@Composable
+fun AppNavigation(
+    modifier: Modifier = Modifier,
+    viewModel: AppNavigationViewModel = hiltViewModel()
+) {
+    val navigationStack: List<AppDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
+
+    NavDisplay(
+        backStack = navigationStack,
+        onBack = { /* Don't allow back at app level */ },
+        entryProvider = { key ->
+            when (key) {
+                AppDestination.Authentication -> NavEntry(key) {
+                    AuthenticationNavigation()
+                }
+
+                AppDestination.MainApp -> NavEntry(key) {
+                    MainAppContent(modifier = modifier)
+                }
+            }
+        },
+        transitionSpec = {
+            ContentTransform(
+                fadeIn(),
+                fadeOut()
+            )
+        },
+        popTransitionSpec = {
+            ContentTransform(
+                fadeIn(),
+                fadeOut()
+            )
+        },
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator()
+        )
+    )
+}
+
+@Composable
+private fun MainAppContent(
+    modifier: Modifier = Modifier
+) {
+    var currentTab: TopLevelDestination by rememberSaveable {
+        mutableStateOf(TopLevelDestination.HOME)
+    }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        bottomBar = {
+            FmBottomNavigationBar(
+                currentTab = currentTab,
+                selectedTabIconColor = MaterialTheme.colorScheme.primary,
+                onBottomNavigationClicked = { destination ->
+                    currentTab = destination
+                }
+            )
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            when (currentTab) {
+                TopLevelDestination.HOME -> {
+                    FrontPageNavigation()
+                }
+                TopLevelDestination.MY_EVENTS -> {
+                    MyEventsNavigation()
+                }
+                TopLevelDestination.PROFILE -> {
+                    ProfileNavigation()
+                }
+            }
+        }
+    }
+
+    // Keep screen on for HOME and PROFILE tabs
+    val window = LocalActivity.current?.window
+    LaunchedEffect(currentTab) {
+        when (currentTab) {
+            TopLevelDestination.HOME,
+            TopLevelDestination.PROFILE -> {
+                window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+            else -> window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+}
+

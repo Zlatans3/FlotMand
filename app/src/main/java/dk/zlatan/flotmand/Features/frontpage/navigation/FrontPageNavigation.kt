@@ -1,14 +1,11 @@
-package dk.zlatan.flotmand.Features.frontpage.di
+package dk.zlatan.flotmand.Features.frontpage.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -16,8 +13,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
-import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageDestination
-import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigationViewModel
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -38,7 +33,9 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                 }
 
                 is FrontPageDestination.EventDetail -> NavEntry(key) {
-                    EventDetailScreenRoute()
+                    EventDetailScreenRoute(
+                        eventId = key.eventId
+                    )
                 }
             }
         },

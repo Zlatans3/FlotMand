@@ -4,18 +4,13 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import dk.zlatan.flotmand.Features.authentication.login.LoginRoute
-import dk.zlatan.flotmand.Features.authentication.login.LoginScreen
 import dk.zlatan.flotmand.Features.profile.ProfileScreenRoute
 import dk.zlatan.flotmand.Features.profile.account_information.AccountInformationScreenRoute
 
@@ -33,7 +28,8 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                 ProfileDestination.ProfileScreen -> NavEntry(key) {
                     ProfileScreenRoute(
                         navigateToLogin = {
-                            viewModel.navigate(ProfileDestination.Login)
+                            // Navigation to login handled by app-level navigation
+                            // When user logs out, the auth state change will trigger navigation
                         },
                         navigateToAccountInformation = {
                             viewModel.navigate(ProfileDestination.AccountInformation)
@@ -45,10 +41,6 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                     AccountInformationScreenRoute(
                         onDismiss = { viewModel.pop() }
                     )
-                }
-
-                ProfileDestination.Login -> NavEntry(key) {
-                    LoginRoute()
                 }
             }
         },
