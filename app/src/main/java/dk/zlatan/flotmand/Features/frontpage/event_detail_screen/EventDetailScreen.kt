@@ -13,13 +13,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -32,64 +32,118 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCa
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
+import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
-import dk.zlatan.flotmand.model.EventStatus
-import kotlinx.coroutines.launch
+import dk.zlatan.flotmand.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun EventDetailScreenRoute(
+    eventId: String,
     modifier: Modifier = Modifier,
-    viewModel: EventDetailViewModel = hiltViewModel()
+    onDismiss: () -> Unit,
+    viewModel: EventDetailViewModel = hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
+        key = eventId,
+        creationCallback = { factory ->
+            factory.create(eventId)
+        }
+    )
 ) {
-    val event by viewModel.event.collectAsStateWithLifecycle()
-    val showParticipationBottomSheet by viewModel.showParticipationBottomSheet.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isDeleted by viewModel.isDeleted.collectAsState(initial = false)
     val clipboardManager = LocalClipboardManager.current
-    val coroutineScope = rememberCoroutineScope()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (isDeleted) {
+        onDismiss()
+    }
+
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        if (event == null) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CircularProgressIndicator()
-                Spacer(modifier = Modifier.padding(8.dp))
-                Text(text = "Henter et flot event...")
-            }
-        } else {
-            EventDetailScreenContent(
-                event = event!!,
-                onParticipantsClick = {
-                    viewModel.showParticipants()
-                },
-                onDateClick = {
-                    val currentEvent = event!!
-                    val dateTimeString = "${currentEvent.eventDate?.toString().orEmpty()} ${currentEvent.eventStartTime.toString()}"
-                    coroutineScope.launch {
-                        clipboardManager.setText(AnnotatedString(dateTimeString))
-                    }
-                },
-                onLocationLongClick = {
-                    val currentEvent = event!!
-                    val locationString = currentEvent.location.orEmpty()
-                    coroutineScope.launch {
-                        clipboardManager.setText(AnnotatedString(locationString))
-                    }
+        when {
+            uiState.isLoading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Text(text = "Henter et flot event...")
                 }
-            )
+            }
+
+            uiState.event == null -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Event ikke fundet",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Text(
+                        text = "Eventet kunne ikke indlæses eller eksisterer ikke",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            else -> {
+                EventDetailScreenContent(
+                    event = uiState.event!!,
+                    publisher = uiState.publisher,
+                    onParticipantsClick = {
+                        if (!uiState.event!!.participantIds.isNullOrEmpty()) {
+                            viewModel.showParticipants()
+                        }
+                    },
+                    onDateClick = {
+                        val dateTimeString = "${
+                            uiState.event!!.eventDate?.toString().orEmpty()
+                        } ${uiState.event!!.eventStartTime.toString()}"
+                        clipboardManager.setText(AnnotatedString(dateTimeString))
+                    },
+                    onLocationLongClick = {
+                        val locationString = uiState.event!!.location.orEmpty()
+                        clipboardManager.setText(AnnotatedString(locationString))
+                    },
+                    onEditEvent = {
+                        // TODO: Zlatan 06/01/2026 WILL BE ADDED IN LATER PATCH
+                    },
+                    onDeleteEvent = { showDeleteDialog = true },
+                    isPublisher = uiState.isPublisher
+                )
+            }
         }
     }
 
-    if (!showParticipationBottomSheet.isNullOrEmpty()) {
+    if (uiState.showParticipationBottomSheet) {
         ParticipantsBottomSheet(
             onDismiss = {
                 viewModel.onDismissParticipantsSheet()
             },
-            participants = event?.participants ?: emptyList()
+            participants = uiState.participants
+        )
+    }
+
+    if (showDeleteDialog) {
+        FmConfirmDialog(
+            title = "Slet event?",
+            message = "Denne handling kan ikke fortrydes.",
+            confirmText = "Slet",
+            onDismiss = { showDeleteDialog = false },
+            onConfirmClick = {
+                showDeleteDialog = false
+                viewModel.deleteEvent(eventId)
+            }
         )
     }
 }
@@ -99,7 +153,11 @@ private fun EventDetailScreenContent(
     modifier: Modifier = Modifier,
     onParticipantsClick: () -> Unit = {},
     event: Event,
-    onDateClick: () -> Unit = {},
+    publisher: User?,
+    isPublisher: Boolean,
+    onEditEvent: () -> Unit,
+    onDeleteEvent: () -> Unit,
+    onDateClick: () -> Unit,
     onLocationLongClick: () -> Unit,
 ) {
     Column(
@@ -109,10 +167,13 @@ private fun EventDetailScreenContent(
             .background(MaterialTheme.colorScheme.background) // Use background color
     ) {
         DetailHeader(
-            eventStatus = event.status ?: EventStatus.entries.first(),
-            name = event.publisher?.displayName.orEmpty(),
+            eventStatus = event.status,
+            name = publisher?.displayName.orEmpty(),
             eventTitle = event.eventName.orEmpty(),
-            // Optionally, update DetailHeader to use onSurface for text if not already
+            publisherProfileImageUrl = publisher?.photoUrl,
+            isPublisher = isPublisher,
+            onEditClick = onEditEvent,
+            onDeleteClick = onDeleteEvent
         )
         VSpacer(20.dp)
         SectionItem(
@@ -128,7 +189,7 @@ private fun EventDetailScreenContent(
             modifier = Modifier,
             leadingIcon = FmIcons.Person,
             trailingIcon = FmIcons.chevronRight,
-            title = "Deltagere: ${event.participants?.size ?: 0}/6",
+            title = "Deltagere: ${event.participantIds?.size ?: 0}/6",
             onClick = onParticipantsClick,
             iconTint = MaterialTheme.colorScheme.secondary,
             textColor = MaterialTheme.colorScheme.onSurface
@@ -177,24 +238,39 @@ private fun EventDetailScreenContent(
 @Preview(showBackground = true)
 @Composable
 private fun EventDetailScreenPreview() {
+    val event = Event.staticTestEvents.first()
     EventDetailScreenContent(
         modifier = Modifier,
-        event = Event.staticTestEvents.first(),
-        onLocationLongClick = {}
+        event = event,
+        publisher = User(
+            id = "test-publisher",
+            displayName = "Test Publisher",
+            email = "publisher@test.com"
+        ),
+        onLocationLongClick = {},
+        onDateClick = {},
+        onEditEvent = {},
+        onDeleteEvent = {},
+        isPublisher = true,
     )
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun printListPreview() {
+private fun PrintListPreview() {
     val event = Event.staticTestEvents.first()
+    val publisher = User(
+        id = "test-publisher",
+        displayName = "Test Publisher",
+        email = "publisher@test.com"
+    )
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Event: ${event.eventName}\nDate: ${event.eventDate}\nTime: ${event.eventStartTime}\nHost: ${event.publisher?.displayName}"
+            text = "Event: ${event.eventName}\nDate: ${event.eventDate}\nTime: ${event.eventStartTime}\nHost: ${publisher.displayName}"
         )
     }
 }

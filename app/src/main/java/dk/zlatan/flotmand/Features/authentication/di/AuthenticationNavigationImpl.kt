@@ -1,45 +1,39 @@
-package dk.zlatan.flotmand.Features.profile.navigation
+package dk.zlatan.flotmand.Features.authentication.di
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import dk.zlatan.flotmand.Features.profile.ProfileScreenRoute
-import dk.zlatan.flotmand.Features.profile.account_information.AccountInformationScreenRoute
+import dk.zlatan.flotmand.Features.authentication.login.LoginRoute
+import dk.zlatan.flotmand.Features.authentication.navigation.AuthenticationDestination
+import dk.zlatan.flotmand.Features.authentication.navigation.AuthenticationNavigationViewModel
 
-@Suppress("CyclomaticComplexMethod")
 @Composable
-fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
-    val navigationStack: List<ProfileDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
+fun AuthenticationNavigation(
+    viewModel: AuthenticationNavigationViewModel = hiltViewModel(),
+    onLoginSuccess: () -> Unit = {}
+) {
+    val navigationStack: List<AuthenticationDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
 
-    // Navigation overlay for sub-screens
     NavDisplay(
         backStack = navigationStack,
         onBack = { viewModel.pop() },
         entryProvider = { key ->
             when (key) {
-                ProfileDestination.ProfileScreen -> NavEntry(key) {
-                    ProfileScreenRoute(
-                        navigateToLogin = {
-                            // Navigation to login handled by app-level navigation
-                            // When user logs out, the auth state change will trigger navigation
-                        },
-                        navigateToAccountInformation = {
-                            viewModel.navigate(ProfileDestination.AccountInformation)
-                        }
-                    )
-                }
-
-                ProfileDestination.AccountInformation -> NavEntry(key) {
-                    AccountInformationScreenRoute(
-                        onDismiss = { viewModel.pop() }
+                AuthenticationDestination.Login -> NavEntry(key) {
+                    LoginRoute(
+                        modifier = Modifier.fillMaxSize(),
+                        onLoginSuccess = { onLoginSuccess() }
                     )
                 }
             }
@@ -61,8 +55,9 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
             )
         },
         entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-//            rememberViewModelStoreNavEntryDecorator()
+            rememberSaveableStateHolderNavEntryDecorator()
         )
     )
 }
+
+

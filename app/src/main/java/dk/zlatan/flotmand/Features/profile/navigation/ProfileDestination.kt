@@ -1,0 +1,6 @@
+package dk.zlatan.flotmand.Features.profile.navigation
+
+sealed class ProfileDestination {
+    object ProfileScreen : ProfileDestination()
+    object AccountInformation : ProfileDestination()
+}

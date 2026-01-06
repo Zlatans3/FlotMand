@@ -7,6 +7,8 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import kotlinx.coroutines.channels.awaitClose
@@ -45,8 +47,81 @@ class AccountServiceImpl @Inject constructor() : AccountService {
         return Firebase.auth.currentUser.toNotesUser()
     }
 
+    override suspend fun getUserById(userId: String): User? {
+        return try {
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(userId)
+                .get()
+                .await()
+                .toObject()
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    override suspend fun getUsersByIds(userIds: List<String>): List<User> {
+        if (userIds.isEmpty()) return emptyList()
+
+        return try {
+            android.util.Log.d("AccountService", "Fetching users for IDs: $userIds")
+            // Firestore 'in' query supports up to 10 items
+            // If we have more, we need to batch the requests
+            val users = mutableListOf<User>()
+            userIds.chunked(10).forEach { chunk ->
+                val querySnapshot = Firebase.firestore
+                    .collection(USERS_COLLECTION)
+                    .whereIn(com.google.firebase.firestore.FieldPath.documentId(), chunk)
+                    .get()
+                    .await()
+
+                android.util.Log.d("AccountService", "Query returned ${querySnapshot.documents.size} documents for chunk: $chunk")
+                querySnapshot.documents.forEach { document ->
+                    android.util.Log.d("AccountService", "Document: ${document.id}, exists: ${document.exists()}")
+                    document.toObject<User>()?.let {
+                        users.add(it)
+                        android.util.Log.d("AccountService", "Parsed user: ${it.displayName}")
+                    } ?: android.util.Log.w("AccountService", "Failed to parse user from document ${document.id}")
+                }
+            }
+            android.util.Log.d("AccountService", "Total users fetched: ${users.size}")
+            users
+        } catch (e: Exception) {
+            android.util.Log.e("AccountService", "Error fetching users: ${e.message}", e)
+            emptyList()
+        }
+    }
+
     override suspend fun createAnonymousAccount() {
         Firebase.auth.signInAnonymously().await()
+        saveUserToFirestore()
+    }
+
+    private suspend fun saveUserToFirestore() {
+        val currentUser = Firebase.auth.currentUser ?: return
+
+        android.util.Log.d("AccountService", "Saving user to Firestore: ${currentUser.uid}")
+
+        val user = User(
+            id = currentUser.uid,
+            email = currentUser.email ?: "",
+            provider = currentUser.providerId,
+            phoneNumber = currentUser.phoneNumber ?: "",
+            displayName = currentUser.displayName ?: "",
+            photoUrl = currentUser.photoUrl?.toString() ?: "",
+            isAnonymous = currentUser.isAnonymous
+        )
+
+        try {
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(currentUser.uid)
+                .set(user)
+                .await()
+            android.util.Log.d("AccountService", "User saved successfully to Firestore")
+        } catch (e: Exception) {
+            android.util.Log.e("AccountService", "Failed to save user to Firestore: ${e.message}", e)
+        }
     }
 
     override suspend fun updateDisplayName(newDisplayName: String) {
@@ -55,6 +130,7 @@ class AccountServiceImpl @Inject constructor() : AccountService {
         }
 
         Firebase.auth.currentUser!!.updateProfile(profileUpdates).await()
+        saveUserToFirestore()
     }
 
     override suspend fun updatePhoneNumber(newPhoneNumber: String) {
@@ -76,10 +152,12 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     override suspend fun linkAccount(email: String, password: String) {
         val credential = EmailAuthProvider.getCredential(email, password)
         Firebase.auth.currentUser!!.linkWithCredential(credential).await()
+        saveUserToFirestore()
     }
 
     override suspend fun signIn(email: String, password: String) {
         Firebase.auth.signInWithEmailAndPassword(email, password).await()
+        saveUserToFirestore()
     }
 
     override suspend fun signOut() {
@@ -89,6 +167,7 @@ class AccountServiceImpl @Inject constructor() : AccountService {
     override suspend fun signInWithGoogle(idToken: String) {
         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
         Firebase.auth.signInWithCredential(firebaseCredential).await()
+        saveUserToFirestore()
     }
 
     override suspend fun deleteAccount() {
@@ -119,5 +198,9 @@ class AccountServiceImpl @Inject constructor() : AccountService {
             photoUrl = this.photoUrl?.toString() ?: "",
             isAnonymous = this.isAnonymous
         )
+    }
+
+    companion object {
+        private const val USERS_COLLECTION = "users"
     }
 }

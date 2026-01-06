@@ -20,7 +20,8 @@ data class AddEventUiState(
     val event: Event = Event(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val isEventCreated: Boolean = false
+    val isEventCreated: Boolean = false,
+    val hasHandledCreation: Boolean = false
 )
 
 @HiltViewModel
@@ -33,18 +34,21 @@ class AddEventViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     private val _errorMessage = MutableStateFlow<String?>(null)
     private val _isEventCreated = MutableStateFlow(false)
+    private val _hasHandledCreation = MutableStateFlow(false)
 
     val uiState: StateFlow<AddEventUiState> = combine(
         _event,
         _isLoading,
         _errorMessage,
-        _isEventCreated
-    ) { event: Event, isLoading: Boolean, errorMessage: String?, isEventCreated: Boolean ->
+        _isEventCreated,
+        _hasHandledCreation
+    ) { event: Event, isLoading: Boolean, errorMessage: String?, isEventCreated: Boolean, hasHandledCreation: Boolean ->
         AddEventUiState(
             event = event,
             isLoading = isLoading,
             errorMessage = errorMessage,
-            isEventCreated = isEventCreated
+            isEventCreated = isEventCreated,
+            hasHandledCreation = hasHandledCreation
         )
     }.stateIn(
         scope = viewModelScope,
@@ -63,12 +67,12 @@ class AddEventViewModel @Inject constructor(
     }
 
     fun onEventDateChange(date: LocalDate) {
-        _event.value = _event.value.copy(eventDate = date)
+        _event.value = _event.value.copyWithDates(eventDate = date)
         _errorMessage.value = null
     }
 
     fun onEventTimeChange(time: LocalTime) {
-        _event.value = _event.value.copy(eventStartTime = time)
+        _event.value = _event.value.copyWithDates(eventStartTime = time)
         _errorMessage.value = null
     }
 
@@ -102,18 +106,19 @@ class AddEventViewModel @Inject constructor(
             _errorMessage.value = null
 
             try {
-                val currentUser = accountService.getUserProfile()
+                // Ensure current user exists and is synced, but avoid unused variable
+                accountService.reloadUser()
 
-                val newEvent = event.copy(
+                val newEvent = event.copyWithDates(
                     publisherId = accountService.currentUserId,
-                    publisher = currentUser,
-                    participants = emptyList()
+                    participantIds = emptyList()
                 )
 
                 dinnerEventService.createDinnerEvent(newEvent)
 
                 _isLoading.value = false
                 _isEventCreated.value = true
+                _hasHandledCreation.value = false // allow UI to handle this once
                 _errorMessage.value = null
             } catch (e: Exception) {
                 _isLoading.value = false

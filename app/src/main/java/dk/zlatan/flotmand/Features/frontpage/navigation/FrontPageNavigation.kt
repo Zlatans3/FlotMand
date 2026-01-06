@@ -1,41 +1,65 @@
 package dk.zlatan.flotmand.Features.frontpage.navigation
 
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptionsBuilder
-import androidx.navigation.NavType
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
-import androidx.navigation.navArgument
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
-import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.navigation.eventDetailScreen
-import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.navigation.navigateToEventDetail
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
 
-object FrontPageDestination {
-    const val route = "front_page"
-    const val eventIdArg = "eventId"
-    val routeWithArgs = "$route/{$eventIdArg}"
-}
+@Suppress("CyclomaticComplexMethod")
+@Composable
+fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel()) {
+    val navigationStack: List<FrontPageDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
+    // Navigation overlay for sub-screens
+    NavDisplay(
+        backStack = navigationStack,
+        onBack = { viewModel.pop() },
+        entryProvider = { key ->
+            when (key) {
+                FrontPageDestination.FrontPageScreen -> NavEntry(key) {
+                    FrontPageRoute(
+                        onClickEvent = { eventId ->
+                            viewModel.navigate(FrontPageDestination.EventDetail(eventId))
+                        }
+                    )
+                }
 
-fun NavController.navigateToFrontPage(builder: NavOptionsBuilder.() -> Unit = {}) {
-    navigate("front_page_graph", builder)
-}
-
-fun NavGraphBuilder.frontPageSection(
-    onEventClicked: (String) -> Unit,
-) {
-    navigation(
-        startDestination = FrontPageDestination.routeWithArgs,
-        route = "front_page_graph"
-    ) {
-        composable(
-            route = FrontPageDestination.routeWithArgs,
-            arguments = listOf(navArgument(FrontPageDestination.eventIdArg) { type = NavType.StringType })
-        ) { backStackEntry ->
-            FrontPageRoute(
-                onClickEvent = onEventClicked,
+                is FrontPageDestination.EventDetail -> NavEntry(key) {
+                    EventDetailScreenRoute(
+                        eventId = key.eventId,
+                        onDismiss = { viewModel.pop() }
+                    )
+                }
+            }
+        },
+        transitionSpec = {
+            ContentTransform(
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left
+                ),
+                ExitTransition.None
             )
-        }
-        eventDetailScreen()
-    }
+        },
+        popTransitionSpec = {
+            ContentTransform(
+                EnterTransition.None,
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right
+                )
+            )
+        },
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator()
+        )
+    )
 }
+
+

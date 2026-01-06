@@ -28,13 +28,14 @@ class MainActivityViewModel @Inject constructor(
     private val accountService: AccountService,
     private val dinnerEventService: DinnerEventService
 ) : ViewModel() {
+
     // Combine all relevant state into a single StateFlow
     val uiState: StateFlow<MainUiState> = combine(
         accountService.currentUser,
-        dinnerEventService.dinnerEvents
+        dinnerEventService.dinnerEventsByUserId
     ) { user, events ->
         MainUiState(
-            isLoggedIn = user != null,
+            isLoggedIn = user != null && user.id.isNotEmpty() && !user.isAnonymous,
             user = user,
             dinnerEvents = events
         )

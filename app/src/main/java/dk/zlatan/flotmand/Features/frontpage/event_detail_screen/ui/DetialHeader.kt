@@ -10,6 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,64 +34,98 @@ internal fun DetailHeader(
     eventStatus: EventStatus,
     name: String,
     eventTitle: String,
-    publisherProfileImageUrl: String? = null,
     modifier: Modifier = Modifier,
+    publisherProfileImageUrl: String? = null,
+    isPublisher: Boolean = false,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
 ) {
     val (statusText, statusColor) = when (eventStatus) {
         EventStatus.UPCOMING -> "Kommende" to Color(0xFF4CAF50) // Green
         EventStatus.ONGOING -> "I gang" to Color(0xFFFFC107)    // Amber
         EventStatus.COMPLETED -> "Afsluttet" to Color(0xFFF44336) // Red
     }
-    Column(
+
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.primaryContainer)
-            .padding(horizontal = 20.dp)
     ) {
-        VSpacer(120.dp)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ProfileImage(
-                profilePic = publisherProfileImageUrl,
-                userName = name,
-                profileSize = 64.dp,
-            )
-            HSpacer(12.dp)
-            Column(
-                modifier = Modifier.fillMaxWidth()
+        // Top-right action icons when publisher: Edit + Delete
+        if (isPublisher) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 12.dp, end = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.height(IntrinsicSize.Min),
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .alignByBaseline()
-                            .clip(CircleShape)
-                            .background(statusColor)
-                    )
-                    Text(
-                        text = "Status: $statusText",
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier
-                            .alignByBaseline()
-                            .padding(start = 8.dp)
+                IconButton(onClick = onEditClick) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Rediger event",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
-                VSpacer(12.dp)
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.displaySmall
+                IconButton(onClick = onDeleteClick) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Slet event",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+        ) {
+            VSpacer(120.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ProfileImage(
+                    profilePic = publisherProfileImageUrl,
+                    userName = name,
+                    profileSize = 64.dp,
                 )
-                VSpacer(12.dp)
-                Text(
-                    text = eventTitle,
-                    style = MaterialTheme.typography.labelMedium
-                )
-                VSpacer(18.dp)
+                HSpacer(12.dp)
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.height(IntrinsicSize.Min),
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .alignByBaseline()
+                                .clip(CircleShape)
+                                .background(statusColor)
+                        )
+                        Text(
+                            text = "Status: $statusText",
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier
+                                .alignByBaseline()
+                                .padding(start = 8.dp)
+                        )
+                    }
+                    VSpacer(12.dp)
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.displaySmall
+                    )
+                    VSpacer(12.dp)
+                    Text(
+                        text = eventTitle,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    VSpacer(18.dp)
+                }
             }
         }
     }
@@ -98,6 +137,9 @@ private fun DetailHeaderPreview() {
     DetailHeader(
         eventStatus = EventStatus.UPCOMING,
         name = "Mikkel",
-        eventTitle = "Lækker sejlads på Øresund"
+        eventTitle = "Lækker sejlads på Øresund",
+        isPublisher = true,
+        onEditClick = {},
+        onDeleteClick = {}
     )
 }
