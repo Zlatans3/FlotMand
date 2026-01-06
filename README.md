@@ -1,4 +1,17 @@
-# 👋 Hello Flotmand! 
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/4af93d7e-e5d0-4734-9b07-abc62c735a06">
+    <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/81c0c2c0-bc28-40de-aee6-d2d03f28bad2">
+    <img width="488" height="508" alt="flotmandapp" src="https://github.com/user-attachments/assets/81c0c2c0-bc28-40de-aee6-d2d03f28bad2">
+  </picture>
+</div>
+
+
+
+
+
+# 👋 Hello Flotmand!
+
 
 This project marks a milestone between friends and that hard work can make hard problems go away! 
 
@@ -45,7 +58,7 @@ I am hoping to add a lot of interesting entires to this list. Here you will be a
 - Migrated app from Nav2 to Nav3
 - Firebase Authenication With Google Login
 - Firestore Database as Backend with CRUD
-- Complete use of Material 3 theme
+- Complete use of Material 3 theme and fully Dark/ light mode supported
 - 
 
 # 📍 Road Map 
