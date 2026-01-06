@@ -297,7 +297,7 @@ private fun AddEventScreenPreview() {
         AddEventScreenContent(
             modifier = Modifier,
             uiState = AddEventUiState(
-                event = Event(
+                event = Event.create(
                     eventName = "Fødselsdagsfest hos Zlatan",
                     location = "Zlatans hus, Flotmand Alle 4",
                     eventDate = LocalDate.now().plusDays(5),

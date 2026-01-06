@@ -1,37 +1,36 @@
 package dk.zlatan.flotmand
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarDuration.Indefinite
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult.ActionPerformed
-import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavDestination.Companion.hierarchy
 import dagger.hilt.android.AndroidEntryPoint
+import dk.zlatan.flotmand.Features.authentication.login.LoginRoute
+import dk.zlatan.flotmand.Features.authentication.login.LoginScreen
+import dk.zlatan.flotmand.Features.bottomnavigation.FmBottomNavigationBar
+import dk.zlatan.flotmand.Features.bottomnavigation.TopLevelDestination
+import dk.zlatan.flotmand.Features.frontpage.di.FrontPageNavigation
+import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigation
+import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigation
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
-import dk.zlatan.flotmand.navigation.FmNavHost
-import dk.zlatan.flotmand.ui.FmAppState
-import dk.zlatan.flotmand.ui.rememberFmAppState
 import dk.zlatan.flotmand.util.NetworkMonitor
-import dk.zlatan.flotmand.util.getRandomOfflineMessage
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -49,113 +48,69 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
-            FlotMandTheme {
-                val appState = rememberFmAppState(
-                    networkMonitor = networkMonitor,
-                )
-
-                FlotMandApp(appState)
-            }
+            FlotMandApp()
         }
     }
 }
 
 @Composable
 fun FlotMandApp(
-    appState: FmAppState
+    modifier: Modifier = Modifier,
+    viewModel: MainActivityViewModel = hiltViewModel()
 ) {
-    val viewModel: MainActivityViewModel = hiltViewModel()
-    val currentDestination = appState.currentDestination
-    val loginRoutes = setOf(
-        dk.zlatan.flotmand.Features.authentication.login.navigation.LoginGraphRoute,
-        dk.zlatan.flotmand.Features.authentication.login.navigation.LoginRoute.toString()
-    )
-    val showBottomBar = currentDestination?.route !in loginRoutes
+    val uiState by viewModel.uiState.collectAsState()
 
-    if (showBottomBar) {
-        NavigationSuiteScaffold(
-            navigationSuiteItems = {
-                appState.topLevelDestinations.forEach {  destination ->
-                    val selected = currentDestination?.hierarchy?.any {
-                        it.route == destination.route
-                    } == true
+    var currentTab: TopLevelDestination by rememberSaveable {
+        mutableStateOf(TopLevelDestination.HOME)
+    }
 
-                    item(
-                        selected = selected,
-                        onClick = { appState.navigateToTopLevelDestination(destination) },
-                        icon = {
-                            Icon(
-                                imageVector = destination.unselectedIcon,
-                                contentDescription = null,
-                            )
-                        },
-                        label = { Text(stringResource(destination.iconTextId)) },
-                        modifier = Modifier
-                            .testTag("FmNavItem")
-                        // TODO: Zlatan 25/11/2025 Maybe some day
-//                        .then(if (hasUnread) Modifier.notificationDot() else Modifier),
+    FlotMandTheme {
+        // Show login screen if user is not logged in
+        if (!uiState.isLoggedIn) {
+            LoginRoute()
+        } else {
+            // Show main app content when user is logged in
+            Scaffold(
+                modifier = modifier.fillMaxSize(),
+                bottomBar = {
+                    FmBottomNavigationBar(
+                        currentTab = currentTab,
+                        selectedTabIconColor = MaterialTheme.colorScheme.primary,
+                        onBottomNavigationClicked = { destination ->
+                            currentTab = destination
+                        }
                     )
                 }
-            }
-        ) {
-            Scaffold(
-                modifier = Modifier.fillMaxSize()
             ) { innerPadding ->
-                val snackbarHostState = remember { SnackbarHostState() }
-                val isOffline by appState.isOffline.collectAsStateWithLifecycle()
-
-                // Show snackbar when offline
-                LaunchedEffect(isOffline) {
-                    if (isOffline) {
-                        snackbarHostState.showSnackbar(
-                            message = getRandomOfflineMessage(),
-                            duration = Indefinite,
-                        )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+                    when (currentTab) {
+                        TopLevelDestination.HOME -> {
+                            FrontPageNavigation()
+                        }
+                        TopLevelDestination.MY_EVENTS -> {
+                            MyEventsNavigation()
+                        }
+                        TopLevelDestination.PROFILE -> {
+                            ProfileNavigation()
+                        }
                     }
                 }
-
-                FmNavHost(
-                    appState = appState,
-                    onShowSnackBar = { message, action ->
-                        snackbarHostState.showSnackbar(
-                            message = message,
-                            actionLabel = action,
-                            duration = SnackbarDuration.Short,
-                        ) == ActionPerformed
-                    },
-                    modifier = Modifier.padding(innerPadding)
-                )
             }
-        }
-    } else {
-        // No bottom bar for login
-        Scaffold(
-            modifier = Modifier.fillMaxSize()
-        ) { innerPadding ->
-            val snackbarHostState = remember { SnackbarHostState() }
-            val isOffline by appState.isOffline.collectAsStateWithLifecycle()
 
-            // Show snackbar when offline
-            LaunchedEffect(isOffline) {
-                if (isOffline) {
-                    snackbarHostState.showSnackbar(
-                        message = getRandomOfflineMessage(),
-                        duration = Indefinite,
-                    )
+            val window = LocalActivity.current?.window
+            LaunchedEffect(currentTab) {
+                when (currentTab) {
+                    TopLevelDestination.HOME,
+                    TopLevelDestination.PROFILE -> {
+                        window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    }
+                    else -> window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 }
             }
-
-            FmNavHost(
-                appState = appState,
-                onShowSnackBar = { message, action ->
-                    snackbarHostState.showSnackbar(
-                        message = message,
-                        actionLabel = action,
-                        duration = SnackbarDuration.Short,
-                    ) == ActionPerformed
-                },
-                modifier = Modifier.padding(innerPadding)
-            )
         }
     }
 }

@@ -63,12 +63,12 @@ class AddEventViewModel @Inject constructor(
     }
 
     fun onEventDateChange(date: LocalDate) {
-        _event.value = _event.value.copy(eventDate = date)
+        _event.value = _event.value.copyWithDates(eventDate = date)
         _errorMessage.value = null
     }
 
     fun onEventTimeChange(time: LocalTime) {
-        _event.value = _event.value.copy(eventStartTime = time)
+        _event.value = _event.value.copyWithDates(eventStartTime = time)
         _errorMessage.value = null
     }
 
@@ -104,10 +104,10 @@ class AddEventViewModel @Inject constructor(
             try {
                 val currentUser = accountService.getUserProfile()
 
-                val newEvent = event.copy(
+                val newEvent = event.copyWithDates(
                     publisherId = accountService.currentUserId,
                     publisher = currentUser,
-                    participants = emptyList()
+                    participantIds = emptyList()
                 )
 
                 dinnerEventService.createDinnerEvent(newEvent)

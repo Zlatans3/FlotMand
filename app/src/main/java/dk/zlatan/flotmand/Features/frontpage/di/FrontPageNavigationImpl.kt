@@ -1,4 +1,4 @@
-package dk.zlatan.flotmand.Features.profile.navigation
+package dk.zlatan.flotmand.Features.frontpage.di
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
@@ -14,41 +14,31 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import dk.zlatan.flotmand.Features.authentication.login.LoginRoute
-import dk.zlatan.flotmand.Features.authentication.login.LoginScreen
-import dk.zlatan.flotmand.Features.profile.ProfileScreenRoute
-import dk.zlatan.flotmand.Features.profile.account_information.AccountInformationScreenRoute
+import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
+import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageDestination
+import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigationViewModel
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
-fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
-    val navigationStack: List<ProfileDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
-
+fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel()) {
+    val navigationStack: List<FrontPageDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
     // Navigation overlay for sub-screens
     NavDisplay(
         backStack = navigationStack,
         onBack = { viewModel.pop() },
         entryProvider = { key ->
             when (key) {
-                ProfileDestination.ProfileScreen -> NavEntry(key) {
-                    ProfileScreenRoute(
-                        navigateToLogin = {
-                            viewModel.navigate(ProfileDestination.Login)
-                        },
-                        navigateToAccountInformation = {
-                            viewModel.navigate(ProfileDestination.AccountInformation)
+                FrontPageDestination.FrontPageScreen -> NavEntry(key) {
+                    FrontPageRoute(
+                        onClickEvent = { eventId ->
+                            viewModel.navigate(FrontPageDestination.EventDetail(eventId))
                         }
                     )
                 }
 
-                ProfileDestination.AccountInformation -> NavEntry(key) {
-                    AccountInformationScreenRoute(
-                        onDismiss = { viewModel.pop() }
-                    )
-                }
-
-                ProfileDestination.Login -> NavEntry(key) {
-                    LoginRoute()
+                is FrontPageDestination.EventDetail -> NavEntry(key) {
+                    EventDetailScreenRoute()
                 }
             }
         },
@@ -69,8 +59,9 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
             )
         },
         entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-//            rememberViewModelStoreNavEntryDecorator()
+            rememberSaveableStateHolderNavEntryDecorator()
         )
     )
 }
+
+

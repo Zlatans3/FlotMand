@@ -5,7 +5,8 @@ import kotlinx.coroutines.flow.Flow
 
 
 interface DinnerEventService {
-    val dinnerEvents: Flow<List<Event>>
+    val allDinnerEvents: Flow<List<Event>> // All events from all users
+    val dinnerEventsByUserId: Flow<List<Event>> // Current user's events only
     suspend fun createDinnerEvent(dinnerEvent: Event)
     suspend fun readDinnerEvent(dinnerEventId: String): Event?
     suspend fun updateDinnerEvent(dinnerEvent: Event)

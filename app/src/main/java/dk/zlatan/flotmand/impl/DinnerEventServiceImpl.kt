@@ -15,8 +15,15 @@ import jakarta.inject.Inject
 
 class DinnerEventServiceImpl @Inject constructor(private val auth: AccountService) : DinnerEventService {
 
+    // Fetch all dinner events (for front page)
+    override val allDinnerEvents: Flow<List<Event>>
+        get() = Firebase.firestore
+            .collection(NOTES_COLLECTION)
+            .dataObjects()
+
+    // Fetch only current user's dinner events (for my events page)
     @OptIn(ExperimentalCoroutinesApi::class)
-    override val dinnerEvents: Flow<List<Event>>
+    override val dinnerEventsByUserId: Flow<List<Event>>
         get() =
             auth.currentUser.flatMapLatest { note ->
                 Firebase.firestore

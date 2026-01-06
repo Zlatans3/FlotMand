@@ -7,6 +7,8 @@ import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.toObject
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import kotlinx.coroutines.channels.awaitClose
@@ -43,6 +45,43 @@ class AccountServiceImpl @Inject constructor() : AccountService {
 
     override fun getUserProfile(): User {
         return Firebase.auth.currentUser.toNotesUser()
+    }
+
+    override suspend fun getUserById(userId: String): User? {
+        return try {
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(userId)
+                .get()
+                .await()
+                .toObject()
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    override suspend fun getUsersByIds(userIds: List<String>): List<User> {
+        if (userIds.isEmpty()) return emptyList()
+
+        return try {
+            // Firestore 'in' query supports up to 10 items
+            // If we have more, we need to batch the requests
+            val users = mutableListOf<User>()
+            userIds.chunked(10).forEach { chunk ->
+                val querySnapshot = Firebase.firestore
+                    .collection(USERS_COLLECTION)
+                    .whereIn(com.google.firebase.firestore.FieldPath.documentId(), chunk)
+                    .get()
+                    .await()
+
+                querySnapshot.documents.forEach { document ->
+                    document.toObject<User>()?.let { users.add(it) }
+                }
+            }
+            users
+        } catch (_: Exception) {
+            emptyList()
+        }
     }
 
     override suspend fun createAnonymousAccount() {
@@ -119,5 +158,9 @@ class AccountServiceImpl @Inject constructor() : AccountService {
             photoUrl = this.photoUrl?.toString() ?: "",
             isAnonymous = this.isAnonymous
         )
+    }
+
+    companion object {
+        private const val USERS_COLLECTION = "users"
     }
 }

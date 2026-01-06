@@ -1,17 +1,25 @@
 package dk.zlatan.flotmand.Features.frontpage
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.design_system.componenets.EventCard
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageHeader
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
@@ -25,14 +33,33 @@ fun FrontPageRoute(
     modifier: Modifier = Modifier,
     onClickEvent: (String) -> Unit,
     viewModel: FrontPageViewModel = hiltViewModel(),
-    ) {
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    FrontpageContent(
-        modifier = modifier,
-        onClickEvent = onClickEvent,
-        eventList = viewModel.eventList,
-        user = null
-    )
+    if (uiState.isLoading) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                CircularProgressIndicator()
+                Text(
+                    text = "Henter events...",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+    } else {
+        FrontpageContent(
+            modifier = modifier,
+            onClickEvent = onClickEvent,
+            eventList = uiState.eventList,
+            user = null
+        )
+    }
 }
 
 @Composable

@@ -19,16 +19,30 @@ import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
 
 @Composable
-internal fun MyEventScreen(
+fun MyEventScreenRoute(
     modifier: Modifier = Modifier,
     viewModel: MyEventViewModel = hiltViewModel(),
-    onAddEventClick: () -> Unit = {} // Add callback for FAB
+    onAddEventClick: () -> Unit = {}
 ) {
     val events by viewModel.myDinnerEvents.collectAsStateWithLifecycle()
+
+    MyEventScreen(
+        modifier = modifier,
+        filteredEvents = events,
+        onAddEventClick = onAddEventClick
+    )
+}
+
+@Composable
+internal fun MyEventScreen(
+    modifier: Modifier = Modifier,
+    filteredEvents: List<Event>,
+    onAddEventClick: () -> Unit = {}
+) {
     Box(modifier = modifier.fillMaxSize()) {
         MyEventContent(
             modifier = Modifier.matchParentSize(),
-            filteredEvents = events,
+            filteredEvents = filteredEvents,
         )
         ExtendedFloatingActionButton(
             onClick = onAddEventClick,

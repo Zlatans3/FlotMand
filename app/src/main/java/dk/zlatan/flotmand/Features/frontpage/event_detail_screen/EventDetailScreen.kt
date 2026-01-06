@@ -13,12 +13,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +32,6 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
-import dk.zlatan.flotmand.model.EventStatus
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,15 +40,16 @@ internal fun EventDetailScreenRoute(
     modifier: Modifier = Modifier,
     viewModel: EventDetailViewModel = hiltViewModel()
 ) {
-    val event by viewModel.event.collectAsStateWithLifecycle()
-    val showParticipationBottomSheet by viewModel.showParticipationBottomSheet.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val clipboardManager = LocalClipboardManager.current
     val coroutineScope = rememberCoroutineScope()
+
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        if (event == null) {
+        if (uiState.isLoading || uiState.event == null) {
             Column(
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -62,20 +59,18 @@ internal fun EventDetailScreenRoute(
             }
         } else {
             EventDetailScreenContent(
-                event = event!!,
+                event = uiState.event!!,
                 onParticipantsClick = {
                     viewModel.showParticipants()
                 },
                 onDateClick = {
-                    val currentEvent = event!!
-                    val dateTimeString = "${currentEvent.eventDate?.toString().orEmpty()} ${currentEvent.eventStartTime.toString()}"
+                    val dateTimeString = "${uiState.event!!.eventDate?.toString().orEmpty()} ${uiState.event!!.eventStartTime.toString()}"
                     coroutineScope.launch {
                         clipboardManager.setText(AnnotatedString(dateTimeString))
                     }
                 },
                 onLocationLongClick = {
-                    val currentEvent = event!!
-                    val locationString = currentEvent.location.orEmpty()
+                    val locationString = uiState.event!!.location.orEmpty()
                     coroutineScope.launch {
                         clipboardManager.setText(AnnotatedString(locationString))
                     }
@@ -84,12 +79,12 @@ internal fun EventDetailScreenRoute(
         }
     }
 
-    if (!showParticipationBottomSheet.isNullOrEmpty()) {
+    if (uiState.showParticipationBottomSheet) {
         ParticipantsBottomSheet(
             onDismiss = {
                 viewModel.onDismissParticipantsSheet()
             },
-            participants = event?.participants ?: emptyList()
+            participants = uiState.participants
         )
     }
 }
@@ -109,7 +104,7 @@ private fun EventDetailScreenContent(
             .background(MaterialTheme.colorScheme.background) // Use background color
     ) {
         DetailHeader(
-            eventStatus = event.status ?: EventStatus.entries.first(),
+            eventStatus = event.status,
             name = event.publisher?.displayName.orEmpty(),
             eventTitle = event.eventName.orEmpty(),
             // Optionally, update DetailHeader to use onSurface for text if not already
@@ -128,7 +123,7 @@ private fun EventDetailScreenContent(
             modifier = Modifier,
             leadingIcon = FmIcons.Person,
             trailingIcon = FmIcons.chevronRight,
-            title = "Deltagere: ${event.participants?.size ?: 0}/6",
+            title = "Deltagere: ${event.participantIds?.size ?: 0}/6",
             onClick = onParticipantsClick,
             iconTint = MaterialTheme.colorScheme.secondary,
             textColor = MaterialTheme.colorScheme.onSurface
@@ -186,7 +181,7 @@ private fun EventDetailScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun printListPreview() {
+private fun PrintListPreview() {
     val event = Event.staticTestEvents.first()
     Column(
         modifier = Modifier.fillMaxSize(),

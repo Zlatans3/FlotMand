@@ -1,28 +1,23 @@
-package dk.zlatan.flotmand.Features.profile.navigation
+package dk.zlatan.flotmand.Features.my_events.navigaiton
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import dk.zlatan.flotmand.Features.authentication.login.LoginRoute
-import dk.zlatan.flotmand.Features.authentication.login.LoginScreen
-import dk.zlatan.flotmand.Features.profile.ProfileScreenRoute
-import dk.zlatan.flotmand.Features.profile.account_information.AccountInformationScreenRoute
+import dk.zlatan.flotmand.Features.my_events.MyEventScreenRoute
+import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreenRoute
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
-fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
-    val navigationStack: List<ProfileDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
+fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel()) {
+    val navigationStack: List<MyEventsDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
 
     // Navigation overlay for sub-screens
     NavDisplay(
@@ -30,25 +25,18 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
         onBack = { viewModel.pop() },
         entryProvider = { key ->
             when (key) {
-                ProfileDestination.ProfileScreen -> NavEntry(key) {
-                    ProfileScreenRoute(
-                        navigateToLogin = {
-                            viewModel.navigate(ProfileDestination.Login)
-                        },
-                        navigateToAccountInformation = {
-                            viewModel.navigate(ProfileDestination.AccountInformation)
+                MyEventsDestination.MyEvents -> NavEntry(key) {
+                    MyEventScreenRoute(
+                        onAddEventClick = {
+                            viewModel.navigate(MyEventsDestination.AddEvent)
                         }
                     )
                 }
 
-                ProfileDestination.AccountInformation -> NavEntry(key) {
-                    AccountInformationScreenRoute(
+                MyEventsDestination.AddEvent -> NavEntry(key) {
+                    AddEventScreenRoute(
                         onDismiss = { viewModel.pop() }
                     )
-                }
-
-                ProfileDestination.Login -> NavEntry(key) {
-                    LoginRoute()
                 }
             }
         },
@@ -74,3 +62,5 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
         )
     )
 }
+
+
