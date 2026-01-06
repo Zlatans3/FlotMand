@@ -14,7 +14,7 @@ The purpose of this app is to stay organised and have a helping tool making sure
 
 Concretely speaking this app lets us keep track of all our dinner night events, letting us know who's up next, where to meet up, who will participate and hopefully much more to come! 
 
-if you are interested in following the roadmap, i made a poorly public [Trello board]([url](https://trello.com/b/1Xu4SSJk/flotmand-app))
+if you are interested in following the roadmap, i made public [Trello board](https://trello.com/b/1Xu4SSJk/flotmand-app)
 
 # ⚙️ What makes this app special? 
 
