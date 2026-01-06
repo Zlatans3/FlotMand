@@ -1,6 +1,6 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
-import androidx.lifecycle.SavedStateHandle
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.assisted.Assisted
@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class EventDetailUiState(
     val event: Event? = null,
@@ -69,20 +68,40 @@ internal class EventDetailViewModel @AssistedInject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
+                Log.d(TAG, "Loading event with ID: $eventId")
                 val event = dinnerEventService.readDinnerEvent(eventId)
-                _event.value = event
 
-                // Load participants based on participantIds
-                event?.participantIds?.let { participantIds ->
-                    val users = accountService.getUsersByIds(participantIds)
-                    _participants.value = users
+                if (event == null) {
+                    Log.w(TAG, "Event not found for ID: $eventId")
+                    _event.value = null
+                    _participants.value = emptyList()
+                } else {
+                    Log.d(TAG, "Event loaded successfully: ${event.eventName}")
+                    _event.value = event
+
+                    // Load participants based on participantIds
+                    event.participantIds?.let { participantIds ->
+                        if (participantIds.isNotEmpty()) {
+                            Log.d(TAG, "Loading ${participantIds.size} participants")
+                            val users = accountService.getUsersByIds(participantIds)
+                            _participants.value = users
+                            Log.d(TAG, "Loaded ${users.size} participants")
+                        } else {
+                            Log.d(TAG, "No participants for this event")
+                            _participants.value = emptyList()
+                        }
+                    } ?: run {
+                        Log.d(TAG, "participantIds is null")
+                        _participants.value = emptyList()
+                    }
                 }
-            } catch (_: Exception) {
-                // Handle error - could emit error state
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading event: ${e.message}", e)
                 _event.value = null
                 _participants.value = emptyList()
             } finally {
                 _isLoading.value = false
+                Log.d(TAG, "Loading complete. isLoading set to false")
             }
         }
     }
@@ -93,5 +112,9 @@ internal class EventDetailViewModel @AssistedInject constructor(
 
     fun showParticipants() {
         _showParticipationBottomSheet.value = true
+    }
+
+    companion object {
+        private const val TAG = "EventDetailViewModel"
     }
 }

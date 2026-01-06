@@ -1,6 +1,7 @@
 package dk.zlatan.flotmand.model
 
 
+import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.Exclude
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -13,6 +14,7 @@ enum class EventStatus {
 }
 
 data class Event(
+    @DocumentId
     val eventId: String? = null,
     val publisherId: String? = null,
     val participantIds: List<String>? = null,

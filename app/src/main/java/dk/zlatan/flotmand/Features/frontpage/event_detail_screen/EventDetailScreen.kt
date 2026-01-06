@@ -50,18 +50,39 @@ internal fun EventDetailScreenRoute(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        if (uiState.isLoading || uiState.event == null) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CircularProgressIndicator()
-                Spacer(modifier = Modifier.padding(8.dp))
-                Text(text = "Henter et flot event...")
+        when {
+            uiState.isLoading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Text(text = "Henter et flot event...")
+                }
             }
-        } else {
-            EventDetailScreenContent(
+            uiState.event == null -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Event ikke fundet",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Text(
+                        text = "Eventet kunne ikke indlæses eller eksisterer ikke",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            else -> {
+                EventDetailScreenContent(
                 event = uiState.event!!,
                 onParticipantsClick = {
                     viewModel.showParticipants()
@@ -77,6 +98,7 @@ internal fun EventDetailScreenRoute(
                     clipboardManager.setText(AnnotatedString(locationString))
                 }
             )
+            }
         }
     }
 
