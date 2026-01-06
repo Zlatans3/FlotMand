@@ -41,14 +41,22 @@ I love being creative, but designing is hard. I created a figma but most of it i
 
 I am hoping to add a lot of interesting entires to this list. Here you will be able to read about the interesting dependencies and technical stuff that has helped this project become what it is
 
-- setup Hilt and dagger for viewmodels
-- As of now set up with navigation 2.0 but planning to migrate to 3.0 in the near future
-
+- setup Hilt and dagger for DI
+- Migrated app from Nav2 to Nav3
+- Firebase Authenication With Google Login
+- Firestore Database as Backend with CRUD
+- Complete use of Material 3 theme
 - 
 
 # 📍 Road Map 
 
 - hoping to recreate this project as Compose multiplatform
+- add retrofit support for adding addresses and rejseplanen app.
+- Notifications for reminders
+- Widget with Glance
+- Using Google maps to show address
+- Use of Room to save user data
+- 
 
 More text to come
 
