@@ -11,10 +11,10 @@ import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
+import dk.zlatan.flotmand.util.combine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -23,7 +23,8 @@ data class EventDetailUiState(
     val publisher: User? = null,
     val participants: List<User> = emptyList(),
     val isLoading: Boolean = false,
-    val showParticipationBottomSheet: Boolean = false
+    val showParticipationBottomSheet: Boolean = false,
+    val isPublisher: Boolean = false
 )
 
 @HiltViewModel(assistedFactory = EventDetailViewModel.Factory::class)
@@ -43,20 +44,23 @@ internal class EventDetailViewModel @AssistedInject constructor(
     private val _participants = MutableStateFlow<List<User>>(emptyList())
     private val _isLoading = MutableStateFlow(false)
     private val _showParticipationBottomSheet = MutableStateFlow(false)
+    private val _isPublisher = MutableStateFlow(false)
 
     val uiState: StateFlow<EventDetailUiState> = combine(
         _event,
         _publisher,
         _participants,
         _isLoading,
-        _showParticipationBottomSheet
-    ) { event, publisher, participants, isLoading, showBottomSheet ->
+        _showParticipationBottomSheet,
+        _isPublisher
+    ) { event, publisher, participants, isLoading, showBottomSheet, isPublisher ->
         EventDetailUiState(
             event = event,
             publisher = publisher,
             participants = participants,
             isLoading = isLoading,
-            showParticipationBottomSheet = showBottomSheet
+            showParticipationBottomSheet = showBottomSheet,
+            isPublisher = isPublisher
         )
     }.stateIn(
         scope = viewModelScope,
@@ -77,10 +81,14 @@ internal class EventDetailViewModel @AssistedInject constructor(
                 if (event == null) {
                     Log.w(TAG, "Event not found: id=$eventId")
                     clearAll()
+                    _isPublisher.value = false
                     return@launch
                 }
 
                 _event.value = event
+                // Compute editing permission: current user is publisher
+                _isPublisher.value = (event.publisherId != null && event.publisherId == accountService.currentUserId)
+
                 // Publisher
                 loadPublisher(event.publisherId)
                 // Participants (exclude publisher)
@@ -89,6 +97,7 @@ internal class EventDetailViewModel @AssistedInject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load event: ${e.message}", e)
                 clearAll()
+                _isPublisher.value = false
             } finally {
                 setLoading(false)
             }
@@ -126,6 +135,7 @@ internal class EventDetailViewModel @AssistedInject constructor(
         _event.value = null
         _publisher.value = null
         _participants.value = emptyList()
+        _isPublisher.value = false
     }
 
     private fun setLoading(isLoading: Boolean) { _isLoading.value = isLoading }

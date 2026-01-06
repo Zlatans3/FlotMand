@@ -98,6 +98,9 @@ internal fun EventDetailScreenRoute(
                     onLocationLongClick = {
                         val locationString = uiState.event!!.location.orEmpty()
                         clipboardManager.setText(AnnotatedString(locationString))
+                    },
+                    onEditEvent = {
+                        
                     }
                 )
             }
@@ -120,7 +123,8 @@ private fun EventDetailScreenContent(
     onParticipantsClick: () -> Unit = {},
     event: Event,
     publisher: User?,
-    onDateClick: () -> Unit = {},
+    onEditEvent: () -> Unit,
+    onDateClick: () -> Unit,
     onLocationLongClick: () -> Unit,
 ) {
     Column(
@@ -133,7 +137,8 @@ private fun EventDetailScreenContent(
             eventStatus = event.status,
             name = publisher?.displayName.orEmpty(),
             eventTitle = event.eventName.orEmpty(),
-            // Optionally, update DetailHeader to use onSurface for text if not already
+            publisherProfileImageUrl = publisher?.photoUrl,
+            onEditClick = onEditEvent
         )
         VSpacer(20.dp)
         SectionItem(
@@ -207,7 +212,9 @@ private fun EventDetailScreenPreview() {
             displayName = "Test Publisher",
             email = "publisher@test.com"
         ),
-        onLocationLongClick = {}
+        onLocationLongClick = {},
+        onDateClick = {},
+        onEditEvent = {}
     )
 }
 
