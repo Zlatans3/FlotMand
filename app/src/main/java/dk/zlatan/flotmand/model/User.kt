@@ -3,6 +3,7 @@ package dk.zlatan.flotmand.model
 data class User(
     val id: String = "",
     val email: String = "",
+    val phoneNumber: String = "",
     val provider: String = "",
     val displayName: String = "",
     val photoUrl: String = "",
@@ -16,6 +17,7 @@ data class User(
                     email = "user${index}@gmail.com",
                             provider = "mockProvider",
                     displayName = "Mock User ${index + 1}",
+                    phoneNumber = "12345678",
                     isAnonymous = false
                 )
             }

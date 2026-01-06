@@ -6,10 +6,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
-import dk.zlatan.flotmand.util.combine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -20,9 +20,7 @@ data class AddEventUiState(
     val event: Event = Event(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val isEventCreated: Boolean = false,
-    val showDatePicker: Boolean = false,
-    val showTimePicker: Boolean = false
+    val isEventCreated: Boolean = false
 )
 
 @HiltViewModel
@@ -35,24 +33,18 @@ class AddEventViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     private val _errorMessage = MutableStateFlow<String?>(null)
     private val _isEventCreated = MutableStateFlow(false)
-    private val _showDatePicker = MutableStateFlow(false)
-    private val _showTimePicker = MutableStateFlow(false)
 
     val uiState: StateFlow<AddEventUiState> = combine(
         _event,
         _isLoading,
         _errorMessage,
-        _isEventCreated,
-        _showDatePicker,
-        _showTimePicker
-    ) { event: Event, isLoading: Boolean, errorMessage: String?, isEventCreated: Boolean, showDatePicker: Boolean, showTimePicker: Boolean ->
+        _isEventCreated
+    ) { event: Event, isLoading: Boolean, errorMessage: String?, isEventCreated: Boolean ->
         AddEventUiState(
             event = event,
             isLoading = isLoading,
             errorMessage = errorMessage,
-            isEventCreated = isEventCreated,
-            showDatePicker = showDatePicker,
-            showTimePicker = showTimePicker
+            isEventCreated = isEventCreated
         )
     }.stateIn(
         scope = viewModelScope,
@@ -80,21 +72,6 @@ class AddEventViewModel @Inject constructor(
         _errorMessage.value = null
     }
 
-    fun showDatePicker() {
-        _showDatePicker.value = true
-    }
-
-    fun hideDatePicker() {
-        _showDatePicker.value = false
-    }
-
-    fun showTimePicker() {
-        _showTimePicker.value = true
-    }
-
-    fun hideTimePicker() {
-        _showTimePicker.value = false
-    }
 
     fun createEvent() {
         viewModelScope.launch {

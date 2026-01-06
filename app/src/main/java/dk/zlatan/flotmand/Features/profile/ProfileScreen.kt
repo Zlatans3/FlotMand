@@ -32,6 +32,7 @@ fun ProfileScreenRoute(
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = hiltViewModel(),
     navigateToLogin: () -> Unit = {},
+    navigateToAccountInformation: () -> Unit = {},
 ) {
     val user by viewModel.user.collectAsState(initial = User(displayName = set_name))
     val signedOut by viewModel.signedOut.collectAsState()
@@ -55,7 +56,8 @@ fun ProfileScreenRoute(
         },
         onUpdateDisplayNameClick = { newName ->
             viewModel.onUpdateDisplayNameClick(newName)
-        }
+        },
+        onAccountInformationClick = navigateToAccountInformation
     )
 
     if (sinOutDialogState)
@@ -79,6 +81,7 @@ internal fun ProfileScreen(
     userName: String,
     onUpdateDisplayNameClick: (String) -> Unit,
     onLogoutClicked: () -> Unit = {},
+    onAccountInformationClick: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier
@@ -111,7 +114,7 @@ internal fun ProfileScreen(
             SectionCard(
                 title = "Konto Information",
                 iconRes = FmIcons.Person,
-                onClick = {  }
+                onClick = onAccountInformationClick
             )
             VSpacer(12.dp)
             SectionCard(
