@@ -21,36 +21,26 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
     // Fetch all dinner events
     override val allDinnerEvents: Flow<List<Event>>
         get() = callbackFlow {
-            Log.d(TAG, "Starting to listen for events")
             val listenerRegistration = Firebase.firestore
                 .collection(DINNER_EVENTS_COLLECTION)
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
-                        Log.e(TAG, "Error fetching events", error)
-                        close(error) // Close the flow with error instead of sending empty list
+                        Log.e(TAG, "Error fetching events: ${error.message}", error)
+                        close(error)
                         return@addSnapshotListener
                     }
 
-                    Log.d(TAG, "Snapshot received with ${snapshot?.documents?.size ?: 0} documents")
                     val events = snapshot?.documents?.mapNotNull { doc ->
-                        Log.d(TAG, "Processing document: ${doc.id}, exists: ${doc.exists()}")
-                        val event = safeParseEvent(doc)
-                        if (event == null) {
-                            Log.w(TAG, "Failed to parse document ${doc.id}")
-                        } else {
-                            Log.d(TAG, "Successfully parsed event: ${event.eventName}")
+                        safeParseEvent(doc).also { event ->
+                            if (event == null) Log.w(TAG, "Failed to parse document ${doc.id}")
                         }
-                        event
                     } ?: emptyList()
 
-                    Log.d(TAG, "Sending ${events.size} events to flow")
+                    Log.d(TAG, "Fetched ${events.size} events")
                     trySend(events)
                 }
 
-            awaitClose {
-                Log.d(TAG, "Closing events listener")
-                listenerRegistration.remove()
-            }
+            awaitClose { listenerRegistration.remove() }
         }
 
     // Fetch only current user's dinner events (for my events page)
@@ -63,15 +53,13 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
                     .whereEqualTo(USER_ID_FIELD, user?.id)
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
-                            Log.e(TAG, "Error fetching user events", error)
-                            close(error) // Close the flow with error instead of sending empty list
+                            Log.e(TAG, "Error fetching user events: ${error.message}", error)
+                            close(error)
                             return@addSnapshotListener
                         }
 
-                        val events = snapshot?.documents?.mapNotNull { doc ->
-                            safeParseEvent(doc)
-                        } ?: emptyList()
-
+                        val events = snapshot?.documents?.mapNotNull { safeParseEvent(it) } ?: emptyList()
+                        Log.d(TAG, "Fetched ${events.size} events for user ${user?.id}")
                         trySend(events)
                     }
 
@@ -86,14 +74,11 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
     @Suppress("UNCHECKED_CAST")
     private fun safeParseEvent(doc: DocumentSnapshot): Event? {
         return try {
-            Log.d(TAG, "Parsing document ${doc.id}, data: ${doc.data}")
-
-            // Check if eventId field exists in the document
+            // Check if eventId field exists in the document (legacy data)
             if (doc.contains("eventId")) {
-                Log.w(TAG, "Document ${doc.id} has eventId field, parsing manually")
-                // Parse manually to avoid @DocumentId conflict
-                val event = Event(
-                    eventId = doc.id, // Use document ID, not the field
+                Log.w(TAG, "Document ${doc.id} has legacy eventId field, parsing manually")
+                Event(
+                    eventId = doc.id,
                     publisherId = doc.getString("publisherId"),
                     participantIds = doc.get("participantIds") as? List<String>,
                     eventName = doc.getString("eventName"),
@@ -101,17 +86,12 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
                     eventDateString = doc.getString("eventDateString"),
                     eventStartTimeString = doc.getString("eventStartTimeString")
                 )
-                Log.d(TAG, "Manually parsed event: ${event.eventName}, date: ${event.eventDateString}")
-                event
             } else {
                 // Normal parsing with @DocumentId
-                Log.d(TAG, "Parsing with toObject for document ${doc.id}")
-                val event = doc.toObject<Event>()
-                Log.d(TAG, "toObject parsed event: ${event?.eventName}, eventId: ${event?.eventId}")
-                event
+                doc.toObject<Event>()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error parsing event from document ${doc.id}: ${e.message}", e)
+            Log.e(TAG, "Failed to parse document ${doc.id}: ${e.message}", e)
             null
         }
     }
@@ -125,36 +105,33 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
     }
 
     override suspend fun readDinnerEvent(noteId: String): Event? {
-        Log.d(TAG, "Fetching event with ID: $noteId")
         return try {
             val doc = Firebase.firestore
                 .collection(DINNER_EVENTS_COLLECTION)
-                .document(noteId).get().await()
+                .document(noteId)
+                .get()
+                .await()
 
-            Log.d(TAG, "Document exists: ${doc.exists()}")
-            if (!doc.exists()) return null
+            if (!doc.exists()) {
+                Log.w(TAG, "Event not found: $noteId")
+                return null
+            }
 
             // Try to parse - if it fails due to eventId field conflict, migrate this document
             try {
-                val event = doc.toObject<Event>()
-                Log.d(TAG, "Parsed event: ${event?.eventName}, eventId: ${event?.eventId}")
-                event
+                doc.toObject<Event>()
             } catch (e: RuntimeException) {
                 if (e.message?.contains("@DocumentId") == true) {
-                    Log.w(TAG, "Document has eventId field, migrating document: $noteId")
-                    // Remove the eventId field from this document
+                    Log.w(TAG, "Migrating document with eventId field: $noteId")
+                    // Remove the eventId field and retry
                     doc.reference.update("eventId", com.google.firebase.firestore.FieldValue.delete()).await()
-                    // Fetch again and parse
-                    val updatedDoc = doc.reference.get().await()
-                    val event = updatedDoc.toObject<Event>()
-                    Log.d(TAG, "Migrated and parsed event: ${event?.eventName}, eventId: ${event?.eventId}")
-                    event
+                    doc.reference.get().await().toObject<Event>()
                 } else {
                     throw e
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error reading event: ${e.message}", e)
+            Log.e(TAG, "Error reading event $noteId: ${e.message}", e)
             null
         }
     }
@@ -178,7 +155,6 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
      */
     suspend fun migrateRemoveEventIdField() {
         try {
-            Log.d(TAG, "Starting migration to remove eventId field from documents")
             val querySnapshot = Firebase.firestore
                 .collection(DINNER_EVENTS_COLLECTION)
                 .get()
@@ -187,13 +163,11 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
             var migratedCount = 0
             for (document in querySnapshot.documents) {
                 if (document.contains("eventId")) {
-                    // Use FieldValue.delete() to remove the field
                     document.reference.update("eventId", com.google.firebase.firestore.FieldValue.delete()).await()
                     migratedCount++
-                    Log.d(TAG, "Removed eventId field from document: ${document.id}")
                 }
             }
-            Log.d(TAG, "Migration complete. Migrated $migratedCount documents")
+            Log.d(TAG, "Migration complete: $migratedCount documents updated")
         } catch (e: Exception) {
             Log.e(TAG, "Migration failed: ${e.message}", e)
         }
