@@ -149,6 +149,9 @@ internal class EventDetailViewModel @AssistedInject constructor(
         }
     }
 
+    /**
+     * Logic might change to reflect a seperate button for "Join" vs "Leave" in future.
+     */
     fun onUserParticipate() {
         // Toggle current user's participation in the event and persist the change
         viewModelScope.launch {

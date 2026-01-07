@@ -1,5 +1,13 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
+import androidx.compose.animation.SizeTransform
 
 @Composable
 fun SectionItem(
@@ -48,11 +57,52 @@ fun SectionItem(
             tint = iconTint
         )
         HSpacer(15.dp)
-        Text(
-            text = title,
-            color = textColor,
-            style = MaterialTheme.typography.bodyLarge,
-        )
+
+        // Split the title into prefix, number, and suffix. Only animate the number.
+        val numberRegex = Regex("(\\d+)")
+        val match = numberRegex.find(title)
+        if (match != null) {
+            val prefix = title.substring(0, match.range.first)
+            val number = match.value
+            val suffix = title.substring(match.range.last + 1)
+
+            Text(
+                text = prefix,
+                color = textColor,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            AnimatedContent(
+                targetState = number,
+                transitionSpec = {
+                    ((slideInVertically { fullHeight -> fullHeight / 2 } + fadeIn()) togetherWith
+                    (slideOutVertically { fullHeight -> fullHeight / 2 } + fadeOut()))
+                        .using(SizeTransform(clip = false))
+                }
+            ) { animatedNumber ->
+                Text(
+                    text = animatedNumber,
+                    color = textColor,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+            Text(
+                text = suffix,
+                color = textColor,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        } else {
+            // Fallback: animate whole title if no digits are present
+            AnimatedContent(
+                targetState = title,
+                transitionSpec = { fadeIn() togetherWith fadeOut() }
+            ) { animatedTitle ->
+                Text(
+                    text = animatedTitle,
+                    color = textColor,
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
