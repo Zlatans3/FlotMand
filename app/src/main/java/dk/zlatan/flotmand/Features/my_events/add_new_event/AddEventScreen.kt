@@ -1,6 +1,7 @@
 package dk.zlatan.flotmand.Features.my_events.add_new_event
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
@@ -39,14 +42,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.layout.size
+import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.AddressAutocompleteDropdown
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.EventTextField
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
+import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.Event
 import java.time.Instant
 import java.time.LocalDate
@@ -140,6 +146,8 @@ internal fun AddEventScreenRoute(
             onLocationChange = viewModel::onLocationChange,
             onEventDateChange = viewModel::onEventDateChange,
             onEventTimeChange = viewModel::onEventTimeChange,
+            onAddressSelected = viewModel::onAddressSelected,
+            onClearPredictions = viewModel::clearAddressPredictions
         )
     }
 }
@@ -150,17 +158,25 @@ private fun AddEventScreenContent(
     modifier: Modifier = Modifier,
     uiState: AddEventUiState,
     onEventNameChange: (String) -> Unit,
-    onLocationChange: (String) -> Unit,
+    onLocationChange: (TextFieldValue) -> Unit,
     onEventDateChange: (LocalDate) -> Unit,
     onEventTimeChange: (LocalTime) -> Unit,
+    onAddressSelected: (AddressPrediction) -> Unit,
+    onClearPredictions: () -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.Top
@@ -177,13 +193,25 @@ private fun AddEventScreenContent(
 
         VSpacer(20.dp)
 
-        // Location
-        EventTextField(
-            label = "Lokation",
-            value = uiState.event.location.orEmpty(),
-            onValueChange = onLocationChange,
-            placeholder = "Fx. flotmand alle 4"
-        )
+        // Location with Autocomplete
+        Column {
+            EventTextField(
+                label = "Lokation",
+                value = uiState.locationTextFieldValue,
+                onValueChange = onLocationChange,
+                placeholder = "Fx. Flotmand alle 4, København"
+            )
+
+            // Autocomplete dropdown
+            AddressAutocompleteDropdown(
+                predictions = uiState.addressPredictions,
+                isLoading = uiState.isLoadingPredictions,
+                onPredictionSelected = { prediction ->
+                    onAddressSelected(prediction)
+                    onClearPredictions()
+                }
+            )
+        }
 
         VSpacer(20.dp)
 
@@ -193,7 +221,10 @@ private fun AddEventScreenContent(
             value = uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
             onValueChange = { }, // Read-only
             placeholder = "Vælg dato",
-            onClick = { showDatePicker = true }
+            onClick = {
+                focusManager.clearFocus()
+                showDatePicker = true
+            }
         )
 
         VSpacer(20.dp)
@@ -204,7 +235,10 @@ private fun AddEventScreenContent(
             value = uiState.event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
             onValueChange = { }, // Read-only
             placeholder = "Vælg tidspunkt",
-            onClick = { showTimePicker = true }
+            onClick = {
+                focusManager.clearFocus()
+                showTimePicker = true
+            }
         )
 
         VSpacer(32.dp)
@@ -299,15 +333,18 @@ private fun AddEventScreenPreview() {
             uiState = AddEventUiState(
                 event = Event.create(
                     eventName = "Fødselsdagsfest hos Zlatan",
-                    location = "Zlatans hus, Flotmand Alle 4",
+                    location = "Flotmand Alle 4",
                     eventDate = LocalDate.now().plusDays(5),
                     eventStartTime = LocalTime.of(19, 30)
-                )
+                ),
+                locationTextFieldValue = TextFieldValue("Flotmand Alle 4")
             ),
             onEventNameChange = {},
             onLocationChange = {},
             onEventDateChange = {},
-            onEventTimeChange = {}
+            onEventTimeChange = {},
+            onAddressSelected = {},
+            onClearPredictions = {}
         )
     }
 }

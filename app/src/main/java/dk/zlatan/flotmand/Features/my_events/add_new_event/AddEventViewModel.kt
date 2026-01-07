@@ -1,15 +1,22 @@
 package dk.zlatan.flotmand.Features.my_events.add_new_event
 
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.Event
+import dk.zlatan.flotmand.model.GeoLocation
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
+import dk.zlatan.flotmand.model.service.PlacesService
+import dk.zlatan.flotmand.util.combine
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -21,13 +28,18 @@ data class AddEventUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val isEventCreated: Boolean = false,
-    val hasHandledCreation: Boolean = false
+    val hasHandledCreation: Boolean = false,
+    val addressPredictions: List<AddressPrediction> = emptyList(),
+    val isLoadingPredictions: Boolean = false,
+    val selectedGeoLocation: GeoLocation? = null,
+    val locationTextFieldValue: TextFieldValue = TextFieldValue()
 )
 
 @HiltViewModel
 class AddEventViewModel @Inject constructor(
     private val dinnerEventService: DinnerEventService,
-    private val accountService: AccountService
+    private val accountService: AccountService,
+    private val placesService: PlacesService
 ) : ViewModel() {
 
     private val _event = MutableStateFlow(Event())
@@ -35,20 +47,37 @@ class AddEventViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     private val _isEventCreated = MutableStateFlow(false)
     private val _hasHandledCreation = MutableStateFlow(false)
+    private val _addressPredictions = MutableStateFlow<List<AddressPrediction>>(emptyList())
+    private val _isLoadingPredictions = MutableStateFlow(false)
+    private val _selectedGeoLocation = MutableStateFlow<GeoLocation?>(null)
+    private val _locationTextFieldValue = MutableStateFlow(TextFieldValue())
+
+    private var searchJob: Job? = null
 
     val uiState: StateFlow<AddEventUiState> = combine(
         _event,
         _isLoading,
         _errorMessage,
         _isEventCreated,
-        _hasHandledCreation
-    ) { event: Event, isLoading: Boolean, errorMessage: String?, isEventCreated: Boolean, hasHandledCreation: Boolean ->
+        _hasHandledCreation,
+        _addressPredictions,
+        _isLoadingPredictions,
+        _selectedGeoLocation,
+        _locationTextFieldValue
+    ) { event: Event, isLoading: Boolean, errorMessage: String?, isEventCreated: Boolean,
+        hasHandledCreation: Boolean, addressPredictions: List<AddressPrediction>,
+        isLoadingPredictions: Boolean, selectedGeoLocation: GeoLocation?,
+        locationTextFieldValue: TextFieldValue ->
         AddEventUiState(
             event = event,
             isLoading = isLoading,
             errorMessage = errorMessage,
             isEventCreated = isEventCreated,
-            hasHandledCreation = hasHandledCreation
+            hasHandledCreation = hasHandledCreation,
+            addressPredictions = addressPredictions,
+            isLoadingPredictions = isLoadingPredictions,
+            selectedGeoLocation = selectedGeoLocation,
+            locationTextFieldValue = locationTextFieldValue
         )
     }.stateIn(
         scope = viewModelScope,
@@ -61,9 +90,13 @@ class AddEventViewModel @Inject constructor(
         _errorMessage.value = null
     }
 
-    fun onLocationChange(location: String) {
-        _event.value = _event.value.copy(location = location)
+    fun onLocationChange(textFieldValue: TextFieldValue) {
+        _locationTextFieldValue.value = textFieldValue
+        _event.value = _event.value.copy(location = textFieldValue.text)
         _errorMessage.value = null
+
+        // Trigger address predictions with debounce
+        searchAddressPredictions(textFieldValue.text)
     }
 
     fun onEventDateChange(date: LocalDate) {
@@ -76,6 +109,94 @@ class AddEventViewModel @Inject constructor(
         _errorMessage.value = null
     }
 
+    /**
+     * Search for address predictions with debounce to avoid excessive API calls.
+     */
+    private fun searchAddressPredictions(query: String) {
+        // Cancel previous search job
+        searchJob?.cancel()
+
+        if (query.length < 3) {
+            _addressPredictions.value = emptyList()
+            return
+        }
+
+        searchJob = viewModelScope.launch {
+            // Debounce: wait 300ms before searching
+            delay(300)
+
+            _isLoadingPredictions.value = true
+            try {
+                val predictions = placesService.getAddressPredictions(query, "DK")
+                _addressPredictions.value = predictions
+            } catch (_: Exception) {
+                _addressPredictions.value = emptyList()
+            } finally {
+                _isLoadingPredictions.value = false
+            }
+        }
+    }
+
+    /**
+     * Utility to remove trailing country from an address string.
+     * Currently strips ", Denmark" or ", Danmark" at the end.
+     */
+    private fun stripCountrySuffix(address: String): String {
+        return address
+            .replace(Regex(",\\s*(Denmark|Danmark)\\s*$"), "")
+            .trim()
+    }
+
+    /**
+     * Called when user selects an address from predictions.
+     */
+    fun onAddressSelected(prediction: AddressPrediction) {
+        viewModelScope.launch {
+            _isLoadingPredictions.value = true
+            try {
+                val placeDetails = placesService.getPlaceDetails(prediction.placeId)
+                if (placeDetails != null) {
+                    val (fullAddress, geoLocation) = placeDetails
+                    // Clean the address to avoid including country in the text field
+                    val cleanedAddress = stripCountrySuffix(fullAddress)
+
+                    _event.value = _event.value.copy(location = cleanedAddress)
+
+                    // Position cursor after first comma (and space) - at start of city/postal code
+                    val cursorPosition = cleanedAddress.indexOf(',').let { commaIndex ->
+                        if (commaIndex >= 0) {
+                            // Skip comma and any following spaces
+                            var pos = commaIndex + 1
+                            while (pos < cleanedAddress.length && cleanedAddress[pos] == ' ') {
+                                pos++
+                            }
+                            pos
+                        } else {
+                            cleanedAddress.length
+                        }
+                    }
+                    _locationTextFieldValue.value = TextFieldValue(
+                        text = cleanedAddress,
+                        selection = TextRange(cursorPosition)
+                    )
+
+                    _selectedGeoLocation.value = geoLocation
+                    _addressPredictions.value = emptyList() // Clear predictions
+                }
+            } catch (_: Exception) {
+                _errorMessage.value = "Kunne ikke hente adressedetaljer"
+            } finally {
+                _isLoadingPredictions.value = false
+            }
+        }
+    }
+
+    /**
+     * Clear address predictions (e.g., when user dismisses dropdown).
+     */
+    fun clearAddressPredictions() {
+        _addressPredictions.value = emptyList()
+    }
 
     fun createEvent() {
         viewModelScope.launch {

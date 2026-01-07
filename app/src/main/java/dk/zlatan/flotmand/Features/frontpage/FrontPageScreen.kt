@@ -142,7 +142,7 @@ fun FrontpageContent(
 
     LazyColumn(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.background), // Use background for main surface
+            .background(MaterialTheme.colorScheme.background),
     ) {
         item {
             FrontPageHeader()
