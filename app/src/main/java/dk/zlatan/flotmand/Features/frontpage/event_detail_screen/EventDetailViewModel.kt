@@ -146,7 +146,7 @@ internal class EventDetailViewModel @AssistedInject constructor(
     }
 
     fun onUserParticipate() {
-        // Add current user to the participantIds of the current event and persist the change
+        // Toggle current user's participation in the event and persist the change
         viewModelScope.launch {
             val currentEvent = _event.value
             val userId = accountService.currentUserId
@@ -168,9 +168,14 @@ internal class EventDetailViewModel @AssistedInject constructor(
 
                 // Start from current event participantIds (default to empty)
                 val existingIds = currentEvent.participantIds ?: emptyList()
+                val isCurrentlyParticipating = existingIds.contains(userId)
 
-                // Add the current user if not already present
-                val updatedIds = if (existingIds.contains(userId)) existingIds else existingIds + userId
+                // Toggle: remove if present, add if missing
+                val updatedIds = if (isCurrentlyParticipating) {
+                    existingIds.filterNot { it == userId }
+                } else {
+                    existingIds + userId
+                }
 
                 val updatedEvent = currentEvent.copy(participantIds = updatedIds)
 
@@ -184,16 +189,17 @@ internal class EventDetailViewModel @AssistedInject constructor(
                 val idsForLoad = updatedIds.filterNot { it == updatedEvent.publisherId }
                 loadParticipants(idsForLoad)
 
-                // Optionally dismiss the sheet after successful participation
+                // Optionally dismiss the sheet after successful toggle
                 _showParticipationBottomSheet.value = false
-                // Signal success to UI - set to true to indicate participated
-                _isParticipated.value = true
+                // Set final participation state (true if added, false if removed)
+                _isParticipated.value = !isCurrentlyParticipating
 
-                Log.d(TAG, "User $userId added to participants for event ${updatedEvent.eventId}")
+                val action = if (isCurrentlyParticipating) "removed" else "added"
+                Log.d(TAG, "User $userId $action to participants for event ${updatedEvent.eventId}")
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to add participant: ${e.message}", e)
-                // Reset to false on error
-                _isParticipated.value = false
+                Log.e(TAG, "Failed to toggle participant: ${e.message}", e)
+                // Revert to previous state on error
+                _isParticipated.value = currentEvent.participantIds?.contains(userId) ?: false
             }
         }
     }
