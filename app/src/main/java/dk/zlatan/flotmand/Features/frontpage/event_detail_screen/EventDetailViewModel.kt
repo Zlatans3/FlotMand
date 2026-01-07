@@ -19,13 +19,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/**
+ * UI state for Event Detail screen.
+ * - isParticipated tri-state: false = not participating (default), null = loading, true = participating
+ */
 data class EventDetailUiState(
     val event: Event? = null,
     val publisher: User? = null,
     val participants: List<User> = emptyList(),
-    val isLoading: Boolean = false,
+    val isLoadingEvent: Boolean = false,
     val showParticipationBottomSheet: Boolean = false,
-    val isPublisher: Boolean = false
+    val isPublisher: Boolean = false,
+    val isParticipated: Boolean? = false
 )
 
 @HiltViewModel(assistedFactory = EventDetailViewModel.Factory::class)
@@ -43,26 +48,29 @@ internal class EventDetailViewModel @AssistedInject constructor(
     private val _event = MutableStateFlow<Event?>(null)
     private val _publisher = MutableStateFlow<User?>(null)
     private val _participants = MutableStateFlow<List<User>>(emptyList())
-    private val _isLoading = MutableStateFlow(false)
+    private val _isLoadingEvent = MutableStateFlow(false)
     private val _showParticipationBottomSheet = MutableStateFlow(false)
     private val _isPublisher = MutableStateFlow(false)
     private val _isDeleted = MutableStateFlow(false)
+    private val _isParticipated = MutableStateFlow<Boolean?>(false)
 
     val uiState: StateFlow<EventDetailUiState> = combine(
         _event,
         _publisher,
         _participants,
-        _isLoading,
+        _isLoadingEvent,
         _showParticipationBottomSheet,
-        _isPublisher
-    ) { event, publisher, participants, isLoading, showBottomSheet, isPublisher ->
+        _isPublisher,
+        _isParticipated
+    ) { event, publisher, participants, isLoadingEvent, showBottomSheet, isPublisher, isParticipated ->
         EventDetailUiState(
             event = event,
             publisher = publisher,
             participants = participants,
-            isLoading = isLoading,
+            isLoadingEvent = isLoadingEvent,
             showParticipationBottomSheet = showBottomSheet,
-            isPublisher = isPublisher
+            isPublisher = isPublisher,
+            isParticipated = isParticipated
         )
     }.stateIn(
         scope = viewModelScope,
@@ -78,7 +86,7 @@ internal class EventDetailViewModel @AssistedInject constructor(
 
     private fun loadEvent() {
         viewModelScope.launch {
-            setLoading(true)
+            setLoadingEvent(true)
             try {
                 Log.d(TAG, "Load event: id=$eventId")
                 val event = dinnerEventService.readDinnerEvent(eventId)
@@ -90,20 +98,26 @@ internal class EventDetailViewModel @AssistedInject constructor(
                 }
 
                 _event.value = event
+
+                val currentUserId = accountService.currentUserId
+
                 // Compute editing permission: current user is publisher
-                _isPublisher.value = (event.publisherId != null && event.publisherId == accountService.currentUserId)
+                _isPublisher.value =
+                    (event.publisherId != null && event.publisherId == currentUserId)
+
+                // Check if current user is already participating
+                _isParticipated.value = event.participantIds?.contains(currentUserId) ?: false
 
                 // Publisher
                 loadPublisher(event.publisherId)
-                // Participants (exclude publisher)
-                val participantIds = event.participantIds?.filterNot { it == event.publisherId }
-                loadParticipants(participantIds)
+                // Participants (including publisher/host)
+                loadParticipants(event.participantIds)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load event: ${e.message}", e)
                 clearAll()
                 _isPublisher.value = false
             } finally {
-                setLoading(false)
+                setLoadingEvent(false)
             }
         }
     }
@@ -135,17 +149,86 @@ internal class EventDetailViewModel @AssistedInject constructor(
         }
     }
 
+    /**
+     * Logic might change to reflect a seperate button for "Join" vs "Leave" in future.
+     */
+    fun onUserParticipate() {
+        // Toggle current user's participation in the event and persist the change
+        viewModelScope.launch {
+            val currentEvent = _event.value
+            val userId = accountService.currentUserId
+
+            if (currentEvent == null) {
+                Log.w(TAG, "onUserParticipate called but event is null")
+                return@launch
+            }
+
+            // Guard: publisher should not be able to participate via this button
+            if (currentEvent.publisherId == userId) {
+                Log.i(TAG, "Publisher cannot participate; ignoring click. publisherId=$userId")
+                return@launch
+            }
+
+            try {
+                // Set to null to indicate loading state
+                _isParticipated.value = null
+
+                // Start from current event participantIds (default to empty)
+                val existingIds = currentEvent.participantIds ?: emptyList()
+                val isCurrentlyParticipating = existingIds.contains(userId)
+
+                // Toggle: remove if present, add if missing
+                val updatedIds = if (isCurrentlyParticipating) {
+                    existingIds.filterNot { it == userId }
+                } else {
+                    existingIds + userId
+                }
+
+                val updatedEvent = currentEvent.copy(participantIds = updatedIds)
+
+                // Persist the update
+                dinnerEventService.updateDinnerEvent(updatedEvent)
+
+                // Update local state
+                _event.value = updatedEvent
+
+                // Reload participants for UI (including publisher/host)
+                loadParticipants(updatedIds)
+
+                // Optionally dismiss the sheet after successful toggle
+                _showParticipationBottomSheet.value = false
+                // Set final participation state (true if added, false if removed)
+                _isParticipated.value = !isCurrentlyParticipating
+
+                val action = if (isCurrentlyParticipating) "removed" else "added"
+                Log.d(TAG, "User $userId $action to participants for event ${updatedEvent.eventId}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to toggle participant: ${e.message}", e)
+                // Revert to previous state on error
+                _isParticipated.value = currentEvent.participantIds?.contains(userId) ?: false
+            }
+        }
+    }
+
     private fun clearAll() {
         _event.value = null
         _publisher.value = null
         _participants.value = emptyList()
         _isPublisher.value = false
+        _isParticipated.value = false
     }
 
-    private fun setLoading(isLoading: Boolean) { _isLoading.value = isLoading }
+    private fun setLoadingEvent(isLoading: Boolean) {
+        _isLoadingEvent.value = isLoading
+    }
 
-    fun onDismissParticipantsSheet() { _showParticipationBottomSheet.value = false }
-    fun showParticipants() { _showParticipationBottomSheet.value = true }
+    fun onDismissParticipantsSheet() {
+        _showParticipationBottomSheet.value = false
+    }
+
+    fun showParticipants() {
+        _showParticipationBottomSheet.value = true
+    }
 
     fun deleteEvent(eventId: String) {
         viewModelScope.launch {
@@ -160,5 +243,7 @@ internal class EventDetailViewModel @AssistedInject constructor(
         }
     }
 
-    companion object { private const val TAG = "EventDetailViewModel" }
+    companion object {
+        private const val TAG = "EventDetailViewModel"
+    }
 }

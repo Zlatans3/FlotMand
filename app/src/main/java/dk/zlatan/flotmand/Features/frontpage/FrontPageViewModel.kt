@@ -1,6 +1,5 @@
 package dk.zlatan.flotmand.Features.frontpage
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +16,7 @@ import javax.inject.Inject
 
 data class FrontPageUiState(
     val eventList: List<Event> = emptyList(),
-    val publishers: Map<String, User> = emptyMap(), // Map of publisherId -> User
+    val publishers: Map<String, User> = emptyMap(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null
 )
@@ -28,45 +27,25 @@ class FrontPageViewModel @Inject constructor(
     private val accountService: AccountService
 ) : ViewModel() {
 
+    // TODO: Zlatan 06/01/2026 SHOULD MAYBE BE COMBINED FLOWS
     val uiState: StateFlow<FrontPageUiState> = dinnerEventService.allDinnerEvents
         .map { events ->
-            Log.d(TAG, "Received ${events.size} events")
+            val sortedEvents = events.sortedByDescending { it.eventDate }
+            val publisherIds = sortedEvents.mapNotNull { it.publisherId }.distinct()
 
-            // Extract unique publisher IDs
-            val publisherIds = events.mapNotNull { it.publisherId }.distinct()
-            Log.d(TAG, "Publisher IDs from events: $publisherIds")
-
-            // Fetch all publishers in one batch
-            val publishersList = if (publisherIds.isNotEmpty()) {
-                Log.d(TAG, "Fetching ${publisherIds.size} unique publishers")
-                accountService.getUsersByIds(publisherIds)
-            } else {
-                Log.w(TAG, "No publisher IDs found in events!")
-                emptyList()
-            }
-
-            // Create map of publisherId -> User
-            val publishersMap = publishersList.associateBy { it.id }
-            Log.d(TAG, "Loaded ${publishersMap.size} publishers")
-            Log.d(TAG, "Publishers map keys: ${publishersMap.keys}")
-            publishersMap.forEach { (id, user) ->
-                Log.d(TAG, "Publisher: id=$id, name=${user.displayName}, email=${user.email}")
-            }
-
-            events.forEach { event ->
-                val publisherName = publishersMap[event.publisherId]?.displayName ?: "Unknown"
-                Log.d(TAG, "Event: ${event.eventName}, publisherId: ${event.publisherId}, Publisher: $publisherName")
-            }
+            val publishersMap = if (publisherIds.isNotEmpty())
+                fetchPublishersMap(publisherIds)
+            else
+                emptyMap()
 
             FrontPageUiState(
-                eventList = events.sortedByDescending { it.eventDate },
+                eventList = sortedEvents,
                 publishers = publishersMap,
                 isLoading = false,
                 errorMessage = null
             )
         }
-        .catch { e ->
-            Log.e(TAG, "Error loading events: ${e.message}", e)
+        .catch { _ ->
             emit(
                 FrontPageUiState(
                     eventList = emptyList(),
@@ -81,6 +60,14 @@ class FrontPageViewModel @Inject constructor(
             started = SharingStarted.Eagerly,
             initialValue = FrontPageUiState(isLoading = true)
         )
+
+    private suspend fun fetchPublishersMap(publisherIds: List<String>): Map<String, User> {
+        return try {
+            accountService.getUsersByIds(publisherIds).associateBy { it.id }
+        } catch (_: Exception) {
+            emptyMap()
+        }
+    }
 
     companion object {
         private const val TAG = "FrontPageViewModel"
