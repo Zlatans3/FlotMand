@@ -143,7 +143,8 @@ internal fun EventDetailScreenRoute(
             onDismiss = {
                 viewModel.onDismissParticipantsSheet()
             },
-            participants = uiState.participants
+            participants = uiState.participants,
+            publisherId = uiState.publisher?.id
         )
     }
 

@@ -110,9 +110,8 @@ internal class EventDetailViewModel @AssistedInject constructor(
 
                 // Publisher
                 loadPublisher(event.publisherId)
-                // Participants (exclude publisher)
-                val participantIds = event.participantIds?.filterNot { it == event.publisherId }
-                loadParticipants(participantIds)
+                // Participants (including publisher/host)
+                loadParticipants(event.participantIds)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to load event: ${e.message}", e)
                 clearAll()
@@ -190,9 +189,8 @@ internal class EventDetailViewModel @AssistedInject constructor(
                 // Update local state
                 _event.value = updatedEvent
 
-                // Reload participants for UI (exclude publisher like in load)
-                val idsForLoad = updatedIds.filterNot { it == updatedEvent.publisherId }
-                loadParticipants(idsForLoad)
+                // Reload participants for UI (including publisher/host)
+                loadParticipants(updatedIds)
 
                 // Optionally dismiss the sheet after successful toggle
                 _showParticipationBottomSheet.value = false

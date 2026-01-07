@@ -27,8 +27,9 @@ fun ParticipantsBottomSheet(
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(),
     participants: List<User>,
+    publisherId: String? = null,
     onDismiss: () -> Unit,
-    ) {
+) {
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -37,7 +38,8 @@ fun ParticipantsBottomSheet(
     ) {
         ParticipantsContent(
             modifier = Modifier,
-            participants = participants
+            participants = participants,
+            publisherId = publisherId,
         )
     }
 }
@@ -46,6 +48,7 @@ fun ParticipantsBottomSheet(
 internal fun ParticipantsContent(
     modifier: Modifier = Modifier,
     participants: List<User> = emptyList(),
+    publisherId: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -56,10 +59,13 @@ internal fun ParticipantsContent(
 
         VSpacer(12.dp)
         participants.forEach { participant ->
+            val isHost = publisherId != null && participant.id == publisherId
+            val displayName = if (isHost) "${participant.displayName} (Host)" else participant.displayName
+
             ProfileParticipant(
                 modifier = Modifier,
                 profilePic = participant.photoUrl,
-                userName = participant.displayName
+                userName = displayName
             )
             HSpacer(16.dp)
         }
@@ -71,7 +77,7 @@ fun ProfileParticipant(
     modifier: Modifier = Modifier,
     profilePic: String? = null,
     userName: String,
-    ) {
+) {
     Row(
         modifier = modifier
             .clickable(
@@ -80,7 +86,7 @@ fun ProfileParticipant(
             .padding(14.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
-        ) {
+    ) {
         ProfileImage(
             modifier = Modifier,
             profilePic = profilePic,
@@ -98,12 +104,13 @@ fun ProfileParticipant(
 @Composable
 private fun ParticipantsContentPreview() {
     val mockUserList = listOf(
-        User(displayName = "Alice Johnson"),
-        User(displayName = "Bob Smith"),
-        User(displayName = "Charlie Brown"),
+        User(id = "u1", displayName = "Gustav Rasslan"),
+        User(id = "u2", displayName = "Oliver Payne"),
+        User(id = "u3", displayName = "Mikkel Rahbek"),
     )
     ParticipantsContent(
         modifier = Modifier,
-        participants = mockUserList
-        )
+        participants = mockUserList,
+        publisherId = mockUserList[1].id
+    )
 }
