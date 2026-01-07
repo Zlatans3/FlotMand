@@ -38,7 +38,7 @@ import dk.zlatan.flotmand.model.AddressPrediction
  * Address autocomplete dropdown showing predictions.
  */
 @Composable
-fun AddressAutocompleteDropdown(
+internal fun AddressAutocompleteDropdown(
     predictions: List<AddressPrediction>,
     isLoading: Boolean,
     onPredictionSelected: (AddressPrediction) -> Unit,

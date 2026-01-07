@@ -23,6 +23,8 @@ import kotlin.coroutines.resume
 /**
  * Implementation of PlacesService using Google Places API.
  *
+ * This is used for address autocomplete in Add Event and place details retrieval.
+ *
  * Best practices:
  * - Session tokens for billing optimization
  * - Proper error handling
