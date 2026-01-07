@@ -33,7 +33,6 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.rememberTimePickerState
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.AddressAutocompleteDropdown
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.EventTextField
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
@@ -70,10 +70,12 @@ internal fun AddEventScreenRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Navigate back when event is created successfully
+    // Navigate back when event is created successfully, then reset state
     LaunchedEffect(uiState.isEventCreated) {
         if (uiState.isEventCreated) {
             onDismiss()
+            // Reset state after dismissing so it's clean for next time
+            viewModel.resetState()
         }
     }
 
