@@ -39,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -154,7 +155,7 @@ private fun AddEventScreenContent(
     modifier: Modifier = Modifier,
     uiState: AddEventUiState,
     onEventNameChange: (String) -> Unit,
-    onLocationChange: (String) -> Unit,
+    onLocationChange: (TextFieldValue) -> Unit,
     onEventDateChange: (LocalDate) -> Unit,
     onEventTimeChange: (LocalTime) -> Unit,
     onAddressSelected: (AddressPrediction) -> Unit,
@@ -187,7 +188,7 @@ private fun AddEventScreenContent(
         Column {
             EventTextField(
                 label = "Lokation",
-                value = uiState.event.location.orEmpty(),
+                value = uiState.locationTextFieldValue,
                 onValueChange = onLocationChange,
                 placeholder = "Fx. Fortuna alle 4, København"
             )
@@ -320,7 +321,8 @@ private fun AddEventScreenPreview() {
                     location = "Flotmand Alle 4",
                     eventDate = LocalDate.now().plusDays(5),
                     eventStartTime = LocalTime.of(19, 30)
-                )
+                ),
+                locationTextFieldValue = TextFieldValue("Flotmand Alle 4")
             ),
             onEventNameChange = {},
             onLocationChange = {},
