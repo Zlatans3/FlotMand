@@ -16,6 +16,7 @@ val localProperties = Properties().apply {
     }
 }
 val googleServerClientId = localProperties["GOOGLE_SERVER_CLIENT_ID"] as String? ?: ""
+val googleMapsApiKey = localProperties["GOOGLE_MAPS_API_KEY"] as String? ?: ""
 
 android {
     namespace = "dk.zlatan.flotmand"
@@ -32,6 +33,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"$googleServerClientId\"")
+        buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
     }
 
     buildTypes {
@@ -94,4 +96,11 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation(libs.javapoet)
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // Google Maps for LatLng and location services
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    // Google Places API for address autocomplete
+    implementation("com.google.android.libraries.places:places:4.1.0")
 }

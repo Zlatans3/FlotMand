@@ -44,9 +44,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.layout.size
+import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.AddressAutocompleteDropdown
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.EventTextField
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
+import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.Event
 import java.time.Instant
 import java.time.LocalDate
@@ -140,6 +142,8 @@ internal fun AddEventScreenRoute(
             onLocationChange = viewModel::onLocationChange,
             onEventDateChange = viewModel::onEventDateChange,
             onEventTimeChange = viewModel::onEventTimeChange,
+            onAddressSelected = viewModel::onAddressSelected,
+            onClearPredictions = viewModel::clearAddressPredictions
         )
     }
 }
@@ -153,6 +157,8 @@ private fun AddEventScreenContent(
     onLocationChange: (String) -> Unit,
     onEventDateChange: (LocalDate) -> Unit,
     onEventTimeChange: (LocalTime) -> Unit,
+    onAddressSelected: (AddressPrediction) -> Unit,
+    onClearPredictions: () -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -177,13 +183,25 @@ private fun AddEventScreenContent(
 
         VSpacer(20.dp)
 
-        // Location
-        EventTextField(
-            label = "Lokation",
-            value = uiState.event.location.orEmpty(),
-            onValueChange = onLocationChange,
-            placeholder = "Fx. flotmand alle 4"
-        )
+        // Location with Autocomplete
+        Column {
+            EventTextField(
+                label = "Lokation",
+                value = uiState.event.location.orEmpty(),
+                onValueChange = onLocationChange,
+                placeholder = "Fx. Fortuna alle 4, København"
+            )
+
+            // Autocomplete dropdown
+            AddressAutocompleteDropdown(
+                predictions = uiState.addressPredictions,
+                isLoading = uiState.isLoadingPredictions,
+                onPredictionSelected = { prediction ->
+                    onAddressSelected(prediction)
+                    onClearPredictions()
+                }
+            )
+        }
 
         VSpacer(20.dp)
 
@@ -299,7 +317,7 @@ private fun AddEventScreenPreview() {
             uiState = AddEventUiState(
                 event = Event.create(
                     eventName = "Fødselsdagsfest hos Zlatan",
-                    location = "Zlatans hus, Flotmand Alle 4",
+                    location = "Flotmand Alle 4",
                     eventDate = LocalDate.now().plusDays(5),
                     eventStartTime = LocalTime.of(19, 30)
                 )
@@ -307,7 +325,9 @@ private fun AddEventScreenPreview() {
             onEventNameChange = {},
             onLocationChange = {},
             onEventDateChange = {},
-            onEventTimeChange = {}
+            onEventTimeChange = {},
+            onAddressSelected = {},
+            onClearPredictions = {}
         )
     }
 }
