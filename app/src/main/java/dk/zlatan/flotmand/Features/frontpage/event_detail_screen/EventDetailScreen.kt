@@ -1,20 +1,27 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
@@ -65,7 +73,7 @@ internal fun EventDetailScreenRoute(
         modifier = modifier.fillMaxSize()
     ) {
         when {
-            uiState.isLoading -> {
+            uiState.isLoadingEvent -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -100,6 +108,7 @@ internal fun EventDetailScreenRoute(
             else -> {
                 EventDetailScreenContent(
                     event = uiState.event!!,
+                    isParticipating = uiState.isParticipated,
                     publisher = uiState.publisher,
                     onParticipantsClick = {
                         if (!uiState.event!!.participantIds.isNullOrEmpty()) {
@@ -120,7 +129,10 @@ internal fun EventDetailScreenRoute(
                         // TODO: Zlatan 06/01/2026 WILL BE ADDED IN LATER PATCH
                     },
                     onDeleteEvent = { showDeleteDialog = true },
-                    isPublisher = uiState.isPublisher
+                    isPublisher = uiState.isPublisher,
+                    onParticipateClick = {
+                        viewModel.onUserParticipate()
+                    }
                 )
             }
         }
@@ -152,10 +164,12 @@ internal fun EventDetailScreenRoute(
 @Composable
 private fun EventDetailScreenContent(
     modifier: Modifier = Modifier,
-    onParticipantsClick: () -> Unit = {},
     event: Event,
+    isParticipating: Boolean?,
     publisher: User?,
     isPublisher: Boolean,
+    onParticipantsClick: () -> Unit,
+    onParticipateClick: () -> Unit,
     onEditEvent: () -> Unit,
     onDeleteEvent: () -> Unit,
     onDateClick: () -> Unit,
@@ -215,25 +229,75 @@ private fun EventDetailScreenContent(
         )
 
         Spacer(modifier = Modifier.weight(1f))
+        val participationText = if (isParticipating == true) {
+            "deltager"
+        } else {
+            "Deltag"
+        }
+        if (!isPublisher && event.status == EventStatus.UPCOMING) {
+            Button(
+                onClick = onParticipateClick,
+                shape = RoundedCornerShape(8.dp),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 2.dp
+                ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    when (isParticipating) {
+                        true -> {
+                            val scale = remember { Animatable(0f) }
 
-        if(!isPublisher && event.status == EventStatus.UPCOMING)
-        Button(
-            onClick = {
-                // TODO: Zlatan 27/11/2025 Should probably do something
-            },
-            shape = RoundedCornerShape(8.dp),
-            elevation = ButtonDefaults.buttonElevation(
-                defaultElevation = 2.dp
-            ),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(text = "Deltag")
+                            LaunchedEffect(isParticipating) {
+                                scale.animateTo(
+                                    targetValue = 1f,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessLow
+                                    )
+                                )
+                            }
+
+                            Icon(
+                                imageVector = FmIcons.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .graphicsLayer {
+                                        scaleX = scale.value
+                                        scaleY = scale.value
+                                    }
+                            )
+
+                            Spacer(modifier = Modifier.size(8.dp))
+                        }
+
+                        false -> {
+                            // no op
+                        }
+
+                        null -> {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                        }
+                    }
+                    Text(text = participationText)
+                }
+            }
         }
     }
 }
@@ -255,6 +319,9 @@ private fun EventDetailScreenPreview() {
         onEditEvent = {},
         onDeleteEvent = {},
         isPublisher = false,
+        onParticipantsClick = {},
+        onParticipateClick = {},
+        isParticipating = true
     )
 }
 
@@ -266,15 +333,18 @@ private fun EventDetailScreenIsPublisherPreview() {
         modifier = Modifier,
         event = event,
         publisher = User(
-            id = "test-publisher",
+            id = "user1",
             displayName = "Zlatan Stadler",
-            email = "publisher@test.com"
+            email = "publisher@test.com",
         ),
         onLocationLongClick = {},
         onDateClick = {},
         onEditEvent = {},
         onDeleteEvent = {},
         isPublisher = true,
+        onParticipantsClick = {},
+        onParticipateClick = {},
+        isParticipating = false
     )
 }
 

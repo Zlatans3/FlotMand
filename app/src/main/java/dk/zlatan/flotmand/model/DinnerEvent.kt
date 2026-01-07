@@ -131,6 +131,7 @@ data class Event(
             create(
                 eventId = "event1",
                 eventName = "Middag hos Lasse",
+                publisherId = ids.first(),
                 location = "Fortuna alle 1, 2000 Frederiksberg",
                 eventDate = LocalDate.parse("2027-12-01"),
                 eventStartTime = LocalTime.parse("19:00"),
