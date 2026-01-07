@@ -36,6 +36,7 @@ import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
+import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -160,6 +161,7 @@ private fun EventDetailScreenContent(
     onDateClick: () -> Unit,
     onLocationLongClick: () -> Unit,
 ) {
+    val eventOrganizerName = if (isPublisher) "Dig" else publisher?.displayName.orEmpty()
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -168,7 +170,7 @@ private fun EventDetailScreenContent(
     ) {
         DetailHeader(
             eventStatus = event.status,
-            name = publisher?.displayName.orEmpty(),
+            name = eventOrganizerName,
             eventTitle = event.eventName.orEmpty(),
             publisherProfileImageUrl = publisher?.photoUrl,
             isPublisher = isPublisher,
@@ -214,6 +216,7 @@ private fun EventDetailScreenContent(
 
         Spacer(modifier = Modifier.weight(1f))
 
+        if(!isPublisher && event.status == EventStatus.UPCOMING)
         Button(
             onClick = {
                 // TODO: Zlatan 27/11/2025 Should probably do something
@@ -238,13 +241,33 @@ private fun EventDetailScreenContent(
 @Preview(showBackground = true)
 @Composable
 private fun EventDetailScreenPreview() {
+    val event = Event.staticTestEvents[0]
+    EventDetailScreenContent(
+        modifier = Modifier,
+        event = event,
+        publisher = User(
+            id = "test-publisher",
+            displayName = "Lasse Sandø",
+            email = "publisher@test.com"
+        ),
+        onLocationLongClick = {},
+        onDateClick = {},
+        onEditEvent = {},
+        onDeleteEvent = {},
+        isPublisher = false,
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EventDetailScreenIsPublisherPreview() {
     val event = Event.staticTestEvents.first()
     EventDetailScreenContent(
         modifier = Modifier,
         event = event,
         publisher = User(
             id = "test-publisher",
-            displayName = "Test Publisher",
+            displayName = "Zlatan Stadler",
             email = "publisher@test.com"
         ),
         onLocationLongClick = {},

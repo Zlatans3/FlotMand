@@ -130,9 +130,9 @@ data class Event(
         val staticTestEvents: List<Event> = listOf(
             create(
                 eventId = "event1",
-                eventName = "Middag hos Zlatan",
+                eventName = "Middag hos Lasse",
                 location = "Fortuna alle 1, 2000 Frederiksberg",
-                eventDate = LocalDate.parse("2024-12-01"),
+                eventDate = LocalDate.parse("2027-12-01"),
                 eventStartTime = LocalTime.parse("19:00"),
                 participantIds = ids,
             ),
