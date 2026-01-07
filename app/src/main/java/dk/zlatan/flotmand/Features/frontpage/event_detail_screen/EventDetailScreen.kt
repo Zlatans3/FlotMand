@@ -1,8 +1,15 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -252,48 +259,59 @@ private fun EventDetailScreenContent(
             ) {
                 Row(
                     horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.animateContentSize()
                 ) {
-                    when (isParticipating) {
-                        true -> {
-                            val scale = remember { Animatable(0f) }
+                    AnimatedContent(
+                        targetState = isParticipating,
+                        transitionSpec = {
+                            (fadeIn(tween(200)) togetherWith fadeOut(tween(200))).using(SizeTransform(false))
+                        }
+                    ) { participatingState ->
+                        when (participatingState) {
+                            true -> {
+                                val scale = remember { Animatable(0f) }
 
-                            LaunchedEffect(isParticipating) {
-                                scale.animateTo(
-                                    targetValue = 1f,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessLow
+                                LaunchedEffect(participatingState) {
+                                    scale.animateTo(
+                                        targetValue = 1f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioNoBouncy,
+                                            stiffness = Spring.StiffnessLow,
+                                            visibilityThreshold = 1f
+                                        )
                                     )
-                                )
+                                }
+
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = FmIcons.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .graphicsLayer {
+                                                scaleX = scale.value
+                                                scaleY = scale.value
+                                            }
+                                    )
+                                    Spacer(modifier = Modifier.size(8.dp))
+                                }
                             }
-
-                            Icon(
-                                imageVector = FmIcons.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .graphicsLayer {
-                                        scaleX = scale.value
-                                        scaleY = scale.value
-                                    }
-                            )
-
-                            Spacer(modifier = Modifier.size(8.dp))
-                        }
-
-                        false -> {
-                            // no op
-                        }
-
-                        null -> {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                strokeWidth = 2.dp,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.size(8.dp))
+                            null -> {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    CircularProgressIndicator(
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.size(8.dp))
+                                }
+                            }
+                            false -> {
+                                // Render empty space for alignment consistency
+                                Spacer(modifier = Modifier.size(0.dp))
+                            }
                         }
                     }
                     Text(text = participationText)
