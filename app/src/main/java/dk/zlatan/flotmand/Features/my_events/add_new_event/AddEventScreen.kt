@@ -1,6 +1,7 @@
 package dk.zlatan.flotmand.Features.my_events.add_new_event
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
@@ -163,11 +166,17 @@ private fun AddEventScreenContent(
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
         verticalArrangement = Arrangement.Top
@@ -190,7 +199,7 @@ private fun AddEventScreenContent(
                 label = "Lokation",
                 value = uiState.locationTextFieldValue,
                 onValueChange = onLocationChange,
-                placeholder = "Fx. Fortuna alle 4, København"
+                placeholder = "Fx. Flotmand alle 4, København"
             )
 
             // Autocomplete dropdown
@@ -212,7 +221,10 @@ private fun AddEventScreenContent(
             value = uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
             onValueChange = { }, // Read-only
             placeholder = "Vælg dato",
-            onClick = { showDatePicker = true }
+            onClick = {
+                focusManager.clearFocus()
+                showDatePicker = true
+            }
         )
 
         VSpacer(20.dp)
@@ -223,7 +235,10 @@ private fun AddEventScreenContent(
             value = uiState.event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
             onValueChange = { }, // Read-only
             placeholder = "Vælg tidspunkt",
-            onClick = { showTimePicker = true }
+            onClick = {
+                focusManager.clearFocus()
+                showTimePicker = true
+            }
         )
 
         VSpacer(32.dp)
