@@ -41,10 +41,7 @@ fun SectionItem(
             .fillMaxWidth()
             .combinedClickable(
                 onClick = onClick,
-                onLongClick = {
-                    // Example: Open calendar app (placeholder, implement actual logic as needed)
-                    onLongClick()
-                }
+                onLongClick = onLongClick
             )
             .padding(vertical = 16.dp, horizontal = 20.dp)
         ,

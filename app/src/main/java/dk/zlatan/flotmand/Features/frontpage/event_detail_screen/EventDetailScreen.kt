@@ -204,7 +204,7 @@ private fun EventDetailScreenContent(
             modifier = Modifier,
             leadingIcon = FmIcons.Calendar,
             title = "${event.eventDate?.toString().orEmpty()} ${event.eventStartTime.toString()}",
-            onClick = onDateClick,
+            onLongClick = onDateClick,
             iconTint = MaterialTheme.colorScheme.primary,
             textColor = MaterialTheme.colorScheme.onSurface
         )
