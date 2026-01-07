@@ -251,4 +251,19 @@ class AddEventViewModel @Inject constructor(
     fun clearError() {
         _errorMessage.value = null
     }
+
+    /**
+     * Reset the state of the ViewModel for new event creation.
+     */
+    fun resetState() {
+        _event.value = Event()
+        _isLoading.value = false
+        _errorMessage.value = null
+        _isEventCreated.value = false
+        _hasHandledCreation.value = false
+        _addressPredictions.value = emptyList()
+        _isLoadingPredictions.value = false
+        _selectedGeoLocation.value = null
+        _locationTextFieldValue.value = TextFieldValue()
+    }
 }
