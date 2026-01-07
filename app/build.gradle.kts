@@ -34,6 +34,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"$googleServerClientId\"")
         buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
+        resValue("string", "google_maps_key", googleMapsApiKey)
     }
 
     buildTypes {
@@ -103,4 +105,7 @@ dependencies {
 
     // Google Places API for address autocomplete
     implementation("com.google.android.libraries.places:places:4.1.0")
+
+    // Google Maps Compose
+    implementation("com.google.maps.android:maps-compose:4.4.1")
 }
