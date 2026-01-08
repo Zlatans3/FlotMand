@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 
 /**
  * UI state for Event Detail screen.
@@ -81,42 +82,31 @@ internal class EventDetailViewModel @AssistedInject constructor(
     val isDeleted: StateFlow<Boolean> = _isDeleted.asStateFlow()
 
     init {
-        loadEvent()
+        observeEvent()
     }
 
-    private fun loadEvent() {
+    private fun observeEvent() {
         viewModelScope.launch {
             setLoadingEvent(true)
-            try {
-                Log.d(TAG, "Load event: id=$eventId")
-                val event = dinnerEventService.readDinnerEvent(eventId)
+            dinnerEventService.observeDinnerEvent(eventId).collectLatest { event ->
                 if (event == null) {
-                    Log.w(TAG, "Event not found: id=$eventId")
+                    Log.w(TAG, "Event not found or deleted: id=$eventId")
                     clearAll()
                     _isPublisher.value = false
-                    return@launch
+                    setLoadingEvent(false)
+                    return@collectLatest
                 }
 
                 _event.value = event
 
                 val currentUserId = accountService.currentUserId
-
-                // Compute editing permission: current user is publisher
-                _isPublisher.value =
-                    (event.publisherId != null && event.publisherId == currentUserId)
-
-                // Check if current user is already participating
+                _isPublisher.value = (event.publisherId != null && event.publisherId == currentUserId)
                 _isParticipated.value = event.participantIds?.contains(currentUserId) ?: false
 
-                // Publisher
-                loadPublisher(event.publisherId)
-                // Participants (including publisher/host)
-                loadParticipants(event.participantIds)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to load event: ${e.message}", e)
-                clearAll()
-                _isPublisher.value = false
-            } finally {
+                // Refresh publisher and participants when relevant fields change
+                launch { loadPublisher(event.publisherId) }
+                launch { loadParticipants(event.participantIds) }
+
                 setLoadingEvent(false)
             }
         }

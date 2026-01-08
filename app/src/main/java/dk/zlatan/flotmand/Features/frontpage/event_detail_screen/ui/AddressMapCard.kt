@@ -19,14 +19,16 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import dk.zlatan.flotmand.model.GeoLocation
 
 @Composable
 internal fun AddressMapCard(
     modifier: Modifier = Modifier,
-    coordinates: Pair<Double, Double> = Pair(55.6761, 12.5683),
+    geoLocation: GeoLocation,
     backgroundColor: Color = Color(0xFFE0E0E0)
 ) {
-    val latLng = LatLng(coordinates.first, coordinates.second)
+    val latLng = LatLng(geoLocation.latitude, geoLocation.longitude)
+
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(latLng, 14f)
     }
@@ -70,5 +72,8 @@ internal fun AddressMapCard(
 @Preview
 @Composable
 private fun AddressMapCardPreview() {
-    AddressMapCard(modifier = Modifier)
+    AddressMapCard(
+        modifier = Modifier,
+        geoLocation = GeoLocation(latitude = 55.6761, longitude = 12.5683) // Copenhagen
+    )
 }

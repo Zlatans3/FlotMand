@@ -52,6 +52,7 @@ import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.EventStatus
+import dk.zlatan.flotmand.model.GeoLocation
 import dk.zlatan.flotmand.model.User
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,6 +73,18 @@ internal fun EventDetailScreenRoute(
     val clipboardManager = LocalClipboardManager.current
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    // Debounced loading indicator to prevent flash on fast loads
+    var showLoading by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState.isLoadingEvent) {
+        if (uiState.isLoadingEvent) {
+            // Wait a short period; only show loader if still loading
+            kotlinx.coroutines.delay(300)
+            if (uiState.isLoadingEvent) showLoading = true
+        } else {
+            showLoading = false
+        }
+    }
+
     if (isDeleted) {
         onDismiss()
     }
@@ -80,43 +93,14 @@ internal fun EventDetailScreenRoute(
         modifier = modifier.fillMaxSize()
     ) {
         when {
-            uiState.isLoadingEvent -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator()
-                    Spacer(modifier = Modifier.padding(8.dp))
-                    Text(text = "Henter et flot event...")
-                }
-            }
-
-            uiState.event == null -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Event ikke fundet",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.padding(8.dp))
-                    Text(
-                        text = "Eventet kunne ikke indlæses eller eksisterer ikke",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            else -> {
+            // Prefer content when we have data
+            uiState.event != null -> {
                 EventDetailScreenContent(
                     event = uiState.event!!,
                     isParticipating = uiState.isParticipated,
                     publisher = uiState.publisher,
+                    onDismiss = onDismiss,
+                    geoLocation = uiState.event!!.geoLocation,
                     onParticipantsClick = {
                         if (!uiState.event!!.participantIds.isNullOrEmpty()) {
                             viewModel.showParticipants()
@@ -141,6 +125,40 @@ internal fun EventDetailScreenRoute(
                         viewModel.onUserParticipate()
                     }
                 )
+            }
+
+            // Show loader if loading (or within debounce window)
+            uiState.isLoadingEvent || showLoading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Text(text = "Henter et flot event...")
+                }
+            }
+
+            // Only show null state when not loading and event is still null
+            else -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Event ikke fundet",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Text(
+                        text = "Eventet kunne ikke indlæses eller eksisterer ikke",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
@@ -173,9 +191,11 @@ internal fun EventDetailScreenRoute(
 private fun EventDetailScreenContent(
     modifier: Modifier = Modifier,
     event: Event,
+    geoLocation: GeoLocation?,
     isParticipating: Boolean?,
     publisher: User?,
     isPublisher: Boolean,
+    onDismiss: () -> Unit,
     onParticipantsClick: () -> Unit,
     onParticipateClick: () -> Unit,
     onEditEvent: () -> Unit,
@@ -197,7 +217,8 @@ private fun EventDetailScreenContent(
             publisherProfileImageUrl = publisher?.photoUrl,
             isPublisher = isPublisher,
             onEditClick = onEditEvent,
-            onDeleteClick = onDeleteEvent
+            onDeleteClick = onDeleteEvent,
+            onBackClick = onDismiss
         )
         VSpacer(20.dp)
         SectionItem(
@@ -230,11 +251,15 @@ private fun EventDetailScreenContent(
 
         VSpacer(20.dp)
 
-        AddressMapCard(
-            modifier = Modifier
-                .padding(horizontal = 20.dp),
-            backgroundColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        // Only show map if we have valid coordinates
+        if (geoLocation != null && geoLocation.isValid()) {
+            AddressMapCard(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp),
+                backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                geoLocation = geoLocation
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
         val participationText = if (isParticipating == true) {
@@ -328,6 +353,7 @@ private fun EventDetailScreenPreview() {
     EventDetailScreenContent(
         modifier = Modifier,
         event = event,
+        geoLocation = GeoLocation(latitude = 55.6761, longitude = 12.5683), // Copenhagen
         publisher = User(
             id = "test-publisher",
             displayName = "Lasse Sandø",
@@ -340,7 +366,8 @@ private fun EventDetailScreenPreview() {
         isPublisher = false,
         onParticipantsClick = {},
         onParticipateClick = {},
-        isParticipating = true
+        isParticipating = true,
+        onDismiss = {}
     )
 }
 
@@ -351,6 +378,7 @@ private fun EventDetailScreenIsPublisherPreview() {
     EventDetailScreenContent(
         modifier = Modifier,
         event = event,
+        geoLocation = null, // Test without map
         publisher = User(
             id = "user1",
             displayName = "Zlatan Stadler",
@@ -363,7 +391,8 @@ private fun EventDetailScreenIsPublisherPreview() {
         isPublisher = true,
         onParticipantsClick = {},
         onParticipateClick = {},
-        isParticipating = false
+        isParticipating = false,
+        onDismiss = {}
     )
 }
 

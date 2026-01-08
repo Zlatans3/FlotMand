@@ -160,7 +160,11 @@ class AddEventViewModel @Inject constructor(
                     // Clean the address to avoid including country in the text field
                     val cleanedAddress = stripCountrySuffix(fullAddress)
 
-                    _event.value = _event.value.copy(location = cleanedAddress)
+                    // Save both the address and geoLocation to the event
+                    _event.value = _event.value.copy(
+                        location = cleanedAddress,
+                        geoLocation = geoLocation
+                    )
 
                     // Position cursor after first comma (and space) - at start of city/postal code
                     val cursorPosition = cleanedAddress.indexOf(',').let { commaIndex ->
@@ -232,7 +236,8 @@ class AddEventViewModel @Inject constructor(
 
                 val newEvent = event.copyWithDates(
                     publisherId = accountService.currentUserId,
-                    participantIds = listOf(accountService.currentUserId)
+                    participantIds = listOf(accountService.currentUserId),
+                    geoLocation = event.geoLocation
                 )
 
                 dinnerEventService.createDinnerEvent(newEvent)
