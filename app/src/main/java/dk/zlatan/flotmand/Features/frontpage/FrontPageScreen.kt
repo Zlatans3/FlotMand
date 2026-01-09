@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,8 +25,9 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.Features.frontpage.ui.FmAnimatableTopBar
+import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageNewHeader
 import dk.zlatan.flotmand.design_system.componenets.EventCard
-import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageHeader
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.Event
@@ -31,7 +35,7 @@ import dk.zlatan.flotmand.model.Event.Companion.previewEvents
 import dk.zlatan.flotmand.model.User
 
 @Composable
-fun FrontPageRoute(
+internal fun FrontPageRoute(
     modifier: Modifier = Modifier,
     onClickEvent: (String) -> Unit,
     viewModel: FrontPageViewModel = hiltViewModel(),
@@ -119,19 +123,19 @@ fun FrontPageRoute(
                 onClickEvent = onClickEvent,
                 eventList = uiState.eventList,
                 publishers = uiState.publishers,
-                user = null
+                user = uiState.currentUser
             )
         }
     }
 }
 
 @Composable
-fun FrontpageContent(
+internal fun FrontpageContent(
     modifier: Modifier = Modifier,
     eventList: List<Event> = emptyList(),
     publishers: Map<String, User> = emptyMap(),
     onClickEvent: (String) -> Unit,
-    user: User?,
+    user: User
 ) {
     LaunchedEffect(eventList.size) {
         Log.d("FrontpageContent", "Rendering with ${eventList.size} events")
@@ -140,38 +144,62 @@ fun FrontpageContent(
         }
     }
 
-    LazyColumn(
-        modifier = modifier
-            .background(MaterialTheme.colorScheme.background),
-    ) {
-        item {
-            FrontPageHeader()
-            VSpacer(12.dp)
-            if (user != null) {
-                Text(
-                    "Bruger: ${user.displayName} (${user.email})",
-                    style = MaterialTheme.typography.displayMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+    val listState = rememberLazyListState()
+    val scrollOffset by remember {
+        derivedStateOf {
+            if (listState.firstVisibleItemIndex == 0) {
+                listState.firstVisibleItemScrollOffset.toFloat()
+            } else {
+                1000f // Fully collapsed when scrolled past first item
+            }
+        }
+    }
+
+    // Calculate scroll progress for corner radius animation (0f to 1f over 200px)
+    val scrollProgress by remember {
+        derivedStateOf {
+            (scrollOffset / 200f).coerceIn(0f, 1f)
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
+            stickyHeader(
+                contentType = "FrontPageTopBar"
+            ) {
+                FmAnimatableTopBar(
+                    user = user,
+                    scrollProgress = scrollProgress
+                )
+            }
+            item {
+                FrontPageNewHeader(
+                    user = user,
+                    scrollProgress = scrollProgress
                 )
                 VSpacer(8.dp)
             }
+            items(eventList) { eventDetails ->
+                val publisher = publishers[eventDetails.publisherId]
+                EventCard(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp, horizontal = 12.dp),
+                    userName = publisher?.displayName ?: "Ukendt bruger",
+                    eventName = eventDetails.eventName.orEmpty(),
+                    eventDate = eventDetails.eventDate.toString(),
+                    eventTime = eventDetails.eventStartTime.toString(),
+                    userProfilePic = publisher?.photoUrl,
+                    onClick = {
+                        onClickEvent(eventDetails.eventId.orEmpty())
+                    }
+                )
+            }
         }
-        items(eventList) { eventDetails ->
-            val publisher = publishers[eventDetails.publisherId]
-            EventCard(
-                modifier = Modifier
-                    .padding(vertical = 8.dp, horizontal = 12.dp),
-                userName = publisher?.displayName ?: "Ukendt bruger",
-                eventName = eventDetails.eventName.orEmpty(),
-                eventDate = eventDetails.eventDate.toString(),
-                eventTime = eventDetails.eventStartTime.toString(),
-                userProfilePic = publisher?.photoUrl,
-                onClick = {
-                    onClickEvent(eventDetails.eventId.orEmpty())
-                }
-            )
-        }
-
     }
 }
 
@@ -198,7 +226,7 @@ private fun FrontpageContentPreview() {
             eventList = events,
             publishers = mockPublishers,
             onClickEvent = {},
-            user = null
+            user = User.mockUserWithCounter(1).first()
         )
     }
 }

@@ -22,7 +22,7 @@ import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
 
 @Composable
-fun MyEventScreenRoute(
+internal fun MyEventScreenRoute(
     modifier: Modifier = Modifier,
     viewModel: MyEventViewModel = hiltViewModel(),
     onAddEventClick: () -> Unit = {},

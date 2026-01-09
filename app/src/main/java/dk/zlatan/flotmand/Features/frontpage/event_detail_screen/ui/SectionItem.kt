@@ -26,7 +26,7 @@ import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import androidx.compose.animation.SizeTransform
 
 @Composable
-fun SectionItem(
+internal fun SectionsParticipationItem(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector,
     trailingIcon: ImageVector? = null,
@@ -43,8 +43,7 @@ fun SectionItem(
                 onClick = onClick,
                 onLongClick = onLongClick
             )
-            .padding(vertical = 16.dp, horizontal = 20.dp)
-        ,
+            .padding(vertical = 16.dp, horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
 
     ) {
@@ -72,7 +71,7 @@ fun SectionItem(
                 targetState = number,
                 transitionSpec = {
                     ((slideInVertically { fullHeight -> fullHeight / 2 } + fadeIn()) togetherWith
-                    (slideOutVertically { fullHeight -> fullHeight / 2 } + fadeOut()))
+                            (slideOutVertically { fullHeight -> fullHeight / 2 } + fadeOut()))
                         .using(SizeTransform(clip = false))
                 }
             ) { animatedNumber ->
@@ -103,7 +102,56 @@ fun SectionItem(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        if (trailingIcon != null){
+        if (trailingIcon != null) {
+            Icon(
+                imageVector = trailingIcon,
+                contentDescription = null,
+                tint = iconTint
+            )
+        }
+    }
+}
+
+@Composable
+internal fun SectionItem(
+    modifier: Modifier = Modifier,
+    leadingIcon: ImageVector,
+    trailingIcon: ImageVector? = null,
+    title: String,
+    onClick: () -> Unit = { },
+    onLongClick: () -> Unit = { },
+    iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textColor: Color = MaterialTheme.colorScheme.onSurface
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = {
+                    // Example: Open calendar app (placeholder, implement actual logic as needed)
+                    onLongClick()
+                }
+            )
+            .padding(vertical = 16.dp, horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+
+    ) {
+        Icon(
+            imageVector = leadingIcon,
+            contentDescription = null,
+            tint = iconTint
+        )
+        HSpacer(15.dp)
+        Text(
+            text = title,
+            color = textColor,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        if (trailingIcon != null) {
             Icon(
                 imageVector = trailingIcon,
                 contentDescription = null,

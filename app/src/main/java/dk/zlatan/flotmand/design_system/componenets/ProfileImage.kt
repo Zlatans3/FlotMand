@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 
 @Composable
-internal fun ProfileImage(
+fun ProfileImage(
     modifier: Modifier = Modifier,
     profilePic: String? = null,
     profileSize: Dp = 40.dp,

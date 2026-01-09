@@ -20,12 +20,16 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import dk.zlatan.flotmand.model.GeoLocation
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.draw.clip
 
 @Composable
 internal fun AddressMapCard(
     modifier: Modifier = Modifier,
     geoLocation: GeoLocation,
-    backgroundColor: Color = Color(0xFFE0E0E0)
+    backgroundColor: Color = Color(0xFFE0E0E0),
+    onClick: () -> Unit = {}
 ) {
     val latLng = LatLng(geoLocation.latitude, geoLocation.longitude)
 
@@ -65,6 +69,14 @@ internal fun AddressMapCard(
                     title = "Event location"
                 )
             }
+
+            // Full overlay to capture taps (gestures are disabled on the map)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(onClick = onClick)
+            )
         }
     }
 }

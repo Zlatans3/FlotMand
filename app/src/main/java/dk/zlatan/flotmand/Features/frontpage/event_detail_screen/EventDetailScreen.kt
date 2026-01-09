@@ -1,5 +1,7 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateContentSize
@@ -38,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,6 +50,7 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCa
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionsParticipationItem
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
@@ -71,6 +75,7 @@ internal fun EventDetailScreenRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDeleted by viewModel.isDeleted.collectAsState(initial = false)
     val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Debounced loading indicator to prevent flash on fast loads
@@ -95,25 +100,26 @@ internal fun EventDetailScreenRoute(
         when {
             // Prefer content when we have data
             uiState.event != null -> {
+                val event = uiState.event!!
                 EventDetailScreenContent(
-                    event = uiState.event!!,
+                    event = event,
                     isParticipating = uiState.isParticipated,
                     publisher = uiState.publisher,
                     onDismiss = onDismiss,
-                    geoLocation = uiState.event!!.geoLocation,
+                    geoLocation = event.geoLocation,
                     onParticipantsClick = {
-                        if (!uiState.event!!.participantIds.isNullOrEmpty()) {
+                        if (!event.participantIds.isNullOrEmpty()) {
                             viewModel.showParticipants()
                         }
                     },
                     onDateClick = {
                         val dateTimeString = "${
-                            uiState.event!!.eventDate?.toString().orEmpty()
-                        } ${uiState.event!!.eventStartTime.toString()}"
+                            event.eventDate?.toString().orEmpty()
+                        } ${event.eventStartTime.toString()}"
                         clipboardManager.setText(AnnotatedString(dateTimeString))
                     },
                     onLocationLongClick = {
-                        val locationString = uiState.event!!.location.orEmpty()
+                        val locationString = event.location.orEmpty()
                         clipboardManager.setText(AnnotatedString(locationString))
                     },
                     onEditEvent = {
@@ -123,6 +129,14 @@ internal fun EventDetailScreenRoute(
                     isPublisher = uiState.isPublisher,
                     onParticipateClick = {
                         viewModel.onUserParticipate()
+                    },
+                    onMapClick = {
+                        val intent = buildDirectionsChooserIntent(
+                            latitude = event.geoLocation?.latitude,
+                            longitude = event.geoLocation?.longitude,
+                            address = event.location
+                        )
+                        context.startActivity(intent)
                     }
                 )
             }
@@ -202,6 +216,7 @@ private fun EventDetailScreenContent(
     onDeleteEvent: () -> Unit,
     onDateClick: () -> Unit,
     onLocationLongClick: () -> Unit,
+    onMapClick: () -> Unit,
 ) {
     val eventOrganizerName = if (isPublisher) "Dig" else publisher?.displayName.orEmpty()
     Column(
@@ -230,7 +245,7 @@ private fun EventDetailScreenContent(
             textColor = MaterialTheme.colorScheme.onSurface
         )
 
-        SectionItem(
+        SectionsParticipationItem(
             modifier = Modifier,
             leadingIcon = FmIcons.Person,
             trailingIcon = FmIcons.chevronRight,
@@ -257,7 +272,8 @@ private fun EventDetailScreenContent(
                 modifier = Modifier
                     .padding(horizontal = 20.dp),
                 backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                geoLocation = geoLocation
+                geoLocation = geoLocation,
+                onClick = onMapClick // Handle map click
             )
         }
 
@@ -346,6 +362,39 @@ private fun EventDetailScreenContent(
     }
 }
 
+private fun buildDirectionsChooserIntent(
+    latitude: Double?,
+    longitude: Double?,
+    address: String?
+): Intent {
+    // Prefer precise lat/lng if available
+    val primaryUri: Uri = if (latitude != null && longitude != null) {
+        // Google Maps direction URI with coordinates
+        Uri.parse("google.navigation:q=$latitude,$longitude")
+    } else {
+        // Fall back to address text
+        val encoded = Uri.encode(address ?: "")
+        Uri.parse("google.navigation:q=$encoded")
+    }
+
+    val mapIntent = Intent(Intent.ACTION_VIEW, primaryUri)
+    mapIntent.setPackage("com.google.android.apps.maps")
+
+    // Build a generic chooser to allow other providers if Google Maps isn't installed
+    val chooser = Intent.createChooser(mapIntent, "Åbn navigation med")
+
+    // Also add a generic geo: fallback without package (some map apps listen to this)
+    val geoQuery = if (latitude != null && longitude != null) {
+        "geo:0,0?q=$latitude,$longitude"
+    } else {
+        "geo:0,0?q=" + Uri.encode(address ?: "")
+    }
+    val geoIntent = Intent(Intent.ACTION_VIEW, Uri.parse(geoQuery))
+    chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(geoIntent))
+
+    return chooser
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun EventDetailScreenPreview() {
@@ -367,7 +416,8 @@ private fun EventDetailScreenPreview() {
         onParticipantsClick = {},
         onParticipateClick = {},
         isParticipating = true,
-        onDismiss = {}
+        onDismiss = {},
+        onMapClick = {}
     )
 }
 
@@ -392,7 +442,8 @@ private fun EventDetailScreenIsPublisherPreview() {
         onParticipantsClick = {},
         onParticipateClick = {},
         isParticipating = false,
-        onDismiss = {}
+        onDismiss = {},
+        onMapClick = {}
     )
 }
 
