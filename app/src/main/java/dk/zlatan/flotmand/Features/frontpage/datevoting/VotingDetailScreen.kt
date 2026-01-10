@@ -34,7 +34,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.frontpage.datevoting.ui.VotingListItem
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.DateVotingItem
-import dk.zlatan.flotmand.model.VotingStatus
 
 @Composable
 internal fun DateVotingRoute(
@@ -69,6 +68,13 @@ internal fun DateVotingRoute(
         }
     }
 
+    if (uiState.showCreateVotingDialog) {
+        CreateVotingDialog(
+            onDismiss = viewModel::dismissCreateVotingDialog,
+            onConfirm = viewModel::createNewVoting
+        )
+    }
+
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -77,7 +83,7 @@ internal fun DateVotingRoute(
             modifier = Modifier.padding(paddingValues),
             uiState = uiState,
             onVotingClick = onVotingClick,
-            onCreateVoting = viewModel::createNewVoting
+            onCreateVoting = viewModel::showCreateVotingDialog
         )
     }
 }

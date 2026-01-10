@@ -35,6 +35,7 @@ data class DateOption(
  *
  * @param votingId Unique identifier for this voting session
  * @param creatorId User ID of the person who created the voting
+ * @param name Name or title of the voting session
  * @param status Current status of the voting (OPEN, CLOSED)
  * @param dateOptions List of date options available for voting
  * @param createdAtString ISO-8601 timestamp of when voting was created
@@ -43,6 +44,7 @@ data class DateVotingItem(
     @DocumentId
     val votingId: String? = null,
     val creatorId: String? = null,
+    val name: String? = null,
     val status: VotingStatus = VotingStatus.OPEN,
     val dateOptions: List<DateOption> = emptyList(),
     val createdAtString: String? = null
@@ -106,6 +108,7 @@ data class DateVotingItem(
             return DateVotingItem(
                 votingId = "voting_mock",
                 creatorId = "creator_mock",
+                name = "Mock Voting",
                 status = VotingStatus.OPEN,
                 dateOptions = options,
                 createdAtString = LocalDate.now().toString()

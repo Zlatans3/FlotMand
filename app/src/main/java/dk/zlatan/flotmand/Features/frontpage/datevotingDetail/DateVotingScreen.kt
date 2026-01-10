@@ -84,7 +84,7 @@ internal fun DateVotingDetailRoute(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Vælg dato",
+                        text = uiState.dateVotingItem?.name.orEmpty(),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )

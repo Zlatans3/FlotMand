@@ -23,7 +23,8 @@ data class DateVotingListUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val snackbarMessage: String? = null,
-    val newVotingId: String? = null
+    val newVotingId: String? = null,
+    val showCreateVotingDialog: Boolean = false
 )
 
 @HiltViewModel
@@ -46,7 +47,8 @@ class DateVotingListViewModel @Inject constructor(
             isLoading = false,
             errorMessage = null,
             snackbarMessage = transient.snackbarMessage,
-            newVotingId = transient.newVotingId
+            newVotingId = transient.newVotingId,
+            showCreateVotingDialog = transient.showCreateVotingDialog
         )
     }
         .stateIn(
@@ -60,16 +62,26 @@ class DateVotingListViewModel @Inject constructor(
 
     private data class TransientState(
         val snackbarMessage: String? = null,
-        val newVotingId: String? = null
+        val newVotingId: String? = null,
+        val showCreateVotingDialog: Boolean = false
     )
 
-    fun createNewVoting() {
+    fun showCreateVotingDialog() {
+        _transientState.update { it.copy(showCreateVotingDialog = true) }
+    }
+
+    fun dismissCreateVotingDialog() {
+        _transientState.update { it.copy(showCreateVotingDialog = false) }
+    }
+
+    fun createNewVoting(votingName: String = "") {
         viewModelScope.launch {
             try {
-                _transientState.update { it.copy(snackbarMessage = null) }
+                _transientState.update { it.copy(snackbarMessage = null, showCreateVotingDialog = false) }
 
                 val newVoting = DateVotingItem(
                     creatorId = accountService.currentUserId,
+                    name = votingName.ifBlank { null },
                     status = VotingStatus.OPEN,
                     dateOptions = emptyList(),
                     createdAtString = LocalDateTime.now().toString()

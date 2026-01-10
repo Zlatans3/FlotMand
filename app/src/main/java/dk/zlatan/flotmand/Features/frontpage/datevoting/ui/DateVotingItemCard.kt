@@ -68,6 +68,15 @@ internal fun VotingListItem(
                         fontWeight = FontWeight.SemiBold
                     )
 
+                    if (!voting.name.isNullOrBlank()) {
+                        Text(
+                            text = voting.name,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
                     Text(
                         text = "${voting.dateOptions.size} datoer • ${voting.usersVoted} brugere stemt",
                         style = MaterialTheme.typography.bodyMedium,
