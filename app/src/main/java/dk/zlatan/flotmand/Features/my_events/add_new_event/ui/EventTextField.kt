@@ -25,8 +25,9 @@ fun EventTextField(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     trailingIcon: (@Composable (() -> Unit))? = null,
-    singleLine: Boolean = false,
-    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
+    singleLine: Boolean = true,
+    minLines: Int = 1,
+    maxLines: Int = Int.MAX_VALUE
 ) {
     Column(modifier = modifier) {
         Text(
@@ -50,8 +51,6 @@ fun EventTextField(
             placeholder = { Text(placeholder) },
             readOnly = onClick != null,
             enabled = onClick == null,
-            singleLine = singleLine,
-            maxLines = maxLines,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -62,7 +61,10 @@ fun EventTextField(
                 disabledTextColor = MaterialTheme.colorScheme.onSurface
             ),
             shape = RoundedCornerShape(12.dp),
-            trailingIcon = trailingIcon
+            trailingIcon = trailingIcon,
+            singleLine = singleLine,
+            minLines = minLines,
+            maxLines = maxLines
         )
     }
 }
@@ -77,7 +79,10 @@ fun EventTextField(
     onValueChange: (TextFieldValue) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    trailingIcon: (@Composable (() -> Unit))? = null
+    trailingIcon: (@Composable (() -> Unit))? = null,
+    singleLine: Boolean = true,
+    minLines: Int = 1,
+    maxLines: Int = Int.MAX_VALUE
 ) {
     Column(modifier = modifier) {
         Text(
@@ -98,7 +103,10 @@ fun EventTextField(
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
             shape = RoundedCornerShape(12.dp),
-            trailingIcon = trailingIcon
+            trailingIcon = trailingIcon,
+            singleLine = singleLine,
+            minLines = minLines,
+            maxLines = maxLines
         )
     }
 }

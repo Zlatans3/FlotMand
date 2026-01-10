@@ -21,6 +21,7 @@ data class Event(
     val eventName: String? = null,
     val location: String? = null,
     val geoLocation: GeoLocation? = null,
+    val description: String? = null,
     // Firestore-compatible fields (stored as Strings)
     var eventDateString: String? = null,
     var eventStartTimeString: String? = null
@@ -48,6 +49,7 @@ data class Event(
         eventName: String? = this.eventName,
         location: String? = this.location,
         geoLocation: GeoLocation? = this.geoLocation,
+        description: String? = this.description,
         eventDate: LocalDate? = this.eventDate,
         eventStartTime: LocalTime? = this.eventStartTime
     ): Event {
@@ -58,6 +60,7 @@ data class Event(
             eventName = eventName,
             location = location,
             geoLocation = geoLocation,
+            description = description,
             eventDateString = eventDate?.toString() ?: this.eventDateString,
             eventStartTimeString = eventStartTime?.toString() ?: this.eventStartTimeString
         )
@@ -100,6 +103,7 @@ data class Event(
             eventName: String? = null,
             location: String? = null,
             geoLocation: GeoLocation? = null,
+            description: String? = null,
             eventDate: LocalDate? = null,
             eventStartTime: LocalTime? = null
         ): Event {
@@ -110,6 +114,7 @@ data class Event(
                 eventName = eventName,
                 location = location,
                 geoLocation = geoLocation,
+                description = description,
                 eventDateString = eventDate?.toString(),
                 eventStartTimeString = eventStartTime?.toString()
             )
@@ -125,6 +130,7 @@ data class Event(
                     eventId = "event$name${index + 1}",
                     location = "Fortuna alle $index",
                     eventName = "Middag hos $name",
+                    description = "Hyggelig aften med venner",
                     eventDate = LocalDate.parse("2024-06-15"),
                     eventStartTime = LocalTime.parse("18:00")
                 )
@@ -138,6 +144,7 @@ data class Event(
                 eventName = "Middag hos Lasse",
                 publisherId = ids.first(),
                 location = "Fortuna alle 1, 2000 Frederiksberg",
+                description = "Medbring godt humør",
                 eventDate = LocalDate.parse("2027-12-01"),
                 eventStartTime = LocalTime.parse("19:00"),
                 participantIds = ids,
@@ -146,6 +153,7 @@ data class Event(
                 eventId = "event2",
                 eventName = "Frokost med Gustav",
                 location = "Nørrebrogade 2, 2200 København N",
+                description = "Let frokost",
                 eventDate = LocalDate.parse("2024-12-05"),
                 eventStartTime = LocalTime.parse("12:30"),
                 participantIds = ids,

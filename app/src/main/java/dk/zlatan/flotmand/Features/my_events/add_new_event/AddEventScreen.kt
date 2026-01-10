@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Today
@@ -160,7 +161,8 @@ internal fun AddEventScreenRoute(
             onEventDateChange = viewModel::onEventDateChange,
             onEventTimeChange = viewModel::onEventTimeChange,
             onAddressSelected = viewModel::onAddressSelected,
-            onClearPredictions = viewModel::clearAddressPredictions
+            onClearPredictions = viewModel::clearAddressPredictions,
+            onDescriptionChange = viewModel::onDescriptionChange
         )
     }
 }
@@ -173,6 +175,7 @@ private fun AddEventScreenContent(
     onEventNameChange: (String) -> Unit,
     onLocationChange: (TextFieldValue) -> Unit,
     onEventDateChange: (LocalDate) -> Unit,
+    onDescriptionChange: (String) -> Unit,
     onEventTimeChange: (LocalTime) -> Unit,
     onAddressSelected: (AddressPrediction) -> Unit,
     onClearPredictions: () -> Unit
@@ -202,6 +205,21 @@ private fun AddEventScreenContent(
             value = uiState.event.eventName.orEmpty(),
             onValueChange = onEventNameChange,
             placeholder = "Fx. Middag hos Gustav",
+            singleLine = true,
+            maxLines = 1
+        )
+
+        VSpacer(16.dp)
+
+        // Description (optional) directly under name, larger multi-line
+        EventTextField(
+            label = "Beskrivelse (valgfrit)",
+            value = uiState.event.description.orEmpty(),
+            onValueChange = { desc -> onDescriptionChange(desc) },
+            placeholder = "Tilføj detaljer om eventet",
+            singleLine = false,
+            minLines = 3,
+            maxLines = 6
         )
 
         VSpacer(20.dp)
@@ -231,6 +249,7 @@ private fun AddEventScreenContent(
             )
         }
 
+
         VSpacer(20.dp)
 
         // Date & Time on the same line
@@ -240,7 +259,6 @@ private fun AddEventScreenContent(
                 value = uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
                 onValueChange = { }, // Read-only
                 placeholder = "Vælg dato",
-
                 modifier = Modifier.weight(1f),
                 onClick = {
                     focusManager.clearFocus()
@@ -383,7 +401,8 @@ private fun AddEventScreenPreview() {
             onEventDateChange = {},
             onEventTimeChange = {},
             onAddressSelected = {},
-            onClearPredictions = {}
+            onClearPredictions = {},
+            onDescriptionChange = {}
         )
     }
 }

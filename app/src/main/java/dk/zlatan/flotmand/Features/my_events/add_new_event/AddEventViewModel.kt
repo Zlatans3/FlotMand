@@ -148,6 +148,14 @@ class AddEventViewModel @AssistedInject constructor(
         _errorMessage.value = null
     }
 
+    fun onDescriptionChange(description: String) {
+        _event.value = _event.value.copy(eventName = _event.value.eventName, location = _event.value.location).copyWithDates(
+            eventDate = _event.value.eventDate,
+            eventStartTime = _event.value.eventStartTime
+        ).copy(description = description)
+        _errorMessage.value = null
+    }
+
     /**
      * Search for address predictions with debounce to avoid excessive API calls.
      */
