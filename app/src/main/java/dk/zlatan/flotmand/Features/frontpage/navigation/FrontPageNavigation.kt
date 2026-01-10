@@ -38,6 +38,13 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                         onDismiss = { viewModel.pop() }
                     )
                 }
+                FrontPageDestination.DateVoting -> NavEntry(key) {
+
+                }
+
+                FrontPageDestination.HostRotation -> NavEntry(key) {
+
+                }
             }
         },
         transitionSpec = {
