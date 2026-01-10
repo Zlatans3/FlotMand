@@ -21,6 +21,9 @@ class AppNavigationViewModel @Inject constructor(
     private val _navigationStack = MutableStateFlow<List<AppDestination>>(listOf(AppDestination.Authentication))
     val navigationStack: StateFlow<List<AppDestination>> = _navigationStack.asStateFlow()
 
+    private val _isCheckingAuth = MutableStateFlow(true)
+    val isCheckingAuth: StateFlow<Boolean> = _isCheckingAuth.asStateFlow()
+
     init {
         Log.d(TAG, "ViewModel initialized with stack: ${_navigationStack.value}")
         // Initialize navigation based on current auth state
@@ -29,6 +32,9 @@ class AppNavigationViewModel @Inject constructor(
                 // Check if user is valid: not null, has an ID, and is not anonymous
                 val isValidUser = user != null && user.id.isNotEmpty() && !user.isAnonymous
                 Log.d(TAG, "Auth state changed - User: ${user?.email ?: "null"}, ID: ${user?.id ?: "null"}, isAnonymous: ${user?.isAnonymous}, isValidUser: $isValidUser")
+
+                // Mark auth check as complete after first emission
+                _isCheckingAuth.value = false
 
                 if (isValidUser) {
                     // User is logged in, navigate to main app

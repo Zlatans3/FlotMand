@@ -38,6 +38,13 @@ fun AppNavigation(
     viewModel: AppNavigationViewModel = hiltViewModel()
 ) {
     val navigationStack: List<AppDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
+    val isCheckingAuth: Boolean by viewModel.isCheckingAuth.collectAsStateWithLifecycle()
+
+    // Keep showing splash screen while checking authentication
+    // by not rendering anything until the check is complete
+    if (isCheckingAuth) {
+        return
+    }
 
     NavDisplay(
         backStack = navigationStack,

@@ -250,7 +250,7 @@ internal fun FrontpageContent(
             item {
                 VSpacer(20.dp)
                 SectionHeader(
-                    title = "Upcoming events",
+                    title = "Kommende Events",
                     actionText = if (showAllEvents) null else "Se alle",
                     onActionClick = {
                         showAllEvents = true
