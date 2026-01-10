@@ -31,9 +31,9 @@ fun ProfileImage(
         Modifier
     }
     val baseModifier = modifier
+        .clip(CircleShape)
         .then(optionalClickableModifier)
         .size(profileSize)
-        .clip(CircleShape)
 
     if (!profilePic.isNullOrBlank()) {
         AsyncImage(

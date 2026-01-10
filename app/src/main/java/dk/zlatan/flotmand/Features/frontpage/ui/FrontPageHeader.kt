@@ -109,15 +109,13 @@ fun FmAnimatableTopBar(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     shape = CircleShape
                 )
-                .clickable(
-                    onClick = onClick
-                ),
+                .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.Notifications,
                 contentDescription = "Notifications",
-                modifier = Modifier.size(24.dp).clickable(onClick = onClick),
+                modifier = Modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.surfaceVariant,
             )
         }
