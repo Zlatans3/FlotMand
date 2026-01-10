@@ -78,10 +78,6 @@ fun ClosestEventCard(
     )
 
     val geoLocation = event.geoLocation ?: GeoLocation(0.0, 0.0)
-    val latLng = LatLng(geoLocation.latitude, geoLocation.longitude)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(latLng, 13f)
-    }
 
     // Format date
     val monthFormatter = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH)
@@ -329,30 +325,6 @@ private fun OverlappingAvatars(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun NewEventCard(
-    modifier: Modifier = Modifier,
-    userProfilePic: String? = null,
-    userName: String,
-    eventName: String,
-    eventDate: String,
-    eventTime: String,
-    onClick: () -> Unit,
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.inverseOnSurface
-        ), // find nogle farver der passer bedre
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-
     }
 }
 
