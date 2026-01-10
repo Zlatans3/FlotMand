@@ -8,19 +8,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,12 +44,22 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun DateVotingRoute(
+fun DateVotingRoute(
     modifier: Modifier = Modifier,
+    eventId: String? = null,
     onDismiss: () -> Unit = {},
     viewModel: DateVotingViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Show snackbar when there's a message
+    LaunchedEffect(uiState.snackbarMessage) {
+        uiState.snackbarMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.dismissSnackbar()
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -73,6 +86,9 @@ internal fun DateVotingRoute(
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { paddingValues ->
         var showDatePicker by remember { mutableStateOf(false) }
@@ -82,7 +98,9 @@ internal fun DateVotingRoute(
             dateVoting = uiState.dateVoting,
             currentUserId = uiState.currentUserId,
             onVoteForDate = viewModel::onVoteForDate,
-            onAddDate = { showDatePicker = true }
+            onAddDate = { showDatePicker = true },
+            eventId = eventId,
+            errorMessage = uiState.errorMessage
         )
 
         // Date Picker Dialog
@@ -125,7 +143,9 @@ private fun DateVotingScreen(
     dateVoting: DateVoting? = null,
     currentUserId: String = "",
     onVoteForDate: (LocalDate) -> Unit = {},
-    onAddDate: () -> Unit = {}
+    onAddDate: () -> Unit = {},
+    eventId: String? = null,
+    errorMessage: String? = null
 ) {
     Column(
         modifier = modifier
@@ -143,6 +163,15 @@ private fun DateVotingScreen(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
+
+        // Show error message if present
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
 
         // Display date cards
         if (dateVoting != null) {
@@ -220,7 +249,6 @@ private fun DateVotingScreenPreview() {
 
     val mockDateVoting = DateVoting(
         votingId = "voting1",
-        eventId = "event1",
         dateOptions = mockDateOptions
     )
 

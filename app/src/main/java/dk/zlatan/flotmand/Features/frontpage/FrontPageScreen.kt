@@ -2,6 +2,7 @@ package dk.zlatan.flotmand.Features.frontpage
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,8 +13,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +54,7 @@ import dk.zlatan.flotmand.model.User
 internal fun FrontPageRoute(
     modifier: Modifier = Modifier,
     onDinnerEventClick: (String) -> Unit,
+    onDateVotingClick: () -> Unit,
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -129,6 +138,7 @@ internal fun FrontPageRoute(
             FrontpageContent(
                 modifier = modifier,
                 onClickEvent = onDinnerEventClick,
+                onDateVotingClick = onDateVotingClick,
                 eventList = uiState.eventList,
                 publishers = uiState.publishers,
                 user = uiState.currentUser,
@@ -147,6 +157,7 @@ internal fun FrontpageContent(
     eventList: List<Event> = emptyList(),
     publishers: Map<String, User> = emptyMap(),
     onClickEvent: (String) -> Unit,
+    onDateVotingClick: () -> Unit = {},
     onParticipateClick: (String) -> Unit,
     user: User,
     nextEvent: Event?,
@@ -202,6 +213,14 @@ internal fun FrontpageContent(
                     scrollProgress = scrollProgress
                 )
                 VSpacer(8.dp)
+            }
+
+            // Date Voting Card
+            item {
+                DateVotingCard(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    onClick = onDateVotingClick
+                )
             }
 
             // Next Event section
@@ -293,6 +312,60 @@ private fun SectionHeader(
     }
 }
 
+@Composable
+private fun DateVotingCard(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.CalendarToday,
+                    contentDescription = "Calendar",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(8.dp)
+                )
+                Column {
+                    Text(
+                        text = "Stem på dato",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = "Vælg den bedste dato for næste event",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                    )
+                }
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = "Go to voting",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true, showSystemUi = true)
 @PreviewLightDark()
 @Composable
@@ -316,6 +389,7 @@ private fun FrontpageContentPreview() {
             eventList = events,
             publishers = mockPublishers,
             onClickEvent = {},
+            onDateVotingClick = {},
             user = User.mockUserWithCounter(1).first(),
             nextEvent = events.firstOrNull(),
             nextEventPublisher = mockPublishers[events.firstOrNull()?.publisherId],

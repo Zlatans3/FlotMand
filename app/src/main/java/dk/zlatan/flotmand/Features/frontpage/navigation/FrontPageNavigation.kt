@@ -6,6 +6,7 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -29,7 +30,10 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                     FrontPageRoute(
                         onDinnerEventClick = { eventId ->
                             viewModel.navigate(FrontPageDestination.EventDetail(eventId))
-                        }
+                        },
+                        onDateVotingClick = {
+                            viewModel.navigate(FrontPageDestination.DateVoting())
+                        },
                     )
                 }
 
@@ -39,8 +43,14 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                         onDismiss = { viewModel.pop() }
                     )
                 }
-                FrontPageDestination.DateVoting -> NavEntry(key) {
+
+                FrontPageDestination.VotingDetail -> NavEntry(key) {
+
+                }
+                is FrontPageDestination.DateVoting -> NavEntry(key) {
                     DateVotingRoute(
+                        modifier = Modifier,
+                        eventId = key.eventId,
                         onDismiss = { viewModel.pop() }
                     )
                 }

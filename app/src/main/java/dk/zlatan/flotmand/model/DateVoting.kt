@@ -34,20 +34,14 @@ data class DateOption(
  * Users can propose and vote on dates for when an event should take place.
  *
  * @param votingId Unique identifier for this voting session
- * @param eventId ID of the event this voting is for
  * @param status Current status of the voting (OPEN, CLOSED)
  * @param dateOptions List of date options available for voting
- * @param createdAt ISO-8601 timestamp of when voting was created
- * @param closedAt ISO-8601 timestamp of when voting was closed (null if still open)
  */
 data class DateVoting(
     @DocumentId
     val votingId: String? = null,
-    val eventId: String? = null,
     val status: VotingStatus = VotingStatus.OPEN,
     val dateOptions: List<DateOption> = emptyList(),
-    val createdAtString: String? = null,
-    val closedAtString: String? = null
 ) {
     @get:Exclude
     val winningDate: DateOption?

@@ -63,14 +63,10 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
         }
 
     override suspend fun createDateVoting(dateVoting: DateVoting): String {
-        val votingWithTimestamp = dateVoting.copy(
-            createdAtString = LocalDateTime.now().toString()
-        )
 
         val docRef = Firebase.firestore
             .collection(DATE_VOTING_COLLECTION)
-            .add(votingWithTimestamp)
-            .await()
+
 
         Log.d(TAG, "Created date voting: ${docRef.id}")
         return docRef.id
@@ -197,7 +193,6 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
 
             val closedVoting = voting.copy(
                 status = VotingStatus.CLOSED,
-                closedAtString = LocalDateTime.now().toString()
             )
             updateDateVoting(closedVoting)
 
