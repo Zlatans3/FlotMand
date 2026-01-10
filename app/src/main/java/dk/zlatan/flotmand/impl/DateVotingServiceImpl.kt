@@ -61,7 +61,11 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
                         }
                     } ?: emptyList()
 
-                    Log.d(TAG, "Fetched ${votings.size} date votings")
+                    Log.d(TAG, "Fetched ${votings.size} date votings from Firestore")
+                    votings.forEachIndexed { index, voting ->
+                        Log.d(TAG, "  [$index] votingId=${voting.votingId}, creatorId=${voting.creatorId}, dateOptions=${voting.dateOptions.size}, status=${voting.status}")
+                    }
+
                     trySend(votings)
                 }
 
@@ -69,13 +73,20 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
         }
 
     override suspend fun createDateVoting(dateVoting: DateVoting): String {
+        try {
+            Log.d(TAG, "Creating new date voting with creator: ${dateVoting.creatorId}")
 
-        val docRef = Firebase.firestore
-            .collection(DATE_VOTING_COLLECTION)
+            val docRef = Firebase.firestore
+                .collection(DATE_VOTING_COLLECTION)
+                .add(dateVoting)
+                .await()
 
-
-        Log.d(TAG, "Created date voting: ${docRef.id}")
-        return docRef.id
+            Log.d(TAG, "Successfully created date voting with ID: ${docRef.id}")
+            return docRef.id
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating date voting: ${e.message}", e)
+            throw e
+        }
     }
 
     override suspend fun getDateVoting(votingId: String): DateVoting? {

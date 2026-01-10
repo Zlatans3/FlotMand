@@ -107,7 +107,17 @@ internal fun DateVotingDetailRoute(
             onAddDate = { showDatePicker = true },
             errorMessage = uiState.errorMessage,
             isCreator = uiState.dateVoting?.creatorId == uiState.currentUserId,
-            onCreateEvent = { /* TODO: Navigate to create event with winning date */ },
+            onCreateEvent = {
+                // Get the winning date from the voting
+                val winningDate = uiState.dateVoting?.winningDate
+                if (winningDate?.localDate != null) {
+                    // TODO: Navigate to create event screen with the winning date pre-filled
+                    // For now, we'll just delete the voting
+                    viewModel.deleteVoting()
+                } else {
+                    // Show error if no winning date
+                }
+            },
             onDeleteVoting = viewModel::deleteVoting
         )
 
