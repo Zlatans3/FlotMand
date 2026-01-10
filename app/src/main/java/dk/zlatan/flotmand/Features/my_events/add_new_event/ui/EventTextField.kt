@@ -23,7 +23,10 @@ fun EventTextField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    trailingIcon: (@Composable (() -> Unit))? = null,
+    singleLine: Boolean = false,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
 ) {
     Column(modifier = modifier) {
         Text(
@@ -47,6 +50,8 @@ fun EventTextField(
             placeholder = { Text(placeholder) },
             readOnly = onClick != null,
             enabled = onClick == null,
+            singleLine = singleLine,
+            maxLines = maxLines,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -56,7 +61,8 @@ fun EventTextField(
                 disabledContainerColor = MaterialTheme.colorScheme.surface,
                 disabledTextColor = MaterialTheme.colorScheme.onSurface
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            trailingIcon = trailingIcon
         )
     }
 }
@@ -70,7 +76,8 @@ fun EventTextField(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     placeholder: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    trailingIcon: (@Composable (() -> Unit))? = null
 ) {
     Column(modifier = modifier) {
         Text(
@@ -90,7 +97,8 @@ fun EventTextField(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            trailingIcon = trailingIcon
         )
     }
 }
@@ -102,9 +110,9 @@ private fun EventTextFieldPreview() {
         EventTextField(
             label = "Event navn",
             value = "",
+            maxLines = 1,
             onValueChange = { },
             placeholder = "Fx. Middag hos Gustav",
-            modifier = Modifier
         )
     }
 }
