@@ -12,6 +12,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
+import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
 
 @Suppress("CyclomaticComplexMethod")
@@ -39,7 +40,9 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                     )
                 }
                 FrontPageDestination.DateVoting -> NavEntry(key) {
-
+                    DateVotingRoute(
+                        onDismiss = { viewModel.pop() }
+                    )
                 }
 
                 FrontPageDestination.HostRotation -> NavEntry(key) {
