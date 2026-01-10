@@ -1,4 +1,4 @@
-package dk.zlatan.flotmand.Features.frontpage.datevoting.ui
+package dk.zlatan.flotmand.Features.frontpage.datevotingDetail.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

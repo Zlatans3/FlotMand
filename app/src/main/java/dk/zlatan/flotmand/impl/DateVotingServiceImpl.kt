@@ -19,23 +19,29 @@ import java.time.LocalDateTime
 
 class DateVotingServiceImpl @Inject constructor() : DateVotingService {
 
-    override fun observeDateVoting(eventId: String): Flow<DateVoting?> = callbackFlow {
-        val listenerRegistration = Firebase.firestore
+    override fun observeVotingByIdFlow(votingId: String): Flow<DateVoting?> = callbackFlow {
+        val docRef = Firebase.firestore
             .collection(DATE_VOTING_COLLECTION)
-            .whereEqualTo(EVENT_ID_FIELD, eventId)
-            .limit(1)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Log.e(TAG, "Error observing date voting for event $eventId: ${error.message}", error)
-                    trySend(null)
-                    return@addSnapshotListener
-                }
+            .document(votingId)
 
-                val voting = snapshot?.documents?.firstOrNull()?.let { safeParseDateVoting(it) }
-                trySend(voting)
+        val registration = docRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e(TAG, "Error observing voting $votingId: ${error.message}", error)
+                trySend(null)
+                return@addSnapshotListener
             }
 
-        awaitClose { listenerRegistration.remove() }
+            if (snapshot == null || !snapshot.exists()) {
+                Log.w(TAG, "Voting $votingId no longer exists")
+                trySend(null)
+                return@addSnapshotListener
+            }
+
+            val voting = safeParseDateVoting(snapshot)
+            trySend(voting)
+        }
+
+        awaitClose { registration.remove() }
     }
 
     override val allDateVotings: Flow<List<DateVoting>>
@@ -171,21 +177,6 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
         }
     }
 
-    override suspend fun removeDateOption(votingId: String, date: LocalDate) {
-        try {
-            val voting = getDateVoting(votingId) ?: return
-
-            val updatedVoting = voting.copy(
-                dateOptions = voting.dateOptions.filterNot { it.localDate == date }
-            )
-            updateDateVoting(updatedVoting)
-
-            Log.d(TAG, "Removed date option $date from voting $votingId")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error removing date option: ${e.message}", e)
-            throw e
-        }
-    }
 
     override suspend fun closeVoting(votingId: String) {
         try {

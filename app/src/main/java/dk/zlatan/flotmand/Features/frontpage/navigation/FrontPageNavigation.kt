@@ -14,6 +14,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
 import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
+import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.DateVotingDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
 
 @Suppress("CyclomaticComplexMethod")
@@ -32,7 +33,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                             viewModel.navigate(FrontPageDestination.EventDetail(eventId))
                         },
                         onDateVotingClick = {
-                            viewModel.navigate(FrontPageDestination.DateVoting())
+                            viewModel.navigate(FrontPageDestination.DateVoting)
                         },
                     )
                 }
@@ -44,14 +45,21 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                     )
                 }
 
-                FrontPageDestination.VotingDetail -> NavEntry(key) {
+                is FrontPageDestination.VotingDetail -> NavEntry(key) {
 
+                    DateVotingDetailRoute(
+                        modifier = Modifier,
+                        onDismiss = { viewModel.pop() },
+                        votingId = key.votingId,
+                    )
                 }
-                is FrontPageDestination.DateVoting -> NavEntry(key) {
+
+                FrontPageDestination.DateVoting -> NavEntry(key) {
                     DateVotingRoute(
                         modifier = Modifier,
-                        eventId = key.eventId,
-                        onDismiss = { viewModel.pop() }
+                        onVotingClick = {
+                            viewModel.navigate(FrontPageDestination.VotingDetail(it))
+                        }
                     )
                 }
 

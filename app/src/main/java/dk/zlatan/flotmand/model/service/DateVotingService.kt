@@ -6,22 +6,22 @@ import java.time.LocalDate
 
 interface DateVotingService {
     /**
-     * Observe a date voting session for a specific event
+     * Observe a date voting session by its ID
      */
-    fun observeDateVoting(eventId: String): Flow<DateVoting?>
+    fun observeVotingByIdFlow(votingId: String): Flow<DateVoting?>
 
     /**
-     * Get all date voting sessions
+     * Get all active date voting sessions
      */
     val allDateVotings: Flow<List<DateVoting>>
 
     /**
-     * Create a new date voting session for an event
+     * Create a new standalone date voting session
      */
     suspend fun createDateVoting(dateVoting: DateVoting): String
 
     /**
-     * Get a date voting session by ID
+     * Get a specific date voting session by ID
      */
     suspend fun getDateVoting(votingId: String): DateVoting?
 
@@ -37,7 +37,6 @@ interface DateVotingService {
 
     /**
      * Add a vote for a specific date
-     * Removes any existing vote by this user for other dates in this voting session
      */
     suspend fun addVote(votingId: String, date: LocalDate, userId: String)
 
@@ -52,12 +51,7 @@ interface DateVotingService {
     suspend fun addDateOption(votingId: String, date: LocalDate)
 
     /**
-     * Remove a date option from a voting session
-     */
-    suspend fun removeDateOption(votingId: String, date: LocalDate)
-
-    /**
-     * Close the voting and set the winning date
+     * Close the voting session
      */
     suspend fun closeVoting(votingId: String)
 }
