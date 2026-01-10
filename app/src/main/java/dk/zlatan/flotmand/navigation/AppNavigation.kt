@@ -26,8 +26,11 @@ import dk.zlatan.flotmand.Features.authentication.di.AuthenticationNavigation
 import dk.zlatan.flotmand.Features.bottomnavigation.FmBottomNavigationBar
 import dk.zlatan.flotmand.Features.bottomnavigation.TopLevelDestination
 import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigation
+import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigationViewModel
 import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigation
+import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigationViewModel
 import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigation
+import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigationViewModel
 
 @Composable
 fun AppNavigation(
@@ -35,6 +38,13 @@ fun AppNavigation(
     viewModel: AppNavigationViewModel = hiltViewModel()
 ) {
     val navigationStack: List<AppDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
+    val isCheckingAuth: Boolean by viewModel.isCheckingAuth.collectAsStateWithLifecycle()
+
+    // Keep showing splash screen while checking authentication
+    // by not rendering anything until the check is complete
+    if (isCheckingAuth) {
+        return
+    }
 
     NavDisplay(
         backStack = navigationStack,
@@ -76,6 +86,11 @@ private fun MainAppContent(
         mutableStateOf(TopLevelDestination.HOME)
     }
 
+    // Get navigation ViewModels to access resetToRoot
+    val frontPageViewModel: FrontPageNavigationViewModel = hiltViewModel()
+    val myEventsViewModel: MyEventsNavigationViewModel = hiltViewModel()
+    val profileViewModel: ProfileNavigationViewModel = hiltViewModel()
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         bottomBar = {
@@ -83,7 +98,16 @@ private fun MainAppContent(
                 currentTab = currentTab,
                 selectedTabIconColor = MaterialTheme.colorScheme.primary,
                 onBottomNavigationClicked = { destination ->
-                    currentTab = destination
+                    // If clicking the same tab, reset to root
+                    if (currentTab == destination) {
+                        when (destination) {
+                            TopLevelDestination.HOME -> frontPageViewModel.resetToRoot()
+                            TopLevelDestination.MY_EVENTS -> myEventsViewModel.resetToRoot()
+                            TopLevelDestination.PROFILE -> profileViewModel.resetToRoot()
+                        }
+                    } else {
+                        currentTab = destination
+                    }
                 }
             )
         }
@@ -95,13 +119,13 @@ private fun MainAppContent(
         ) {
             when (currentTab) {
                 TopLevelDestination.HOME -> {
-                    FrontPageNavigation()
+                    FrontPageNavigation(viewModel = frontPageViewModel)
                 }
                 TopLevelDestination.MY_EVENTS -> {
-                    MyEventsNavigation()
+                    MyEventsNavigation(viewModel = myEventsViewModel)
                 }
                 TopLevelDestination.PROFILE -> {
-                    ProfileNavigation()
+                    ProfileNavigation(viewModel = profileViewModel)
                 }
             }
         }

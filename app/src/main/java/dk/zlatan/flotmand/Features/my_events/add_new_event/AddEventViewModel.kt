@@ -4,11 +4,16 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextRange
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.model.AddressPrediction
+import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.GeoLocation
 import dk.zlatan.flotmand.model.service.AccountService
+import dk.zlatan.flotmand.model.service.DateVotingService
 import dk.zlatan.flotmand.model.service.DinnerEventService
 import dk.zlatan.flotmand.model.service.PlacesService
 import dk.zlatan.flotmand.util.combine
@@ -21,7 +26,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
-import javax.inject.Inject
 
 data class AddEventUiState(
     val event: Event = Event(),
@@ -32,15 +36,23 @@ data class AddEventUiState(
     val addressPredictions: List<AddressPrediction> = emptyList(),
     val isLoadingPredictions: Boolean = false,
     val selectedGeoLocation: GeoLocation? = null,
-    val locationTextFieldValue: TextFieldValue = TextFieldValue()
+    val locationTextFieldValue: TextFieldValue = TextFieldValue(),
+    val votingItem: DateVotingItem? = null
 )
 
-@HiltViewModel
-class AddEventViewModel @Inject constructor(
+@HiltViewModel(assistedFactory = AddEventViewModel.Factory::class)
+class AddEventViewModel @AssistedInject constructor(
     private val dinnerEventService: DinnerEventService,
     private val accountService: AccountService,
-    private val placesService: PlacesService
+    private val placesService: PlacesService,
+    private val dateVotingService: DateVotingService,
+    @Assisted private val votingId: String?
 ) : ViewModel() {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(votingId: String?): AddEventViewModel
+    }
 
     private val _event = MutableStateFlow(Event())
     private val _isLoading = MutableStateFlow(false)
@@ -51,8 +63,33 @@ class AddEventViewModel @Inject constructor(
     private val _isLoadingPredictions = MutableStateFlow(false)
     private val _selectedGeoLocation = MutableStateFlow<GeoLocation?>(null)
     private val _locationTextFieldValue = MutableStateFlow(TextFieldValue())
+    private val _votingItem = MutableStateFlow<DateVotingItem?>(null)
 
     private var searchJob: Job? = null
+
+    init {
+        // Load voting item if votingId is provided
+        votingId?.let { id ->
+            viewModelScope.launch {
+                try {
+                    val voting = dateVotingService.getDateVoting(id)
+                    _votingItem.value = voting
+
+                    // Pre-fill event name with voting name if available
+                    voting?.name?.let { name ->
+                        _event.value = _event.value.copy(eventName = name)
+                    }
+
+                    // Pre-fill event date with winning date if available
+                    voting?.winningDate?.localDate?.let { date ->
+                        _event.value = _event.value.copyWithDates(eventDate = date)
+                    }
+                } catch (_: Exception) {
+                    // Silently fail if voting not found
+                }
+            }
+        }
+    }
 
     val uiState: StateFlow<AddEventUiState> = combine(
         _event,
@@ -63,11 +100,12 @@ class AddEventViewModel @Inject constructor(
         _addressPredictions,
         _isLoadingPredictions,
         _selectedGeoLocation,
-        _locationTextFieldValue
+        _locationTextFieldValue,
+        _votingItem
     ) { event: Event, isLoading: Boolean, errorMessage: String?, isEventCreated: Boolean,
         hasHandledCreation: Boolean, addressPredictions: List<AddressPrediction>,
         isLoadingPredictions: Boolean, selectedGeoLocation: GeoLocation?,
-        locationTextFieldValue: TextFieldValue ->
+        locationTextFieldValue: TextFieldValue, votingItem: DateVotingItem? ->
         AddEventUiState(
             event = event,
             isLoading = isLoading,
@@ -77,7 +115,8 @@ class AddEventViewModel @Inject constructor(
             addressPredictions = addressPredictions,
             isLoadingPredictions = isLoadingPredictions,
             selectedGeoLocation = selectedGeoLocation,
-            locationTextFieldValue = locationTextFieldValue
+            locationTextFieldValue = locationTextFieldValue,
+            votingItem = votingItem
         )
     }.stateIn(
         scope = viewModelScope,
@@ -106,6 +145,14 @@ class AddEventViewModel @Inject constructor(
 
     fun onEventTimeChange(time: LocalTime) {
         _event.value = _event.value.copyWithDates(eventStartTime = time)
+        _errorMessage.value = null
+    }
+
+    fun onDescriptionChange(description: String) {
+        _event.value = _event.value.copy(eventName = _event.value.eventName, location = _event.value.location).copyWithDates(
+            eventDate = _event.value.eventDate,
+            eventStartTime = _event.value.eventStartTime
+        ).copy(description = description)
         _errorMessage.value = null
     }
 
@@ -242,6 +289,16 @@ class AddEventViewModel @Inject constructor(
 
                 dinnerEventService.createDinnerEvent(newEvent)
 
+                // Delete the voting if it was created from a voting
+                votingId?.let { id ->
+                    try {
+                        dateVotingService.deleteDateVoting(id)
+                    } catch (_: Exception) {
+                        // Log but don't fail the event creation if voting deletion fails
+                        // The event was successfully created, which is the primary goal
+                    }
+                }
+
                 _isLoading.value = false
                 _isEventCreated.value = true
                 _hasHandledCreation.value = false // allow UI to handle this once
@@ -270,5 +327,6 @@ class AddEventViewModel @Inject constructor(
         _isLoadingPredictions.value = false
         _selectedGeoLocation.value = null
         _locationTextFieldValue.value = TextFieldValue()
+        _votingItem.value = null
     }
 }

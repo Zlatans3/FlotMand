@@ -22,4 +22,8 @@ class FrontPageNavigationCoordinatorImpl @Inject constructor() : FrontPageNaviga
             _navigationStack.value = _navigationStack.value.dropLast(1)
         }
     }
+
+    override fun resetToRoot() {
+        _navigationStack.value = listOf(FrontPageDestination.FrontPageScreen)
+    }
 }

@@ -113,7 +113,7 @@ internal fun MyEventScreenRoute(
                 ) {
                     Icon(FmIcons.Add, contentDescription = "Add Event")
                     Spacer(Modifier.width(8.dp))
-                    Text("Tilføj event", style = MaterialTheme.typography.labelLarge)
+                    Text("Opret event", style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
@@ -155,7 +155,7 @@ internal fun MyEventScreen(
         ) {
             Icon(FmIcons.Add, contentDescription = "Add Event")
             Spacer(Modifier.width(8.dp))
-            Text("Tilføj event", style = MaterialTheme.typography.labelLarge)
+            Text("Opret event", style = MaterialTheme.typography.labelLarge)
         }
     }
 }

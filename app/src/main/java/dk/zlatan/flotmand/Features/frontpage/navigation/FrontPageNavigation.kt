@@ -6,13 +6,17 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
+import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
+import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.DateVotingDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
+import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreenRoute
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -28,7 +32,10 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                     FrontPageRoute(
                         onDinnerEventClick = { eventId ->
                             viewModel.navigate(FrontPageDestination.EventDetail(eventId))
-                        }
+                        },
+                        onDateVotingClick = {
+                            viewModel.navigate(FrontPageDestination.DateVoting)
+                        },
                     )
                 }
 
@@ -37,6 +44,38 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                         eventId = key.eventId,
                         onDismiss = { viewModel.pop() }
                     )
+                }
+
+                FrontPageDestination.DateVoting -> NavEntry(key) {
+                    DateVotingRoute(
+                        modifier = Modifier,
+                        onVotingClick = {
+                            viewModel.navigate(FrontPageDestination.VotingDetail(it))
+                        }
+                    )
+                }
+
+                is FrontPageDestination.VotingDetail -> NavEntry(key) {
+
+                    DateVotingDetailRoute(
+                        modifier = Modifier,
+                        onDismiss = { viewModel.pop() },
+                        votingId = key.votingId,
+                        onCreateEvent = { votingId ->
+                            viewModel.navigate(FrontPageDestination.AddEventFromVoting(votingId))
+                        }
+                    )
+                }
+
+                is FrontPageDestination.AddEventFromVoting -> NavEntry(key) {
+                    AddEventScreenRoute(
+                        votingId = key.votingId,
+                        onDismiss = { viewModel.pop() }
+                    )
+                }
+
+                FrontPageDestination.HostRotation -> NavEntry(key) {
+
                 }
             }
         },

@@ -5,12 +5,12 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dk.zlatan.flotmand.impl.AccountServiceImpl
+import dk.zlatan.flotmand.impl.DateVotingServiceImpl
 import dk.zlatan.flotmand.impl.DinnerEventServiceImpl
-import dk.zlatan.flotmand.impl.GeocodingServiceImpl
 import dk.zlatan.flotmand.impl.PlacesServiceImpl
 import dk.zlatan.flotmand.model.service.AccountService
+import dk.zlatan.flotmand.model.service.DateVotingService
 import dk.zlatan.flotmand.model.service.DinnerEventService
-import dk.zlatan.flotmand.model.service.GeocodingService
 import dk.zlatan.flotmand.model.service.PlacesService
 
 @Module
@@ -23,8 +23,8 @@ abstract class ServiceModule {
     abstract fun provideDinnerEvent(impl: DinnerEventServiceImpl): DinnerEventService
 
     @Binds
-    abstract fun provideGeocodingService(impl: GeocodingServiceImpl): GeocodingService
+    abstract fun providePlacesService(impl: PlacesServiceImpl): PlacesService
 
     @Binds
-    abstract fun providePlacesService(impl: PlacesServiceImpl): PlacesService
+    abstract fun provideDateVotingService(impl: DateVotingServiceImpl): DateVotingService
 }

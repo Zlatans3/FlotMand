@@ -4,16 +4,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,6 +38,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,14 +46,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.rememberTimePickerState
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.AddressAutocompleteDropdown
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.EventTextField
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
@@ -64,7 +70,13 @@ import java.time.format.DateTimeFormatter
 @Composable
 internal fun AddEventScreenRoute(
     modifier: Modifier = Modifier,
-    viewModel: AddEventViewModel = hiltViewModel(),
+    votingId: String? = null,
+    viewModel: AddEventViewModel = hiltViewModel<AddEventViewModel, AddEventViewModel.Factory>(
+        key = votingId ?: "new_event",
+        creationCallback = { factory ->
+            factory.create(votingId)
+        }
+    ),
     onDismiss: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -149,7 +161,8 @@ internal fun AddEventScreenRoute(
             onEventDateChange = viewModel::onEventDateChange,
             onEventTimeChange = viewModel::onEventTimeChange,
             onAddressSelected = viewModel::onAddressSelected,
-            onClearPredictions = viewModel::clearAddressPredictions
+            onClearPredictions = viewModel::clearAddressPredictions,
+            onDescriptionChange = viewModel::onDescriptionChange
         )
     }
 }
@@ -162,6 +175,7 @@ private fun AddEventScreenContent(
     onEventNameChange: (String) -> Unit,
     onLocationChange: (TextFieldValue) -> Unit,
     onEventDateChange: (LocalDate) -> Unit,
+    onDescriptionChange: (String) -> Unit,
     onEventTimeChange: (LocalTime) -> Unit,
     onAddressSelected: (AddressPrediction) -> Unit,
     onClearPredictions: () -> Unit
@@ -190,7 +204,22 @@ private fun AddEventScreenContent(
             label = "Event navn",
             value = uiState.event.eventName.orEmpty(),
             onValueChange = onEventNameChange,
-            placeholder = "Fx. Middag hos Gustav"
+            placeholder = "Fx. Middag hos Gustav",
+            singleLine = true,
+            maxLines = 1
+        )
+
+        VSpacer(16.dp)
+
+        // Description (optional) directly under name, larger multi-line
+        EventTextField(
+            label = "Beskrivelse (valgfrit)",
+            value = uiState.event.description.orEmpty(),
+            onValueChange = { desc -> onDescriptionChange(desc) },
+            placeholder = "Tilføj detaljer om eventet",
+            singleLine = false,
+            minLines = 3,
+            maxLines = 6
         )
 
         VSpacer(20.dp)
@@ -201,7 +230,12 @@ private fun AddEventScreenContent(
                 label = "Lokation",
                 value = uiState.locationTextFieldValue,
                 onValueChange = onLocationChange,
-                placeholder = "Fx. Flotmand alle 4, København"
+                placeholder = "Fx. Flotmand alle 4, København",
+                trailingIcon = {
+                    IconButton(onClick = { /* optional: open map picker in future */ }) {
+                        Icon(imageVector = Icons.Filled.Place, contentDescription = "Lokation")
+                    }
+                }
             )
 
             // Autocomplete dropdown
@@ -215,33 +249,54 @@ private fun AddEventScreenContent(
             )
         }
 
-        VSpacer(20.dp)
-
-        // Event Date - Clickable field that opens DatePicker
-        EventTextField(
-            label = "Dato",
-            value = uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
-            onValueChange = { }, // Read-only
-            placeholder = "Vælg dato",
-            onClick = {
-                focusManager.clearFocus()
-                showDatePicker = true
-            }
-        )
 
         VSpacer(20.dp)
 
-        // Event Time - Clickable field that opens TimePicker
-        EventTextField(
-            label = "Tidspunkt",
-            value = uiState.event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
-            onValueChange = { }, // Read-only
-            placeholder = "Vælg tidspunkt",
-            onClick = {
-                focusManager.clearFocus()
-                showTimePicker = true
-            }
-        )
+        // Date & Time on the same line
+        Row(modifier = Modifier.fillMaxWidth()) {
+            EventTextField(
+                label = "Dato",
+                value = uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
+                onValueChange = { }, // Read-only
+                placeholder = "Vælg dato",
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    focusManager.clearFocus()
+                    showDatePicker = true
+                },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        focusManager.clearFocus()
+                        showDatePicker = true
+                    }) {
+                        Icon(imageVector = Icons.Filled.Today, contentDescription = "Vælg dato")
+                    }
+                },
+            )
+
+            Spacer(modifier = Modifier.size(12.dp))
+
+            EventTextField(
+                label = "Tidspunkt",
+                value = uiState.event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
+                onValueChange = { }, // Read-only
+                placeholder = "tidspunkt",
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                onClick = {
+                    focusManager.clearFocus()
+                    showTimePicker = true
+                },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        focusManager.clearFocus()
+                        showTimePicker = true
+                    }) {
+                        Icon(imageVector = Icons.Filled.Schedule, contentDescription = "Vælg tidspunkt")
+                    }
+                },
+            )
+        }
 
         VSpacer(32.dp)
     }
@@ -334,7 +389,7 @@ private fun AddEventScreenPreview() {
             modifier = Modifier,
             uiState = AddEventUiState(
                 event = Event.create(
-                    eventName = "Fødselsdagsfest hos Zlatan",
+                    eventName = "Middag hos Mikkel",
                     location = "Flotmand Alle 4",
                     eventDate = LocalDate.now().plusDays(5),
                     eventStartTime = LocalTime.of(19, 30)
@@ -346,7 +401,8 @@ private fun AddEventScreenPreview() {
             onEventDateChange = {},
             onEventTimeChange = {},
             onAddressSelected = {},
-            onClearPredictions = {}
+            onClearPredictions = {},
+            onDescriptionChange = {}
         )
     }
 }

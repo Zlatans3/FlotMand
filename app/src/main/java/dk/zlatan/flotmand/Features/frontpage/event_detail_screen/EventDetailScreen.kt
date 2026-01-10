@@ -74,55 +74,62 @@ internal fun EventDetailScreenRoute(
         }
     }
 
-    if (isDeleted) {
-        onDismiss()
+    // Navigate away immediately when deleted, before content can update
+    LaunchedEffect(isDeleted) {
+        if (isDeleted) {
+            onDismiss()
+        }
     }
 
     Column(
         modifier = modifier.fillMaxSize()
     ) {
         when {
-            // Prefer content when we have data
-            uiState.event != null -> {
-                val event = uiState.event!!
-                EventDetailScreenContent(
-                    event = event,
-                    isParticipating = uiState.isParticipated,
-                    publisher = uiState.publisher,
-                    onDismiss = onDismiss,
-                    geoLocation = event.geoLocation,
-                    onParticipantsClick = {
-                        if (!event.participantIds.isNullOrEmpty()) {
-                            viewModel.showParticipants()
+            // Show content if event exists OR if we're in the process of deleting
+            // This prevents the empty state flash during deletion
+            uiState.event != null || isDeleted -> {
+                if (uiState.event != null) {
+                    val event = uiState.event!!
+                    EventDetailScreenContent(
+                        event = event,
+                        isParticipating = uiState.isParticipated,
+                        publisher = uiState.publisher,
+                        onDismiss = onDismiss,
+                        geoLocation = event.geoLocation,
+                        onParticipantsClick = {
+                            if (!event.participantIds.isNullOrEmpty()) {
+                                viewModel.showParticipants()
+                            }
+                        },
+                        onDateClick = {
+                            val dateTimeString = "${
+                                event.eventDate?.toString().orEmpty()
+                            } ${event.eventStartTime.toString()}"
+                            clipboardManager.setText(AnnotatedString(dateTimeString))
+                        },
+                        onLocationLongClick = {
+                            val locationString = event.location.orEmpty()
+                            clipboardManager.setText(AnnotatedString(locationString))
+                        },
+                        onEditEvent = {
+                            // TODO: Zlatan 06/01/2026 WILL BE ADDED IN LATER PATCH
+                        },
+                        onDeleteEvent = { showDeleteDialog = true },
+                        isPublisher = uiState.isPublisher,
+                        onParticipateClick = {
+                            viewModel.onUserParticipate()
+                        },
+                        onMapClick = {
+                            val intent = buildDirectionsChooserIntent(
+                                latitude = event.geoLocation?.latitude,
+                                longitude = event.geoLocation?.longitude,
+                                address = event.location
+                            )
+                            context.startActivity(intent)
                         }
-                    },
-                    onDateClick = {
-                        val dateTimeString = "${
-                            event.eventDate?.toString().orEmpty()
-                        } ${event.eventStartTime.toString()}"
-                        clipboardManager.setText(AnnotatedString(dateTimeString))
-                    },
-                    onLocationLongClick = {
-                        val locationString = event.location.orEmpty()
-                        clipboardManager.setText(AnnotatedString(locationString))
-                    },
-                    onEditEvent = {
-                        // TODO: Zlatan 06/01/2026 WILL BE ADDED IN LATER PATCH
-                    },
-                    onDeleteEvent = { showDeleteDialog = true },
-                    isPublisher = uiState.isPublisher,
-                    onParticipateClick = {
-                        viewModel.onUserParticipate()
-                    },
-                    onMapClick = {
-                        val intent = buildDirectionsChooserIntent(
-                            latitude = event.geoLocation?.latitude,
-                            longitude = event.geoLocation?.longitude,
-                            address = event.location
-                        )
-                        context.startActivity(intent)
-                    }
-                )
+                    )
+                }
+                // If isDeleted is true, content will navigate away before empty state renders
             }
 
             // Show loader if loading (or within debounce window)
@@ -138,7 +145,7 @@ internal fun EventDetailScreenRoute(
                 }
             }
 
-            // Only show null state when not loading and event is still null
+            // Only show null state when not loading and event is still null and not deleted
             else -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),

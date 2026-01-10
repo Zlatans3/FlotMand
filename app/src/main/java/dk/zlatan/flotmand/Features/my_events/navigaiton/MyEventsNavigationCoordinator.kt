@@ -11,5 +11,6 @@ interface MyEventsNavigationCoordinator {
 
     fun navigate(destination: MyEventsDestination)
     fun pop()
+    fun resetToRoot()
 }
 

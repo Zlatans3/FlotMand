@@ -22,4 +22,8 @@ class MyEventsNavigationCoordinatorImpl @Inject constructor() : MyEventsNavigati
             _navigationStack.value = _navigationStack.value.dropLast(1)
         }
     }
+
+    override fun resetToRoot() {
+        _navigationStack.value = listOf(MyEventsDestination.MyEvents)
+    }
 }
