@@ -37,7 +37,10 @@ class MainActivity : ComponentActivity() {
 fun FlotMandApp(
     modifier: Modifier = Modifier
 ) {
-    FlotMandTheme {
+    FlotMandTheme(
+        // enable when colors are ready
+        //     dynamicColor = false
+    ) {
         AppNavigation(modifier = modifier)
     }
 }
