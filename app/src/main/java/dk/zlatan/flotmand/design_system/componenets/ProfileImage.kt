@@ -1,6 +1,7 @@
 package dk.zlatan.flotmand.design_system.componenets
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -22,20 +23,27 @@ fun ProfileImage(
     profilePic: String? = null,
     profileSize: Dp = 40.dp,
     userName: String,
+    onClick: (() -> Unit)? = null
 ) {
+    val optionalClickableModifier = if (onClick != null) {
+        Modifier.clickable { onClick() }
+    } else {
+        Modifier
+    }
+    val baseModifier = modifier
+        .then(optionalClickableModifier)
+        .size(profileSize)
+        .clip(CircleShape)
+
     if (!profilePic.isNullOrBlank()) {
         AsyncImage(
             model = profilePic,
             contentDescription = "Profile Image",
-            modifier = modifier
-                .size(profileSize)
-                .clip(CircleShape),
+            modifier = baseModifier,
         )
     } else {
         Box(
-            modifier = Modifier
-                .size(profileSize)
-                .clip(CircleShape)
+            modifier = baseModifier
                 .background(MaterialTheme.colorScheme.inversePrimary),
             contentAlignment = Alignment.Center
         ) {

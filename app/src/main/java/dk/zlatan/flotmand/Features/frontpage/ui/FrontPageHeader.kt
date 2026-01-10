@@ -2,6 +2,7 @@ package dk.zlatan.flotmand.Features.frontpage.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,9 +33,9 @@ import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 
 @Composable
 internal fun FrontPageNewHeader(
-    modifier: Modifier = Modifier,
     user: User,
-    scrollProgress: Float = 0f
+    modifier: Modifier = Modifier,
+    scrollProgress: Float = 0f,
     ) {
     Column(
         modifier = modifier
@@ -62,7 +63,8 @@ internal fun FrontPageNewHeader(
 fun FmAnimatableTopBar(
     modifier: Modifier = Modifier,
     user: User,
-    scrollProgress: Float = 0f // 0f = not scrolled (0dp corners), 1f = fully scrolled (24dp corners)
+    scrollProgress: Float = 0f,
+    onClick: () -> Unit = { }
     ) {
     val cornerRadius = (24.dp * scrollProgress)
 
@@ -104,16 +106,19 @@ fun FmAnimatableTopBar(
             modifier = Modifier
                 .size(40.dp)
                 .background(
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     shape = CircleShape
+                )
+                .clickable(
+                    onClick = onClick
                 ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.Notifications,
                 contentDescription = "Notifications",
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                modifier = Modifier.size(24.dp).clickable(onClick = onClick),
+                tint = MaterialTheme.colorScheme.surfaceVariant,
             )
         }
 
@@ -123,7 +128,8 @@ fun FmAnimatableTopBar(
         ProfileImage(
             modifier = Modifier,
             profilePic = user.photoUrl,
-            userName = user.getFirstName()
+            userName = user.getFirstName(),
+            onClick = onClick
         )
     }
 }
@@ -155,7 +161,7 @@ fun HeaderContent(
         VSpacer(8.dp)
 
         Text(
-            text = "Ready for your next social event?",
+            text = "Velkommen tilbage til Flotmand appen",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
             modifier = Modifier.padding(horizontal = 24.dp),

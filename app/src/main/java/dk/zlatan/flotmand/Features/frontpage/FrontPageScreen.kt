@@ -5,11 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,7 +30,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.frontpage.ui.FmAnimatableTopBar
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageNewHeader
+import dk.zlatan.flotmand.Features.frontpage.ui.NextEventSection
 import dk.zlatan.flotmand.design_system.componenets.EventCard
+import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.Event
@@ -37,7 +42,7 @@ import dk.zlatan.flotmand.model.User
 @Composable
 internal fun FrontPageRoute(
     modifier: Modifier = Modifier,
-    onClickEvent: (String) -> Unit,
+    onDinnerEventClick: (String) -> Unit,
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -120,10 +125,14 @@ internal fun FrontPageRoute(
         else -> {
             FrontpageContent(
                 modifier = modifier,
-                onClickEvent = onClickEvent,
+                onClickEvent = onDinnerEventClick,
                 eventList = uiState.eventList,
                 publishers = uiState.publishers,
-                user = uiState.currentUser
+                user = uiState.currentUser,
+                nextEvent = uiState.nextEvent,
+                nextEventPublisher = uiState.nextEventPublisher,
+                nextEventParticipants = uiState.nextEventParticipants,
+                onParticipateClick = viewModel::onParticipateClick
             )
         }
     }
@@ -135,7 +144,11 @@ internal fun FrontpageContent(
     eventList: List<Event> = emptyList(),
     publishers: Map<String, User> = emptyMap(),
     onClickEvent: (String) -> Unit,
-    user: User
+    onParticipateClick: (String) -> Unit,
+    user: User,
+    nextEvent: Event?,
+    nextEventPublisher: User?,
+    nextEventParticipants: List<User>
 ) {
     LaunchedEffect(eventList.size) {
         Log.d("FrontpageContent", "Rendering with ${eventList.size} events")
@@ -184,7 +197,41 @@ internal fun FrontpageContent(
                 )
                 VSpacer(8.dp)
             }
-            items(eventList) { eventDetails ->
+
+            // Next Event section
+            if (nextEvent != null) {
+                val publisher = nextEventPublisher ?: User(
+                    id = nextEvent.publisherId ?: "",
+                    displayName = "Ukendt bruger"
+                )
+                item {
+                    NextEventSection(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        event = nextEvent,
+                        publisher = publisher,
+                        participants = nextEventParticipants,
+                        onParticipateClick = { onParticipateClick(nextEvent.eventId.orEmpty()) },
+                        onCardClick = { onClickEvent(nextEvent.eventId.orEmpty()) },
+                        onMapClick = { onClickEvent(nextEvent.eventId.orEmpty()) },
+                        // TODO: Zlatan 10/01/2026 This is just horrible
+                        isParticipating = nextEventParticipants.any { it.id == user.id },
+                        isLoading = false,
+                        isPublisher = user.id == nextEvent.publisherId
+                    )
+                }
+            }
+
+            // Section title for event list
+            item {
+                VSpacer(20.dp)
+                SectionHeader(
+                    title = "Upcoming events",
+                    actionText = "Se alle",
+                    onActionClick = { /* TODO: navigate to all events */ }
+                )
+            }
+
+            items(eventList.take(3)) { eventDetails ->
                 val publisher = publishers[eventDetails.publisherId]
                 EventCard(
                     modifier = Modifier
@@ -199,6 +246,37 @@ internal fun FrontpageContent(
                     }
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun SectionHeader(
+    modifier: Modifier = Modifier,
+    title: String,
+    actionText: String? = null,
+    onActionClick: (() -> Unit)? = null,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        if (actionText != null) {
+            ClickableText(
+                text = androidx.compose.ui.text.AnnotatedString(actionText),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.primary
+                ),
+                onClick = { onActionClick?.invoke() }
+            )
         }
     }
 }
@@ -226,7 +304,11 @@ private fun FrontpageContentPreview() {
             eventList = events,
             publishers = mockPublishers,
             onClickEvent = {},
-            user = User.mockUserWithCounter(1).first()
+            user = User.mockUserWithCounter(1).first(),
+            nextEvent = events.firstOrNull(),
+            nextEventPublisher = mockPublishers[events.firstOrNull()?.publisherId],
+            nextEventParticipants = emptyList(),
+            onParticipateClick = {}
         )
     }
 }
