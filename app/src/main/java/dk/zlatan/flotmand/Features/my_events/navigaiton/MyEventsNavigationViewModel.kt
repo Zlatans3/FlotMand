@@ -18,5 +18,9 @@ class MyEventsNavigationViewModel @Inject constructor(
     fun pop() {
         myEventsNavigationCoordinator.pop()
     }
+
+    fun resetToRoot() {
+        myEventsNavigationCoordinator.resetToRoot()
+    }
 }
 

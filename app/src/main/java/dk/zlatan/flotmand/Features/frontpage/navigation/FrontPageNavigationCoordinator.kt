@@ -11,5 +11,6 @@ interface FrontPageNavigationCoordinator {
 
     fun navigate(destination: FrontPageDestination)
     fun pop()
+    fun resetToRoot()
 }
 

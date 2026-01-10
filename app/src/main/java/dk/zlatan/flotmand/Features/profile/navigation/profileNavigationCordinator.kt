@@ -11,4 +11,5 @@ interface ProfileNavigationCoordinator {
 
     fun navigate(destination: ProfileDestination)
     fun pop()
+    fun resetToRoot()
 }

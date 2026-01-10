@@ -22,4 +22,8 @@ class ProfileNavigationCoordinatorImpl @Inject constructor() : ProfileNavigation
             _navigationStack.value = _navigationStack.value.dropLast(1)
         }
     }
+
+    override fun resetToRoot() {
+        _navigationStack.value = listOf(ProfileDestination.ProfileScreen)
+    }
 }

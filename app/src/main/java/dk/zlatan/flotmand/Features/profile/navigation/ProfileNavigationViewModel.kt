@@ -18,4 +18,8 @@ class ProfileNavigationViewModel @Inject constructor(
     fun pop() {
         profileNavigationCoordinator.pop()
     }
+
+    fun resetToRoot() {
+        profileNavigationCoordinator.resetToRoot()
+    }
 }

@@ -18,5 +18,9 @@ class FrontPageNavigationViewModel @Inject constructor(
     fun pop() {
         frontPageNavigationCoordinator.pop()
     }
+
+    fun resetToRoot() {
+        frontPageNavigationCoordinator.resetToRoot()
+    }
 }
 
