@@ -18,9 +18,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -175,6 +178,9 @@ internal fun FrontpageContent(
         }
     }
 
+    var showAllEvents by rememberSaveable { mutableStateOf(false) }
+    val eventsToShow = if (showAllEvents) eventList else eventList.take(3)
+
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
@@ -226,12 +232,14 @@ internal fun FrontpageContent(
                 VSpacer(20.dp)
                 SectionHeader(
                     title = "Upcoming events",
-                    actionText = "Se alle",
-                    onActionClick = { /* TODO: navigate to all events */ }
+                    actionText = if (showAllEvents) null else "Se alle",
+                    onActionClick = {
+                        showAllEvents = true
+                    }
                 )
             }
 
-            items(eventList.take(3)) { eventDetails ->
+            items(eventsToShow) { eventDetails ->
                 val publisher = publishers[eventDetails.publisherId]
                 EventCard(
                     modifier = Modifier
@@ -245,6 +253,10 @@ internal fun FrontpageContent(
                         onClickEvent(eventDetails.eventId.orEmpty())
                     }
                 )
+            }
+
+            item {
+                VSpacer(20.dp)
             }
         }
     }

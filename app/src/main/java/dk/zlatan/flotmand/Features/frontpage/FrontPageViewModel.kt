@@ -40,7 +40,9 @@ class FrontPageViewModel @Inject constructor(
         dinnerEventService.allDinnerEvents,
         accountService.currentUser.filterNotNull()
     ) { events, currentUser ->
-        val sortedEvents = events.sortedByDescending { it.eventDate }
+        val sortedEvents = events.sortedWith(
+            compareBy<Event> { it.eventDate ?: LocalDate.MAX }
+        )
         val publisherIds = sortedEvents.mapNotNull { it.publisherId }.distinct()
 
         val publishersMap = if (publisherIds.isNotEmpty()) {
@@ -53,9 +55,8 @@ class FrontPageViewModel @Inject constructor(
             emptyMap()
         }
 
-        val nextEvent = sortedEvents
-            .filter { it.eventDate != null }
-            .minByOrNull { it.eventDate ?: LocalDate.MAX }
+        val nextEvent = sortedEvents.firstOrNull { it.eventDate != null }
+        val displayEvents = sortedEvents.filterNot { it.eventId == nextEvent?.eventId }
 
         val nextEventPublisher = nextEvent?.publisherId?.let { publishersMap[it] }
 
@@ -72,7 +73,7 @@ class FrontPageViewModel @Inject constructor(
         }
 
         FrontPageUiState(
-            eventList = sortedEvents,
+            eventList = displayEvents,
             publishers = publishersMap,
             currentUser = currentUser,
             nextEvent = nextEvent,
@@ -120,7 +121,7 @@ class FrontPageViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Fetch current event by id
-                val events = uiState.value.eventList
+                val events = uiState.value.eventList + listOfNotNull(uiState.value.nextEvent)
                 val currentEvent = events.firstOrNull { it.eventId == eventId }
                 if (currentEvent == null) return@launch
 
