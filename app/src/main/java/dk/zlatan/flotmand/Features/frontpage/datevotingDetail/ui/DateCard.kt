@@ -1,5 +1,7 @@
 package dk.zlatan.flotmand.Features.frontpage.datevotingDetail.ui
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +22,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +48,13 @@ internal fun DateCard(
 ) {
     val accentColor = MaterialTheme.colorScheme.primary
     val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
+
+    // Animate the progress value
+    val animatedProgress by animateFloatAsState(
+        targetValue = votePercentage / 100f,
+        animationSpec = tween(durationMillis = 600),
+        label = "progressAnimation"
+    )
 
     Card(
         modifier = modifier
@@ -151,7 +161,7 @@ internal fun DateCard(
 
             // Progress bar
             LinearProgressIndicator(
-                progress = { votePercentage / 100f },
+                progress = { animatedProgress },
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(4.dp)),

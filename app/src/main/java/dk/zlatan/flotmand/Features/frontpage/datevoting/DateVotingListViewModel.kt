@@ -1,6 +1,5 @@
 package dk.zlatan.flotmand.Features.frontpage.datevoting
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,7 +10,7 @@ import dk.zlatan.flotmand.model.service.DateVotingService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -33,29 +32,23 @@ class DateVotingListViewModel @Inject constructor(
     private val accountService: AccountService
 ) : ViewModel() {
 
-    companion object {
-        private const val TAG = "DateVotingListViewModel"
-    }
-
-    private val _uiState = MutableStateFlow<DateVotingListUiState>(
-        DateVotingListUiState(
-            currentUserId = accountService.currentUserId,
-            isLoading = true
-        )
+    private val _transientState = MutableStateFlow(
+        TransientState()
     )
 
-    val uiState: StateFlow<DateVotingListUiState> = dateVotingService.allDateVotings
-        .map { votings ->
-            Log.d(TAG, "Received votings from service: ${votings.size} votings")
-            DateVotingListUiState(
-                votings = votings,
-                currentUserId = accountService.currentUserId,
-                isLoading = false,
-                errorMessage = null,
-                snackbarMessage = _uiState.value.snackbarMessage,
-                newVotingId = _uiState.value.newVotingId
-            )
-        }
+    val uiState: StateFlow<DateVotingListUiState> = combine(
+        dateVotingService.allDateVotings,
+        _transientState
+    ) { votings, transient ->
+        DateVotingListUiState(
+            votings = votings,
+            currentUserId = accountService.currentUserId,
+            isLoading = false,
+            errorMessage = null,
+            snackbarMessage = transient.snackbarMessage,
+            newVotingId = transient.newVotingId
+        )
+    }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -65,12 +58,15 @@ class DateVotingListViewModel @Inject constructor(
             )
         )
 
+    private data class TransientState(
+        val snackbarMessage: String? = null,
+        val newVotingId: String? = null
+    )
+
     fun createNewVoting() {
-        Log.d(TAG, "createNewVoting called")
         viewModelScope.launch {
             try {
-                Log.d(TAG, "Creating new voting - Current user ID: ${accountService.currentUserId}")
-                _uiState.update { it.copy(snackbarMessage = null) }
+                _transientState.update { it.copy(snackbarMessage = null) }
 
                 val newVoting = DateVoting(
                     creatorId = accountService.currentUserId,
@@ -79,31 +75,13 @@ class DateVotingListViewModel @Inject constructor(
                     createdAtString = LocalDateTime.now().toString()
                 )
 
-                Log.d(TAG, "New voting object created: votingId=${newVoting.votingId}, creatorId=${newVoting.creatorId}, createdAt=${newVoting.createdAtString}")
-
                 val votingId = dateVotingService.createDateVoting(newVoting)
 
-                Log.d(TAG, "Voting created successfully with ID: $votingId")
-
-                _uiState.update {
-                    Log.d(TAG, "Updating UI state with newVotingId: $votingId")
-                    it.copy(
-                        snackbarMessage = "Afstemning oprettet",
-                        newVotingId = votingId
-                    )
-                }
-
-                Log.d(TAG, "UI state updated. Current uiState: ${_uiState.value}")
-
-                // Log all current votings after creation
-                Log.d(TAG, "Current votings after creation:")
-                Log.d(TAG, "Total votings: ${_uiState.value.votings.size}")
-                _uiState.value.votings.forEachIndexed { index, voting ->
-                    Log.d(TAG, "  [$index] votingId=${voting.votingId}, creatorId=${voting.creatorId}, dateOptions=${voting.dateOptions.size}, status=${voting.status}")
+                _transientState.update {
+                    it.copy(newVotingId = votingId)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error creating voting: ${e.message}", e)
-                _uiState.update {
+                _transientState.update {
                     it.copy(snackbarMessage = "Kunne ikke oprette afstemning: ${e.message}")
                 }
             }
@@ -111,12 +89,10 @@ class DateVotingListViewModel @Inject constructor(
     }
 
     fun dismissSnackbar() {
-        Log.d(TAG, "dismissSnackbar called")
-        _uiState.update { it.copy(snackbarMessage = null) }
+        _transientState.update { it.copy(snackbarMessage = null) }
     }
 
     fun clearNewVotingId() {
-        Log.d(TAG, "clearNewVotingId called")
-        _uiState.update { it.copy(newVotingId = null) }
+        _transientState.update { it.copy(newVotingId = null) }
     }
 }

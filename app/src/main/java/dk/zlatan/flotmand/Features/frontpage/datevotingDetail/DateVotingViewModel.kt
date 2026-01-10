@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.frontpage.datevotingDetail
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.assisted.Assisted
@@ -7,6 +8,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.model.DateVoting
+import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DateVotingService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +22,8 @@ data class DateVotingUiState(
     val currentUserId: String = "",
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
-    val snackbarMessage: String? = null
+    val snackbarMessage: String? = null,
+    val votersByUserId: Map<String, User> = emptyMap()
 )
 
 @HiltViewModel(assistedFactory = DateVotingViewModel.Factory::class)
@@ -29,6 +32,10 @@ internal class DateVotingViewModel @AssistedInject constructor(
     @Assisted private val votingId: String,
     private val accountService: AccountService,
 ) : ViewModel() {
+
+    companion object {
+        private const val TAG = "DateVotingViewModel"
+    }
 
     private val _uiState: MutableStateFlow<DateVotingUiState> = if (votingId != null) {
         MutableStateFlow(
@@ -64,6 +71,10 @@ internal class DateVotingViewModel @AssistedInject constructor(
                                     errorMessage = null
                                 )
                             }
+                            // Fetch voter data when voting updates
+                            if (updatedVoting != null) {
+                                fetchVoterData(updatedVoting)
+                            }
                         }
                     } else {
                         _uiState.update { it.copy(errorMessage = "Voting not found", isLoading = false) }
@@ -75,6 +86,33 @@ internal class DateVotingViewModel @AssistedInject constructor(
         }
     }
 
+    private fun fetchVoterData(voting: DateVoting) {
+        viewModelScope.launch {
+            try {
+                // Collect all unique voter IDs
+                val allVoterIds = voting.dateOptions
+                    .flatMap { it.votersId }
+                    .distinct()
+
+                if (allVoterIds.isEmpty()) {
+                    _uiState.update { it.copy(votersByUserId = emptyMap()) }
+                    return@launch
+                }
+
+                // Fetch actual user data for all voters
+                val voters = accountService.getUsersByIds(allVoterIds)
+                val voterMap = voters.associateBy { it.id }
+
+                Log.d(TAG, "Fetched voter data for ${voterMap.size} voters")
+
+                _uiState.update { it.copy(votersByUserId = voterMap) }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching voter data: ${e.message}", e)
+                // Don't update error state, this is non-critical
+            }
+        }
+    }
+
     fun dismissSnackbar() {
         _uiState.update { it.copy(snackbarMessage = null) }
     }
@@ -82,10 +120,13 @@ internal class DateVotingViewModel @AssistedInject constructor(
     fun onVoteForDate(date: LocalDate) {
         viewModelScope.launch {
             try {
+                Log.d(TAG, "Adding vote for date: $date")
                 val votingId = uiState.value.dateVoting?.votingId ?: return@launch
                 val userId = accountService.currentUserId
                 dateVotingService.addVote(votingId, date, userId)
+                Log.d(TAG, "Vote added successfully for date: $date")
             } catch (e: Exception) {
+                Log.e(TAG, "Error adding vote: ${e.message}", e)
                 _uiState.update { it.copy(snackbarMessage = "Kunne ikke stemme: ${e.message}") }
             }
         }
@@ -96,7 +137,6 @@ internal class DateVotingViewModel @AssistedInject constructor(
             try {
                 val votingId = uiState.value.dateVoting?.votingId ?: return@launch
                 dateVotingService.deleteDateVoting(votingId)
-                _uiState.update { it.copy(snackbarMessage = "Afstemning slettet") }
             } catch (e: Exception) {
                 _uiState.update { it.copy(snackbarMessage = "Kunne ikke slette afstemning: ${e.message}") }
             }
@@ -106,11 +146,14 @@ internal class DateVotingViewModel @AssistedInject constructor(
     fun onRemoveVote(date: LocalDate) {
         viewModelScope.launch {
             try {
+                Log.d(TAG, "Removing vote for date: $date")
                 val votingId = uiState.value.dateVoting?.votingId ?: return@launch
                 val userId = accountService.currentUserId
                 dateVotingService.removeVote(votingId, date, userId)
+                Log.d(TAG, "Vote removed successfully for date: $date")
             } catch (e: Exception) {
-                // Handle error
+                Log.e(TAG, "Error removing vote: ${e.message}", e)
+                _uiState.update { it.copy(snackbarMessage = "Kunne ikke fjerne stemme: ${e.message}") }
             }
         }
     }
@@ -124,8 +167,8 @@ internal class DateVotingViewModel @AssistedInject constructor(
                     return@launch
                 }
 
-                dateVotingService.addDateOption(votingId, date)
-                _uiState.update { it.copy(snackbarMessage = "Dato tilføjet") }
+                val userId = accountService.currentUserId
+                dateVotingService.addDateOption(votingId, date, userId)
             } catch (e: Exception) {
                 _uiState.update { it.copy(snackbarMessage = "Kunne ikke tilføje dato: ${e.message}") }
             }

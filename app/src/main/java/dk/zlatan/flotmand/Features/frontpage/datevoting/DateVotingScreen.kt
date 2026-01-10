@@ -25,6 +25,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -60,7 +61,15 @@ internal fun DateVotingRoute(
     // Navigate to new voting when created
     LaunchedEffect(uiState.newVotingId) {
         uiState.newVotingId?.let { votingId ->
+            // Clear immediately to prevent re-navigation
+            viewModel.clearNewVotingId()
             onVotingClick(votingId)
+        }
+    }
+
+    // Ensure state is cleared when leaving composition
+    DisposableEffect(Unit) {
+        onDispose {
             viewModel.clearNewVotingId()
         }
     }

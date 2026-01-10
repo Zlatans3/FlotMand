@@ -73,8 +73,8 @@ data class DateVoting(
                     option
                 }
             } else {
-                // Remove vote from other dates if user voted
-                option.copy(votersId = option.votersId.filterNot { it == userId })
+                // Keep votes on other dates - users can vote for multiple dates
+                option
             }
         }
         return this.copy(dateOptions = updatedOptions)
@@ -89,14 +89,6 @@ data class DateVoting(
             }
         }
         return this.copy(dateOptions = updatedOptions)
-    }
-
-    fun hasUserVoted(userId: String): Boolean {
-        return dateOptions.any { it.votersId.contains(userId) }
-    }
-
-    fun getUserVote(userId: String): DateOption? {
-        return dateOptions.firstOrNull { it.votersId.contains(userId) }
     }
 }
 

@@ -1,11 +1,17 @@
 package dk.zlatan.flotmand.Features.frontpage.datevotingDetail
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -103,7 +109,9 @@ internal fun DateVotingDetailRoute(
             modifier = Modifier.padding(paddingValues),
             dateVoting = uiState.dateVoting,
             currentUserId = uiState.currentUserId,
+            votersByUserId = uiState.votersByUserId,
             onVoteForDate = viewModel::onVoteForDate,
+            onRemoveVote = viewModel::onRemoveVote,
             onAddDate = { showDatePicker = true },
             errorMessage = uiState.errorMessage,
             isCreator = uiState.dateVoting?.creatorId == uiState.currentUserId,
@@ -160,7 +168,9 @@ private fun DateVotingDetailScreen(
     modifier: Modifier = Modifier,
     dateVoting: DateVoting? = null,
     currentUserId: String = "",
+    votersByUserId: Map<String, User> = emptyMap(),
     onVoteForDate: (LocalDate) -> Unit = {},
+    onRemoveVote: (LocalDate) -> Unit = {},
     onAddDate: () -> Unit = {},
     errorMessage: String? = null,
     isCreator: Boolean = false,
@@ -169,6 +179,7 @@ private fun DateVotingDetailScreen(
 ) {
     Column(
         modifier = modifier
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -192,7 +203,9 @@ private fun DateVotingDetailScreen(
             VotingDatesSection(
                 dateVoting = dateVoting,
                 currentUserId = currentUserId,
-                onVoteForDate = onVoteForDate
+                votersByUserId = votersByUserId,
+                onVoteForDate = onVoteForDate,
+                onRemoveVote = onRemoveVote
             )
 
             // Add Date button (always visible)
@@ -219,7 +232,7 @@ private fun VotingDetailsHeader(isCreator: Boolean) {
         )
 
         Text(
-            text = "Stem på datoer hvor du er tilgængelig",
+            text = "Stem på alle datoer hvor du er tilgængelig",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -239,8 +252,12 @@ private fun VotingStatsSection(dateVoting: DateVoting) {
             value = dateVoting.dateOptions.size.toString()
         )
         VotingStat(
-            label = "Stemmer",
-            value = dateVoting.totalVotes.toString()
+            label = "Brugere Stemt",
+            value = dateVoting.dateOptions
+                .flatMap { it.votersId }
+                .distinct()
+                .size
+                .toString()
         )
         VotingStat(
             label = "Status",
@@ -272,7 +289,9 @@ private fun VotingStat(label: String, value: String) {
 private fun VotingDatesSection(
     dateVoting: DateVoting,
     currentUserId: String,
-    onVoteForDate: (LocalDate) -> Unit
+    votersByUserId: Map<String, User> = emptyMap(),
+    onVoteForDate: (LocalDate) -> Unit,
+    onRemoveVote: (LocalDate) -> Unit = {}
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
@@ -281,35 +300,64 @@ private fun VotingDatesSection(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        dateVoting.dateOptions.forEach { dateOption ->
-            val participants = dateOption.votersId.map { voterId ->
-                User(id = voterId, displayName = "Voter")
-            }
+        // Sort date options by vote count (descending), then by date (ascending)
+        val sortedDateOptions = dateVoting.dateOptions.sortedWith(
+            compareByDescending<DateOption> { it.voteCount }
+                .thenBy { it.localDate }
+        )
 
-            val formatter = DateTimeFormatter.ofPattern("EEEE, MMM d'th'", java.util.Locale.ENGLISH)
-            val dateString = dateOption.localDate?.format(formatter) ?: "Unknown date"
-
-            val votingCount = dateOption.voteCount
-            val subtitle = if (votingCount == 0) {
-                "Ingen stemmer endnu"
-            } else if (votingCount == 1) {
-                "1 person stemte"
-            } else {
-                "$votingCount personer stemte"
-            }
-
-            val isSelected = dateOption.votersId.contains(currentUserId)
-
-            DateCard(
-                date = dateString,
-                subtitle = subtitle,
-                voters = participants,
-                votePercentage = dateVoting.getVotePercentage(dateOption),
-                isSelected = isSelected,
-                onClick = {
-                    dateOption.localDate?.let { onVoteForDate(it) }
+        sortedDateOptions.forEach { dateOption ->
+            // Animate with smooth slide in/out movements
+            val dateKey = dateOption.localDate?.toString() ?: "unknown"
+            AnimatedVisibility(
+                visible = true,
+                enter = slideInVertically(
+                    animationSpec = tween(durationMillis = 400),
+                    initialOffsetY = { -it }
+                ),
+                exit = slideOutVertically(
+                    animationSpec = tween(durationMillis = 400),
+                    targetOffsetY = { it }
+                ),
+                label = "dateCardSlide_$dateKey"
+            ) {
+                // Get actual user objects for voters, with fallback display names if data not loaded yet
+                val participants = dateOption.votersId.mapNotNull { voterId ->
+                    votersByUserId[voterId] ?: User(id = voterId, displayName = "Loading...")
                 }
-            )
+
+                val formatter = DateTimeFormatter.ofPattern("EEEE, MMM d'th'", java.util.Locale.ENGLISH)
+                val dateString = dateOption.localDate?.format(formatter) ?: "Unknown date"
+
+                val votingCount = dateOption.voteCount
+                val subtitle = if (votingCount == 0) {
+                    "Ingen stemmer endnu"
+                } else if (votingCount == 1) {
+                    "1 person stemte"
+                } else {
+                    "$votingCount personer stemte"
+                }
+
+                val isSelected = dateOption.votersId.contains(currentUserId)
+
+                DateCard(
+                    date = dateString,
+                    subtitle = subtitle,
+                    voters = participants,
+                    votePercentage = dateVoting.getVotePercentage(dateOption),
+                    isSelected = isSelected,
+                    onClick = {
+                        dateOption.localDate?.let { date ->
+                            // Allow voting on multiple dates: toggle vote for each date independently
+                            if (isSelected) {
+                                onRemoveVote(date)
+                            } else {
+                                onVoteForDate(date)
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 }

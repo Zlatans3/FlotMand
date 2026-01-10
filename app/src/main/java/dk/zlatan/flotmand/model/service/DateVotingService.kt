@@ -47,8 +47,9 @@ interface DateVotingService {
 
     /**
      * Add a new date option to an existing voting session
+     * The userId will be automatically added as a voter for this date
      */
-    suspend fun addDateOption(votingId: String, date: LocalDate)
+    suspend fun addDateOption(votingId: String, date: LocalDate, userId: String)
 
     /**
      * Close the voting session

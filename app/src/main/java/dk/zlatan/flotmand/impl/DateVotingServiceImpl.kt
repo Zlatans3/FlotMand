@@ -165,7 +165,7 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
         }
     }
 
-    override suspend fun addDateOption(votingId: String, date: LocalDate) {
+    override suspend fun addDateOption(votingId: String, date: LocalDate, userId: String) {
         try {
             val voting = getDateVoting(votingId) ?: return
 
@@ -175,13 +175,16 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
                 return
             }
 
-            val newOption = DateOption.fromLocalDate(date)
+            // Create new option with the user already voted for it
+            val newOption = DateOption.fromLocalDate(date).copy(
+                votersId = listOf(userId)
+            )
             val updatedVoting = voting.copy(
                 dateOptions = voting.dateOptions + newOption
             )
             updateDateVoting(updatedVoting)
 
-            Log.d(TAG, "Added date option $date to voting $votingId")
+            Log.d(TAG, "Added date option $date to voting $votingId with user $userId automatically voted")
         } catch (e: Exception) {
             Log.e(TAG, "Error adding date option: ${e.message}", e)
             throw e
