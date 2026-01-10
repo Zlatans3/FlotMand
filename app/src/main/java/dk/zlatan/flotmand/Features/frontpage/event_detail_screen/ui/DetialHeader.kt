@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
@@ -37,6 +39,7 @@ internal fun DetailHeader(
     modifier: Modifier = Modifier,
     publisherProfileImageUrl: String? = null,
     isPublisher: Boolean = false,
+    onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
 ) {
@@ -51,6 +54,20 @@ internal fun DetailHeader(
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.primaryContainer)
     ) {
+        // Top-left back arrow
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 12.dp, start = 12.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
+                contentDescription = "Tilbage",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+
         // Top-right action icons when publisher: Edit + Delete
         if (isPublisher) {
             Row(
@@ -139,6 +156,7 @@ private fun DetailHeaderPreview() {
         name = "Mikkel",
         eventTitle = "Lækker sejlads på Øresund",
         isPublisher = true,
+        onBackClick = {},
         onEditClick = {},
         onDeleteClick = {}
     )

@@ -11,6 +11,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
 import dk.zlatan.flotmand.Features.my_events.MyEventScreenRoute
 import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreenRoute
 
@@ -29,12 +30,22 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                     MyEventScreenRoute(
                         onAddEventClick = {
                             viewModel.navigate(MyEventsDestination.AddEvent)
+                        },
+                        onEventClick = { eventId ->
+                            viewModel.navigate(MyEventsDestination.EventDetail(eventId))
                         }
                     )
                 }
 
                 MyEventsDestination.AddEvent -> NavEntry(key) {
                     AddEventScreenRoute(
+                        onDismiss = { viewModel.pop() }
+                    )
+                }
+
+                is MyEventsDestination.EventDetail -> NavEntry(key) {
+                    EventDetailScreenRoute(
+                        eventId = key.eventId,
                         onDismiss = { viewModel.pop() }
                     )
                 }

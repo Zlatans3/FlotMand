@@ -22,10 +22,11 @@ import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
 
 @Composable
-fun MyEventScreenRoute(
+internal fun MyEventScreenRoute(
     modifier: Modifier = Modifier,
     viewModel: MyEventViewModel = hiltViewModel(),
-    onAddEventClick: () -> Unit = {}
+    onAddEventClick: () -> Unit = {},
+    onEventClick: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -122,7 +123,8 @@ fun MyEventScreenRoute(
                 modifier = modifier,
                 eventList = uiState.eventList,
                 publishers = uiState.publishers,
-                onAddEventClick = onAddEventClick
+                onAddEventClick = onAddEventClick,
+                onEventClick = onEventClick
             )
         }
     }
@@ -133,13 +135,15 @@ internal fun MyEventScreen(
     modifier: Modifier = Modifier,
     eventList: List<Event>,
     publishers: Map<String, User>,
-    onAddEventClick: () -> Unit = {}
+    onAddEventClick: () -> Unit = {},
+    onEventClick: (String) -> Unit = {}
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         MyEventContent(
             modifier = Modifier.matchParentSize(),
             eventList = eventList,
             publishers = publishers,
+            onEventClick = onEventClick
         )
         ExtendedFloatingActionButton(
             onClick = onAddEventClick,
@@ -161,6 +165,7 @@ fun MyEventContent(
     modifier: Modifier = Modifier,
     eventList: List<Event>,
     publishers: Map<String, User> = emptyMap(),
+    onEventClick: (String) -> Unit = {}
 ) {
     LazyColumn(
         modifier = modifier
@@ -184,7 +189,9 @@ fun MyEventContent(
                 eventName = event.eventName ?: "Intet navn",
                 eventDate = event.eventDate?.toString() ?: "",
                 eventTime = event.eventStartTime?.toString() ?: "",
-                onClick = {}
+                onClick = {
+                    event.eventId?.let { onEventClick(it) }
+                }
             )
         }
     }

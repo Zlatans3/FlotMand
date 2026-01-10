@@ -48,7 +48,7 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginRoute(
+internal fun LoginRoute(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
     onLoginSuccess: () -> Unit = {},

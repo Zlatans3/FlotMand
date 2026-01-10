@@ -10,6 +10,10 @@ interface DinnerEventService {
 
     // Current user's events only
     val dinnerEventsByUserId: Flow<List<Event>>
+
+    // Realtime listener for a specific event document
+    fun observeDinnerEvent(dinnerEventId: String): Flow<Event?>
+
     suspend fun createDinnerEvent(dinnerEvent: Event)
     suspend fun readDinnerEvent(dinnerEventId: String): Event?
     suspend fun updateDinnerEvent(dinnerEvent: Event)

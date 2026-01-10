@@ -20,6 +20,7 @@ data class Event(
     val participantIds: List<String>? = null,
     val eventName: String? = null,
     val location: String? = null,
+    val geoLocation: GeoLocation? = null,
     // Firestore-compatible fields (stored as Strings)
     var eventDateString: String? = null,
     var eventStartTimeString: String? = null
@@ -46,6 +47,7 @@ data class Event(
         participantIds: List<String>? = this.participantIds,
         eventName: String? = this.eventName,
         location: String? = this.location,
+        geoLocation: GeoLocation? = this.geoLocation,
         eventDate: LocalDate? = this.eventDate,
         eventStartTime: LocalTime? = this.eventStartTime
     ): Event {
@@ -55,6 +57,7 @@ data class Event(
             participantIds = participantIds,
             eventName = eventName,
             location = location,
+            geoLocation = geoLocation,
             eventDateString = eventDate?.toString() ?: this.eventDateString,
             eventStartTimeString = eventStartTime?.toString() ?: this.eventStartTimeString
         )
@@ -96,6 +99,7 @@ data class Event(
             participantIds: List<String>? = null,
             eventName: String? = null,
             location: String? = null,
+            geoLocation: GeoLocation? = null,
             eventDate: LocalDate? = null,
             eventStartTime: LocalTime? = null
         ): Event {
@@ -105,6 +109,7 @@ data class Event(
                 participantIds = participantIds,
                 eventName = eventName,
                 location = location,
+                geoLocation = geoLocation,
                 eventDateString = eventDate?.toString(),
                 eventStartTimeString = eventStartTime?.toString()
             )

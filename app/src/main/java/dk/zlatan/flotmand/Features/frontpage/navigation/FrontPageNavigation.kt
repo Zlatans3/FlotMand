@@ -26,7 +26,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
             when (key) {
                 FrontPageDestination.FrontPageScreen -> NavEntry(key) {
                     FrontPageRoute(
-                        onClickEvent = { eventId ->
+                        onDinnerEventClick = { eventId ->
                             viewModel.navigate(FrontPageDestination.EventDetail(eventId))
                         }
                     )

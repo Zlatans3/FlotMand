@@ -12,14 +12,19 @@ data class User(
     val photoUrl: String = "",
     val isAnonymous: Boolean = true
 ) {
+    fun getFirstName(): String {
+        return displayName.split(" ").firstOrNull() ?: displayName
+    }
+
     companion object {
         fun mockUserWithCounter(counter: Int): List<User> {
             return List(counter) { index ->
+                val names = listOf("Zlatan Stadler", "Gustav Rasslan", "Mikkel Rahbek", "David Sandell", "Oliver Payne", "Lasse Sandø")
                 User(
                     id = "user${index + 1}",
                     email = "user${index}@gmail.com",
                             provider = "mockProvider",
-                    displayName = "Mock User ${index + 1}",
+                    displayName = names.random(),
                     phoneNumber = "12345678",
                     isAnonymous = false
                 )
