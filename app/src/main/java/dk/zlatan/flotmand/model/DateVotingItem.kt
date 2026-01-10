@@ -39,7 +39,7 @@ data class DateOption(
  * @param dateOptions List of date options available for voting
  * @param createdAtString ISO-8601 timestamp of when voting was created
  */
-data class DateVoting(
+data class DateVotingItem(
     @DocumentId
     val votingId: String? = null,
     val creatorId: String? = null,
@@ -56,6 +56,10 @@ data class DateVoting(
         get() = dateOptions.sumOf { it.voteCount }
 
     @get:Exclude
+    val usersVoted: Int
+        get() = dateOptions.flatMap { it.votersId }.toSet().size
+
+    @get:Exclude
     val isOpen: Boolean
         get() = status == VotingStatus.OPEN
 
@@ -63,7 +67,7 @@ data class DateVoting(
         return if (totalVotes == 0) 0 else (dateOption.voteCount * 100) / totalVotes
     }
 
-    fun addVote(date: LocalDate, userId: String): DateVoting {
+    fun addVote(date: LocalDate, userId: String): DateVotingItem {
         val updatedOptions = dateOptions.map { option ->
             if (option.localDate == date) {
                 // Add vote if not already voted
@@ -80,7 +84,7 @@ data class DateVoting(
         return this.copy(dateOptions = updatedOptions)
     }
 
-    fun removeVote(date: LocalDate, userId: String): DateVoting {
+    fun removeVote(date: LocalDate, userId: String): DateVotingItem {
         val updatedOptions = dateOptions.map { option ->
             if (option.localDate == date) {
                 option.copy(votersId = option.votersId.filterNot { it == userId })
@@ -89,6 +93,30 @@ data class DateVoting(
             }
         }
         return this.copy(dateOptions = updatedOptions)
+    }
+
+    companion object {
+        fun mockDateVotingItemCount(count: Int): DateVotingItem {
+            val options = (1..count).map {
+                DateOption(
+                    date = LocalDate.now().plusDays(it.toLong()).toString(),
+                    votersId = List(it) { "user_$it" }
+                )
+            }
+            return DateVotingItem(
+                votingId = "voting_mock",
+                creatorId = "creator_mock",
+                status = VotingStatus.OPEN,
+                dateOptions = options,
+                createdAtString = LocalDate.now().toString()
+            )
+        }
+
+        fun mockDateVotingItemListCount(listCount: Int, optionCount: Int): List<DateVotingItem> {
+            return (1..listCount).map {
+                mockDateVotingItemCount(optionCount)
+            }
+        }
     }
 }
 

@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,10 +45,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.ui.DateCard
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.DateOption
-import dk.zlatan.flotmand.model.DateVoting
+import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.User
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,17 +112,17 @@ internal fun DateVotingDetailRoute(
 
         DateVotingDetailScreen(
             modifier = Modifier.padding(paddingValues),
-            dateVoting = uiState.dateVoting,
+            dateVotingItem = uiState.dateVotingItem,
             currentUserId = uiState.currentUserId,
             votersByUserId = uiState.votersByUserId,
             onVoteForDate = viewModel::onVoteForDate,
             onRemoveVote = viewModel::onRemoveVote,
             onAddDate = { showDatePicker = true },
             errorMessage = uiState.errorMessage,
-            isCreator = uiState.dateVoting?.creatorId == uiState.currentUserId,
+            isCreator = uiState.dateVotingItem?.creatorId == uiState.currentUserId,
             onCreateEvent = {
                 // Get the winning date from the voting
-                val winningDate = uiState.dateVoting?.winningDate
+                val winningDate = uiState.dateVotingItem?.winningDate
                 if (winningDate?.localDate != null) {
                     // TODO: Navigate to create event screen with the winning date pre-filled
                     // For now, we'll just delete the voting
@@ -139,9 +144,9 @@ internal fun DateVotingDetailRoute(
                     TextButton(
                         onClick = {
                             datePickerState.selectedDateMillis?.let { millis ->
-                                val selectedDate = java.time.Instant
+                                val selectedDate = Instant
                                     .ofEpochMilli(millis)
-                                    .atZone(java.time.ZoneId.systemDefault())
+                                    .atZone(ZoneId.systemDefault())
                                     .toLocalDate()
                                 viewModel.onAddDateOption(selectedDate)
                             }
@@ -166,16 +171,16 @@ internal fun DateVotingDetailRoute(
 @Composable
 private fun DateVotingDetailScreen(
     modifier: Modifier = Modifier,
-    dateVoting: DateVoting? = null,
-    currentUserId: String = "",
-    votersByUserId: Map<String, User> = emptyMap(),
-    onVoteForDate: (LocalDate) -> Unit = {},
-    onRemoveVote: (LocalDate) -> Unit = {},
-    onAddDate: () -> Unit = {},
-    errorMessage: String? = null,
-    isCreator: Boolean = false,
-    onCreateEvent: () -> Unit = {},
-    onDeleteVoting: () -> Unit = {}
+    dateVotingItem: DateVotingItem?,
+    currentUserId: String,
+    votersByUserId: Map<String, User>,
+    onVoteForDate: (LocalDate) -> Unit,
+    onRemoveVote: (LocalDate) -> Unit,
+    onAddDate: () -> Unit,
+    errorMessage: String?,
+    isCreator: Boolean,
+    onCreateEvent: () -> Unit,
+    onDeleteVoting: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -196,12 +201,12 @@ private fun DateVotingDetailScreen(
         }
 
         // Voting Stats Section
-        if (dateVoting != null) {
-            VotingStatsSection(dateVoting = dateVoting)
+        if (dateVotingItem != null) {
+            VotingStatsSection(dateVotingItem = dateVotingItem)
 
             // Date Options Section
             VotingDatesSection(
-                dateVoting = dateVoting,
+                dateVotingItem = dateVotingItem,
                 currentUserId = currentUserId,
                 votersByUserId = votersByUserId,
                 onVoteForDate = onVoteForDate,
@@ -212,7 +217,7 @@ private fun DateVotingDetailScreen(
             AddDateButton(onAddDate = onAddDate)
 
             // Creator Actions Section (only for creator)
-            if (isCreator && dateVoting.dateOptions.isNotEmpty()) {
+            if (isCreator && dateVotingItem.dateOptions.isNotEmpty()) {
                 CreatorActionsSection(
                     onCreateEvent = onCreateEvent,
                     onDeleteVoting = onDeleteVoting
@@ -240,7 +245,7 @@ private fun VotingDetailsHeader(isCreator: Boolean) {
 }
 
 @Composable
-private fun VotingStatsSection(dateVoting: DateVoting) {
+private fun VotingStatsSection(dateVotingItem: DateVotingItem) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -249,11 +254,11 @@ private fun VotingStatsSection(dateVoting: DateVoting) {
     ) {
         VotingStat(
             label = "Datoer",
-            value = dateVoting.dateOptions.size.toString()
+            value = dateVotingItem.dateOptions.size.toString()
         )
         VotingStat(
             label = "Brugere Stemt",
-            value = dateVoting.dateOptions
+            value = dateVotingItem.dateOptions
                 .flatMap { it.votersId }
                 .distinct()
                 .size
@@ -261,7 +266,7 @@ private fun VotingStatsSection(dateVoting: DateVoting) {
         )
         VotingStat(
             label = "Status",
-            value = if (dateVoting.status.name == "OPEN") "Åben" else "Lukket"
+            value = if (dateVotingItem.status.name == "OPEN") "Åben" else "Lukket"
         )
     }
 }
@@ -269,7 +274,7 @@ private fun VotingStatsSection(dateVoting: DateVoting) {
 @Composable
 private fun VotingStat(label: String, value: String) {
     Column(
-        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
@@ -287,7 +292,7 @@ private fun VotingStat(label: String, value: String) {
 
 @Composable
 private fun VotingDatesSection(
-    dateVoting: DateVoting,
+    dateVotingItem: DateVotingItem,
     currentUserId: String,
     votersByUserId: Map<String, User> = emptyMap(),
     onVoteForDate: (LocalDate) -> Unit,
@@ -301,7 +306,7 @@ private fun VotingDatesSection(
         )
 
         // Sort date options by vote count (descending), then by date (ascending)
-        val sortedDateOptions = dateVoting.dateOptions.sortedWith(
+        val sortedDateOptions = dateVotingItem.dateOptions.sortedWith(
             compareByDescending<DateOption> { it.voteCount }
                 .thenBy { it.localDate }
         )
@@ -322,11 +327,11 @@ private fun VotingDatesSection(
                 label = "dateCardSlide_$dateKey"
             ) {
                 // Get actual user objects for voters, with fallback display names if data not loaded yet
-                val participants = dateOption.votersId.mapNotNull { voterId ->
+                val participants = dateOption.votersId.map { voterId ->
                     votersByUserId[voterId] ?: User(id = voterId, displayName = "Loading...")
                 }
 
-                val formatter = DateTimeFormatter.ofPattern("EEEE, MMM d'th'", java.util.Locale.ENGLISH)
+                val formatter = DateTimeFormatter.ofPattern("EEEE, MMM d'th'", Locale.ENGLISH)
                 val dateString = dateOption.localDate?.format(formatter) ?: "Unknown date"
 
                 val votingCount = dateOption.voteCount
@@ -344,7 +349,7 @@ private fun VotingDatesSection(
                     date = dateString,
                     subtitle = subtitle,
                     voters = participants,
-                    votePercentage = dateVoting.getVotePercentage(dateOption),
+                    votePercentage = dateVotingItem.getVotePercentage(dateOption),
                     isSelected = isSelected,
                     onClick = {
                         dateOption.localDate?.let { date ->
@@ -369,7 +374,7 @@ private fun AddDateButton(onAddDate: () -> Unit) {
             .clickable(onClick = onAddDate)
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Filled.Add,
@@ -391,7 +396,7 @@ private fun CreatorActionsSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            text = "Creator Handlinger",
+            text = "Handlinger",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -403,7 +408,7 @@ private fun CreatorActionsSection(
                 .clickable(onClick = onCreateEvent)
                 .padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Filled.Add,
@@ -432,10 +437,10 @@ private fun CreatorActionsSection(
                 .clickable(onClick = onDeleteVoting)
                 .padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Filled.Add,
+                imageVector = Icons.Filled.Delete,
                 contentDescription = "Delete voting",
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(8.dp)
@@ -474,15 +479,25 @@ private fun DateVotingDetailScreenPreview() {
         )
     )
 
-    val mockDateVoting = DateVoting(
+    val mockDateVotingItem = DateVotingItem(
         votingId = "voting1",
+        creatorId = "1",
         dateOptions = mockDateOptions
     )
 
     FlotMandTheme {
         DateVotingDetailScreen(
             modifier = Modifier,
-            dateVoting = mockDateVoting
+            dateVotingItem = mockDateVotingItem,
+            currentUserId = "",
+            votersByUserId = emptyMap(),
+            onVoteForDate = { },
+            onRemoveVote = { },
+            onAddDate = { },
+            errorMessage = null,
+            isCreator = true,
+            onCreateEvent = { },
+            onDeleteVoting = { },
         )
     }
 }

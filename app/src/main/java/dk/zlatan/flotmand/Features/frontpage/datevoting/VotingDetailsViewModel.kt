@@ -3,7 +3,7 @@ package dk.zlatan.flotmand.Features.frontpage.datevoting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.zlatan.flotmand.model.DateVoting
+import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.VotingStatus
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DateVotingService
@@ -18,7 +18,7 @@ import javax.inject.Inject
 import java.time.LocalDateTime
 
 data class DateVotingListUiState(
-    val votings: List<DateVoting> = emptyList(),
+    val votings: List<DateVotingItem> = emptyList(),
     val currentUserId: String = "",
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
@@ -37,7 +37,7 @@ class DateVotingListViewModel @Inject constructor(
     )
 
     val uiState: StateFlow<DateVotingListUiState> = combine(
-        dateVotingService.allDateVotings,
+        dateVotingService.allDateVotingsItem,
         _transientState
     ) { votings, transient ->
         DateVotingListUiState(
@@ -68,7 +68,7 @@ class DateVotingListViewModel @Inject constructor(
             try {
                 _transientState.update { it.copy(snackbarMessage = null) }
 
-                val newVoting = DateVoting(
+                val newVoting = DateVotingItem(
                     creatorId = accountService.currentUserId,
                     status = VotingStatus.OPEN,
                     dateOptions = emptyList(),

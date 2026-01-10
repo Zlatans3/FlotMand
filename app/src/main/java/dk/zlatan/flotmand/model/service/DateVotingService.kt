@@ -1,6 +1,6 @@
 package dk.zlatan.flotmand.model.service
 
-import dk.zlatan.flotmand.model.DateVoting
+import dk.zlatan.flotmand.model.DateVotingItem
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -8,27 +8,27 @@ interface DateVotingService {
     /**
      * Observe a date voting session by its ID
      */
-    fun observeVotingByIdFlow(votingId: String): Flow<DateVoting?>
+    fun observeVotingByIdFlow(votingId: String): Flow<DateVotingItem?>
 
     /**
      * Get all active date voting sessions
      */
-    val allDateVotings: Flow<List<DateVoting>>
+    val allDateVotingsItem: Flow<List<DateVotingItem>>
 
     /**
      * Create a new standalone date voting session
      */
-    suspend fun createDateVoting(dateVoting: DateVoting): String
+    suspend fun createDateVoting(dateVotingItem: DateVotingItem): String
 
     /**
      * Get a specific date voting session by ID
      */
-    suspend fun getDateVoting(votingId: String): DateVoting?
+    suspend fun getDateVoting(votingId: String): DateVotingItem?
 
     /**
      * Update an existing date voting session
      */
-    suspend fun updateDateVoting(dateVoting: DateVoting)
+    suspend fun updateDateVoting(dateVotingItem: DateVotingItem)
 
     /**
      * Delete a date voting session

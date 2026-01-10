@@ -6,7 +6,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import dk.zlatan.flotmand.model.DateOption
-import dk.zlatan.flotmand.model.DateVoting
+import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.VotingStatus
 import dk.zlatan.flotmand.model.service.DateVotingService
 import jakarta.inject.Inject
@@ -15,11 +15,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class DateVotingServiceImpl @Inject constructor() : DateVotingService {
 
-    override fun observeVotingByIdFlow(votingId: String): Flow<DateVoting?> = callbackFlow {
+    override fun observeVotingByIdFlow(votingId: String): Flow<DateVotingItem?> = callbackFlow {
         val docRef = Firebase.firestore
             .collection(DATE_VOTING_COLLECTION)
             .document(votingId)
@@ -44,7 +43,7 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
         awaitClose { registration.remove() }
     }
 
-    override val allDateVotings: Flow<List<DateVoting>>
+    override val allDateVotingsItem: Flow<List<DateVotingItem>>
         get() = callbackFlow {
             val listenerRegistration = Firebase.firestore
                 .collection(DATE_VOTING_COLLECTION)
@@ -72,13 +71,13 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
             awaitClose { listenerRegistration.remove() }
         }
 
-    override suspend fun createDateVoting(dateVoting: DateVoting): String {
+    override suspend fun createDateVoting(dateVotingItem: DateVotingItem): String {
         try {
-            Log.d(TAG, "Creating new date voting with creator: ${dateVoting.creatorId}")
+            Log.d(TAG, "Creating new date voting with creator: ${dateVotingItem.creatorId}")
 
             val docRef = Firebase.firestore
                 .collection(DATE_VOTING_COLLECTION)
-                .add(dateVoting)
+                .add(dateVotingItem)
                 .await()
 
             Log.d(TAG, "Successfully created date voting with ID: ${docRef.id}")
@@ -89,7 +88,7 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
         }
     }
 
-    override suspend fun getDateVoting(votingId: String): DateVoting? {
+    override suspend fun getDateVoting(votingId: String): DateVotingItem? {
         return try {
             val doc = Firebase.firestore
                 .collection(DATE_VOTING_COLLECTION)
@@ -109,17 +108,17 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
         }
     }
 
-    override suspend fun updateDateVoting(dateVoting: DateVoting) {
+    override suspend fun updateDateVoting(dateVotingItem: DateVotingItem) {
         try {
             Firebase.firestore
                 .collection(DATE_VOTING_COLLECTION)
-                .document(dateVoting.votingId.orEmpty())
-                .set(dateVoting)
+                .document(dateVotingItem.votingId.orEmpty())
+                .set(dateVotingItem)
                 .await()
 
-            Log.d(TAG, "Updated date voting: ${dateVoting.votingId}")
+            Log.d(TAG, "Updated date voting: ${dateVotingItem.votingId}")
         } catch (e: Exception) {
-            Log.e(TAG, "Error updating date voting ${dateVoting.votingId}: ${e.message}", e)
+            Log.e(TAG, "Error updating date voting ${dateVotingItem.votingId}: ${e.message}", e)
             throw e
         }
     }
@@ -208,9 +207,9 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
         }
     }
 
-    private fun safeParseDateVoting(doc: DocumentSnapshot): DateVoting? {
+    private fun safeParseDateVoting(doc: DocumentSnapshot): DateVotingItem? {
         return try {
-            doc.toObject<DateVoting>()
+            doc.toObject<DateVotingItem>()
         } catch (e: Exception) {
             Log.e(TAG, "Failed to parse document ${doc.id}: ${e.message}", e)
             null

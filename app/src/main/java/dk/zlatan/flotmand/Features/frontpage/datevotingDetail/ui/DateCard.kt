@@ -150,7 +150,7 @@ internal fun DateCard(
 
                 // Vote percentage (right side)
                 Text(
-                    text = "$votePercentage% voted",
+                    text = "$votePercentage% stemte",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 8.dp)
