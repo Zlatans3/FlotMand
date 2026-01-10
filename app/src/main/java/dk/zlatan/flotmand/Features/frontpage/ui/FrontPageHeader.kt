@@ -136,10 +136,10 @@ fun FmAnimatableTopBar(
 fun HeaderContent(
     modifier: Modifier = Modifier,
     name: String,
-    scrollProgress: Float = 0f // 0f = visible, 1f = hidden
+    scrollProgress: Float = 0f
     ) {
     val alpha = 1f - scrollProgress
-    val translationY = -80f * scrollProgress // Slide up 80px as it fades
+    val translationY = -80f * scrollProgress
 
     Column(
         modifier = modifier
@@ -159,7 +159,7 @@ fun HeaderContent(
         VSpacer(8.dp)
 
         Text(
-            text = "Velkommen tilbage til Flotmand appen",
+            text = "Velkommen tilbage til Flotte Mand!",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
             modifier = Modifier.padding(horizontal = 24.dp),

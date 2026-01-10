@@ -60,6 +60,7 @@ internal fun DateVotingDetailRoute(
     modifier: Modifier = Modifier,
     votingId: String,
     onDismiss: () -> Unit = {},
+    onCreateEvent: (String) -> Unit = {},
     viewModel: DateVotingViewModel = hiltViewModel<DateVotingViewModel, DateVotingViewModel.Factory>(
         key = votingId,
         creationCallback = { factory ->
@@ -121,14 +122,9 @@ internal fun DateVotingDetailRoute(
             errorMessage = uiState.errorMessage,
             isCreator = uiState.dateVotingItem?.creatorId == uiState.currentUserId,
             onCreateEvent = {
-                // Get the winning date from the voting
-                val winningDate = uiState.dateVotingItem?.winningDate
-                if (winningDate?.localDate != null) {
-                    // TODO: Navigate to create event screen with the winning date pre-filled
-                    // For now, we'll just delete the voting
-                    viewModel.deleteVoting()
-                } else {
-                    // Show error if no winning date
+                // Navigate to AddEvent screen with the voting ID
+                uiState.dateVotingItem?.votingId?.let { votingId ->
+                    onCreateEvent(votingId)
                 }
             },
             onDeleteVoting = viewModel::deleteVoting

@@ -64,7 +64,13 @@ import java.time.format.DateTimeFormatter
 @Composable
 internal fun AddEventScreenRoute(
     modifier: Modifier = Modifier,
-    viewModel: AddEventViewModel = hiltViewModel(),
+    votingId: String? = null,
+    viewModel: AddEventViewModel = hiltViewModel<AddEventViewModel, AddEventViewModel.Factory>(
+        key = votingId ?: "new_event",
+        creationCallback = { factory ->
+            factory.create(votingId)
+        }
+    ),
     onDismiss: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

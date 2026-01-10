@@ -16,6 +16,7 @@ import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
 import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.DateVotingDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
+import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreenRoute
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -45,21 +46,31 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                     )
                 }
 
-                is FrontPageDestination.VotingDetail -> NavEntry(key) {
-
-                    DateVotingDetailRoute(
-                        modifier = Modifier,
-                        onDismiss = { viewModel.pop() },
-                        votingId = key.votingId,
-                    )
-                }
-
                 FrontPageDestination.DateVoting -> NavEntry(key) {
                     DateVotingRoute(
                         modifier = Modifier,
                         onVotingClick = {
                             viewModel.navigate(FrontPageDestination.VotingDetail(it))
                         }
+                    )
+                }
+
+                is FrontPageDestination.VotingDetail -> NavEntry(key) {
+
+                    DateVotingDetailRoute(
+                        modifier = Modifier,
+                        onDismiss = { viewModel.pop() },
+                        votingId = key.votingId,
+                        onCreateEvent = { votingId ->
+                            viewModel.navigate(FrontPageDestination.AddEventFromVoting(votingId))
+                        }
+                    )
+                }
+
+                is FrontPageDestination.AddEventFromVoting -> NavEntry(key) {
+                    AddEventScreenRoute(
+                        votingId = key.votingId,
+                        onDismiss = { viewModel.pop() }
                     )
                 }
 

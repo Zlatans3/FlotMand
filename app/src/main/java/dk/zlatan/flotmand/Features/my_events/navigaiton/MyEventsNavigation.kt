@@ -43,6 +43,13 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                     )
                 }
 
+                is MyEventsDestination.AddEventFromVoting -> NavEntry(key) {
+                    AddEventScreenRoute(
+                        votingId = key.votingId,
+                        onDismiss = { viewModel.pop() }
+                    )
+                }
+
                 is MyEventsDestination.EventDetail -> NavEntry(key) {
                     EventDetailScreenRoute(
                         eventId = key.eventId,

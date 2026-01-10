@@ -6,5 +6,5 @@ sealed class FrontPageDestination {
     data class VotingDetail(val votingId: String) : FrontPageDestination()
     data object DateVoting : FrontPageDestination()
     data object HostRotation : FrontPageDestination()
-
+    data class AddEventFromVoting(val votingId: String) : FrontPageDestination()
 }

@@ -141,3 +141,43 @@ fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, R> combine(
         array[8] as T9
     )
 }
+
+fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, R> combine(
+    flow1: Flow<T1>,
+    flow2: Flow<T2>,
+    flow3: Flow<T3>,
+    flow4: Flow<T4>,
+    flow5: Flow<T5>,
+    flow6: Flow<T6>,
+    flow7: Flow<T7>,
+    flow8: Flow<T8>,
+    flow9: Flow<T9>,
+    flow10: Flow<T10>,
+    transform: suspend (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10) -> R
+): Flow<R> = combine(
+    flow1,
+    flow2,
+    flow3,
+    flow4,
+    flow5,
+    flow6,
+    flow7,
+    flow8,
+    flow9,
+    flow10
+) { array ->
+    @Suppress("UNCHECKED_CAST")
+    transform(
+        array[0] as T1,
+        array[1] as T2,
+        array[2] as T3,
+        array[3] as T4,
+        array[4] as T5,
+        array[5] as T6,
+        array[6] as T7,
+        array[7] as T8,
+        array[8] as T9,
+        array[9] as T10
+    )
+}
+
