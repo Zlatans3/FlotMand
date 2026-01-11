@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
-import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
 import java.time.LocalDate
@@ -60,13 +59,13 @@ fun DateTimeInfoBox(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.DateRange,
-                        contentDescription = "Date",
+                        contentDescription = "Dato",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                     Column {
                         Text(
-                            text = "DATE",
+                            text = "DATO",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -104,7 +103,7 @@ fun DateTimeInfoBox(
                     )
                     Column {
                         Text(
-                            text = "TIME",
+                            text = "TIDSPUNKT",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -153,7 +152,7 @@ fun ParticipantsInfoBox(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "PARTICIPANTS",
+                    text = "DELTAGERE",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

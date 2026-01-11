@@ -296,7 +296,7 @@ fun EventCard(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.CalendarToday,
-                            contentDescription = "Date",
+                            contentDescription = "Dato",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(14.dp)
                         )

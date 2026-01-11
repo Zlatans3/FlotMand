@@ -328,7 +328,7 @@ private fun VotingDatesSection(
                 }
 
                 val formatter = DateTimeFormatter.ofPattern("EEEE, MMM d'th'", Locale.ENGLISH)
-                val dateString = dateOption.localDate?.format(formatter) ?: "Unknown date"
+                val dateString = dateOption.localDate?.format(formatter) ?: "Ukendt Dato"
 
                 val votingCount = dateOption.voteCount
                 val subtitle = if (votingCount == 0) {
@@ -374,7 +374,7 @@ private fun AddDateButton(onAddDate: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Filled.Add,
-            contentDescription = "Add date",
+            contentDescription = "Tilføj dato",
             tint = MaterialTheme.colorScheme.primary
         )
         Text(
