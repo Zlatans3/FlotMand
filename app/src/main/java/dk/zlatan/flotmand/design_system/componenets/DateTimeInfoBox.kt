@@ -158,7 +158,7 @@ fun ParticipantsInfoBox(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "${participants.size} joined",
+                    text = "${participants.size} har svaret",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )

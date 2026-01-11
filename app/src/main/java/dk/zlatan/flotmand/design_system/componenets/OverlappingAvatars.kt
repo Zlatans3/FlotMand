@@ -1,5 +1,17 @@
 package dk.zlatan.flotmand.design_system.componenets
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -22,6 +34,7 @@ import androidx.compose.ui.zIndex
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun OverlappingAvatars(
     participants: List<User>,
@@ -46,47 +59,66 @@ fun OverlappingAvatars(
         modifier = Modifier
             .width(totalWidth)
             .height(avatarSize)
+            .animateContentSize(animationSpec = spring())
     ) {
         visible.forEachIndexed { index, user ->
-            Box(
-                modifier = Modifier
-                    .size(avatarSize)
-                    .offset(x = spacing * index)
-                    .border(
-                        width = 2.dp,
-                        color = containerColor,
-                        shape = CircleShape
-                    )
-                    .zIndex((visible.size + index).toFloat())
-            ) {
-                ProfileImage(
+            AnimatedContent(
+                targetState = user.id ?: user.displayName ?: index.toString(),
+                transitionSpec = {
+                    (
+                        slideInHorizontally(initialOffsetX = { it }) +
+                            fadeIn(animationSpec = tween(150)) +
+                            scaleIn(animationSpec = tween(150))
+                        ) togetherWith (
+                        slideOutHorizontally(targetOffsetX = { it }) +
+                            fadeOut(animationSpec = tween(150)) +
+                            scaleOut(animationSpec = tween(150))
+                        )
+                },
+                label = "avatar-$index"
+            ) { _ ->
+                Box(
                     modifier = Modifier
-                        .size(avatarSize),
-                    profilePic = user.photoUrl,
-                    userName = user.displayName
-                )
+                        .size(avatarSize)
+                        .offset(x = spacing * index)
+                        .border(
+                            width = 2.dp,
+                            color = containerColor,
+                            shape = CircleShape
+                        )
+                        .zIndex((visible.size + index).toFloat())
+                ) {
+                    ProfileImage(
+                        modifier = Modifier
+                            .size(avatarSize),
+                        profilePic = user.photoUrl,
+                        userName = user.displayName
+                    )
+                }
             }
         }
-        if (showOverflow) {
-            Box(
-                modifier = Modifier
-                    .offset(x = spacing * visible.size)
-                    .size(avatarSize)
-                    .clip(CircleShape)
-                    .border(
-                        width = 2.dp,
-                        color = containerColor,
-                        shape = CircleShape
+        AnimatedContent(targetState = showOverflow, label = "overflow-badge") { shouldShowOverflow ->
+            if (shouldShowOverflow) {
+                Box(
+                    modifier = Modifier
+                        .offset(x = spacing * visible.size)
+                        .size(avatarSize)
+                        .clip(CircleShape)
+                        .border(
+                            width = 2.dp,
+                            color = containerColor,
+                            shape = CircleShape
+                        )
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .zIndex((visible.size * 2).toFloat()),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+${participants.size - visible.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .zIndex((visible.size * 2).toFloat()),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "+${participants.size - visible.size}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                }
             }
         }
     }
