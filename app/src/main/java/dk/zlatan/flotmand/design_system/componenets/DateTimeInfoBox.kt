@@ -171,7 +171,8 @@ fun ParticipantsInfoBox(
             ) {
                 OverlappingAvatars(
                     participants = participants,
-                    avatarSize = 32.dp
+                    avatarSize = 32.dp,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
                 HSpacer(4.dp)
                 Icon(

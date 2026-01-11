@@ -140,6 +140,7 @@ internal fun FrontPageRoute(
                 onClickEvent = onDinnerEventClick,
                 onDateVotingClick = onDateVotingClick,
                 eventList = uiState.eventList,
+                previousEvents = uiState.previousEvents,
                 publishers = uiState.publishers,
                 user = uiState.currentUser,
                 nextEvent = uiState.nextEvent,
@@ -155,6 +156,7 @@ internal fun FrontPageRoute(
 internal fun FrontpageContent(
     modifier: Modifier = Modifier,
     eventList: List<Event> = emptyList(),
+    previousEvents: List<Event> = emptyList(),
     publishers: Map<String, User> = emptyMap(),
     onClickEvent: (String) -> Unit,
     onDateVotingClick: () -> Unit = {},
@@ -190,7 +192,9 @@ internal fun FrontpageContent(
     }
 
     var showAllEvents by rememberSaveable { mutableStateOf(false) }
+    var showAllPreviousEvents by rememberSaveable { mutableStateOf(false) }
     val eventsToShow = if (showAllEvents) eventList else eventList.take(3)
+    val previousEventsToShow = if (showAllPreviousEvents) previousEvents else previousEvents.take(3)
 
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -246,32 +250,64 @@ internal fun FrontpageContent(
                 }
             }
 
-            // Section title for event list
-            item {
-                VSpacer(20.dp)
-                SectionHeader(
-                    title = "Kommende Events",
-                    actionText = if (showAllEvents) null else "Se alle",
-                    onActionClick = {
-                        showAllEvents = true
-                    }
-                )
+            // Section title for upcoming events
+            if (eventList.isNotEmpty()) {
+                item {
+                    VSpacer(20.dp)
+                    SectionHeader(
+                        title = "Kommende Events",
+                        actionText = if (showAllEvents) null else "Se alle",
+                        onActionClick = {
+                            showAllEvents = true
+                        }
+                    )
+                }
+
+                items(eventsToShow) { eventDetails ->
+                    val publisher = publishers[eventDetails.publisherId]
+                    EventCard(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp, horizontal = 12.dp),
+                        userName = publisher?.displayName ?: "Ukendt bruger",
+                        eventName = eventDetails.eventName.orEmpty(),
+                        eventDate = eventDetails.eventDate.toString(),
+                        eventTime = eventDetails.eventStartTime.toString(),
+                        userProfilePic = publisher?.photoUrl,
+                        onClick = {
+                            onClickEvent(eventDetails.eventId.orEmpty())
+                        }
+                    )
+                }
             }
 
-            items(eventsToShow) { eventDetails ->
-                val publisher = publishers[eventDetails.publisherId]
-                EventCard(
-                    modifier = Modifier
-                        .padding(vertical = 8.dp, horizontal = 12.dp),
-                    userName = publisher?.displayName ?: "Ukendt bruger",
-                    eventName = eventDetails.eventName.orEmpty(),
-                    eventDate = eventDetails.eventDate.toString(),
-                    eventTime = eventDetails.eventStartTime.toString(),
-                    userProfilePic = publisher?.photoUrl,
-                    onClick = {
-                        onClickEvent(eventDetails.eventId.orEmpty())
-                    }
-                )
+            // Previous events section
+            if (previousEvents.isNotEmpty()) {
+                item {
+                    VSpacer(20.dp)
+                    SectionHeader(
+                        title = "Tidligere Events",
+                        actionText = if (showAllPreviousEvents) null else "Se alle",
+                        onActionClick = {
+                            showAllPreviousEvents = true
+                        }
+                    )
+                }
+
+                items(previousEventsToShow) { eventDetails ->
+                    val publisher = publishers[eventDetails.publisherId]
+                    EventCard(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp, horizontal = 12.dp),
+                        userName = publisher?.displayName ?: "Ukendt bruger",
+                        eventName = eventDetails.eventName.orEmpty(),
+                        eventDate = eventDetails.eventDate.toString(),
+                        eventTime = eventDetails.eventStartTime.toString(),
+                        userProfilePic = publisher?.photoUrl,
+                        onClick = {
+                            onClickEvent(eventDetails.eventId.orEmpty())
+                        }
+                    )
+                }
             }
 
             item {
@@ -371,6 +407,7 @@ private fun DateVotingCard(
 @Composable
 private fun FrontpageContentPreview() {
     val events = previewEvents(5)
+    val previousEvents = previewEvents(3)
     val mockPublishers = mapOf(
         "publisher1" to User(
             id = "publisher1",
@@ -387,6 +424,7 @@ private fun FrontpageContentPreview() {
         FrontpageContent(
             modifier = Modifier,
             eventList = events,
+            previousEvents = previousEvents,
             publishers = mockPublishers,
             onClickEvent = {},
             onDateVotingClick = {},

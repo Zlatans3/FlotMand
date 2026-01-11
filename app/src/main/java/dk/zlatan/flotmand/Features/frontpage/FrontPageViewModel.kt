@@ -20,6 +20,7 @@ import javax.inject.Inject
 
 data class FrontPageUiState(
     val eventList: List<Event> = emptyList(),
+    val previousEvents: List<Event> = emptyList(),
     val publishers: Map<String, User> = emptyMap(),
     val currentUser: User,
     val nextEvent: Event? = null,
@@ -40,9 +41,15 @@ class FrontPageViewModel @Inject constructor(
         dinnerEventService.allDinnerEvents,
         accountService.currentUser.filterNotNull()
     ) { events, currentUser ->
+        val today = LocalDate.now()
         val sortedEvents = events.sortedWith(
             compareBy<Event> { it.eventDate ?: LocalDate.MAX }
         )
+
+        // Separate upcoming and previous events
+        val upcomingEvents = sortedEvents.filter { it.eventDate == null || it.eventDate!! >= today }
+        val previousEvents = sortedEvents.filter { it.eventDate != null && it.eventDate!! < today }
+
         val publisherIds = sortedEvents.mapNotNull { it.publisherId }.distinct()
 
         val publishersMap = if (publisherIds.isNotEmpty()) {
@@ -55,8 +62,8 @@ class FrontPageViewModel @Inject constructor(
             emptyMap()
         }
 
-        val nextEvent = sortedEvents.firstOrNull { it.eventDate != null }
-        val displayEvents = sortedEvents.filterNot { it.eventId == nextEvent?.eventId }
+        val nextEvent = upcomingEvents.firstOrNull { it.eventDate != null }
+        val displayEvents = upcomingEvents.filterNot { it.eventId == nextEvent?.eventId }
 
         val nextEventPublisher = nextEvent?.publisherId?.let { publishersMap[it] }
 
@@ -74,6 +81,7 @@ class FrontPageViewModel @Inject constructor(
 
         FrontPageUiState(
             eventList = displayEvents,
+            previousEvents = previousEvents.sortedByDescending { it.eventDate },
             publishers = publishersMap,
             currentUser = currentUser,
             nextEvent = nextEvent,
@@ -87,6 +95,7 @@ class FrontPageViewModel @Inject constructor(
             emit(
                 FrontPageUiState(
                     eventList = emptyList(),
+                    previousEvents = emptyList(),
                     publishers = emptyMap<String, User>(),
                     currentUser = User(),
                     nextEvent = null,
