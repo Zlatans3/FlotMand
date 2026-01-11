@@ -47,11 +47,10 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.DateOption
 import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.User
+import dk.zlatan.flotmand.util.DanishDateFormatter
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -327,8 +326,9 @@ private fun VotingDatesSection(
                     votersByUserId[voterId] ?: User(id = voterId, displayName = "Loading...")
                 }
 
-                val formatter = DateTimeFormatter.ofPattern("EEEE, MMM d'th'", Locale.ENGLISH)
-                val dateString = dateOption.localDate?.format(formatter) ?: "Ukendt Dato"
+                val dateString = dateOption.localDate?.let {
+                    DanishDateFormatter.formatDateDanishWithWeekday(it)
+                } ?: "Ukendt Dato"
 
                 val votingCount = dateOption.voteCount
                 val subtitle = if (votingCount == 0) {
