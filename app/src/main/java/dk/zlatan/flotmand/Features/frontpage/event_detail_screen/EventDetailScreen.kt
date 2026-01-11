@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,17 +27,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCard
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCard
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
-import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
-import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionsParticipationItem
 import dk.zlatan.flotmand.design_system.componenets.buttons.FmPrimaryButton
+import dk.zlatan.flotmand.design_system.componenets.DateTimeInfoBox
+import dk.zlatan.flotmand.design_system.componenets.ParticipantsInfoBox
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
@@ -101,16 +103,17 @@ internal fun EventDetailScreenRoute(
                                 viewModel.showParticipants()
                             }
                         },
-                        onDateClick = {
-                            val dateTimeString = "${
-                                event.eventDate?.toString().orEmpty()
-                            } ${event.eventStartTime.toString()}"
-                            clipboardManager.setText(AnnotatedString(dateTimeString))
-                        },
-                        onLocationLongClick = {
-                            val locationString = event.location.orEmpty()
-                            clipboardManager.setText(AnnotatedString(locationString))
-                        },
+                        // TODO: Zlatan 11/01/2026 Might need this later
+//                        onDateClick = {
+//                            val dateTimeString = "${
+//                                event.eventDate?.toString().orEmpty()
+//                            } ${event.eventStartTime.toString()}"
+//                            clipboardManager.setText(AnnotatedString(dateTimeString))
+//                        },
+//                        onLocationLongClick = {
+//                            val locationString = event.location.orEmpty()
+//                            clipboardManager.setText(AnnotatedString(locationString))
+//                        },
                         onEditEvent = {
                             // TODO: Zlatan 06/01/2026 WILL BE ADDED IN LATER PATCH
                         },
@@ -126,7 +129,8 @@ internal fun EventDetailScreenRoute(
                                 address = event.location
                             )
                             context.startActivity(intent)
-                        }
+                        },
+                        participants = uiState.participants ?: emptyList()
                     )
                 }
                 // If isDeleted is true, content will navigate away before empty state renders
@@ -205,21 +209,21 @@ private fun EventDetailScreenContent(
     onParticipateClick: () -> Unit,
     onEditEvent: () -> Unit,
     onDeleteEvent: () -> Unit,
-    onDateClick: () -> Unit,
-    onLocationLongClick: () -> Unit,
     onMapClick: () -> Unit,
+    participants: List<User>
 ) {
     val eventOrganizerName = if (isPublisher) "Dig" else publisher?.displayName.orEmpty()
     Column(
         modifier = modifier
-            .fillMaxWidth()
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background) // Use background color
+            .verticalScroll(rememberScrollState())
+            .background(MaterialTheme.colorScheme.background)
     ) {
         DetailHeader(
             eventStatus = event.status,
             name = eventOrganizerName,
             eventTitle = event.eventName.orEmpty(),
+            eventDescription = event.description,
             publisherProfileImageUrl = publisher?.photoUrl,
             isPublisher = isPublisher,
             onEditClick = onEditEvent,
@@ -227,53 +231,57 @@ private fun EventDetailScreenContent(
             onBackClick = onDismiss
         )
         VSpacer(20.dp)
-        SectionItem(
-            modifier = Modifier,
-            leadingIcon = FmIcons.Calendar,
-            title = "${event.eventDate?.toString().orEmpty()} ${event.eventStartTime.toString()}",
-            onLongClick = onDateClick,
-            iconTint = MaterialTheme.colorScheme.primary,
-            textColor = MaterialTheme.colorScheme.onSurface
+
+        // Date and Time Info Boxes
+        DateTimeInfoBox(
+            date = event.eventDate,
+            time = event.eventStartTime,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        SectionsParticipationItem(
-            modifier = Modifier,
-            leadingIcon = FmIcons.Person,
-            trailingIcon = FmIcons.chevronRight,
-            title = "Deltagere: ${event.participantIds?.size ?: 0}/6",
+        VSpacer(20.dp)
+
+        // Participants Info Box
+        ParticipantsInfoBox(
+            participants = event.participantIds?.mapNotNull { participantId ->
+                participants.find { it.id == participantId }
+            } ?: emptyList(),
             onClick = onParticipantsClick,
-            iconTint = MaterialTheme.colorScheme.secondary,
-            textColor = MaterialTheme.colorScheme.onSurface
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        SectionItem(
-            modifier = Modifier,
-            leadingIcon = FmIcons.mapPin,
-            title = event.location.orEmpty(),
-            onLongClick = onLocationLongClick,
-            iconTint = MaterialTheme.colorScheme.tertiary,
-            textColor = MaterialTheme.colorScheme.onSurface
+        VSpacer(20.dp)
+
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 20.dp)
         )
 
         VSpacer(20.dp)
 
         // Only show map if we have valid coordinates
         if (geoLocation != null && geoLocation.isValid()) {
+            Text(
+                text = "Lokation",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            VSpacer(12.dp)
             AddressMapCard(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp),
-                backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                addressName = event.streetAddress,
+                cityName = event.city,
                 geoLocation = geoLocation,
-                onClick = onMapClick // Handle map click
+                onCardClick = onMapClick,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             )
         }
 
+        VSpacer(80.dp)
+
         Spacer(modifier = Modifier.weight(1f))
-        val participationText = if (isParticipating == true) {
-            "deltager"
-        } else {
-            "Deltag"
-        }
         if (!isPublisher && event.status == EventStatus.UPCOMING) {
             val participationText = if (isParticipating == true) "deltager" else "Deltag"
             FmPrimaryButton(
@@ -330,14 +338,9 @@ private fun EventDetailScreenPreview() {
     EventDetailScreenContent(
         modifier = Modifier,
         event = event,
-        geoLocation = GeoLocation(latitude = 55.6761, longitude = 12.5683), // Copenhagen
-        publisher = User(
-            id = "test-publisher",
-            displayName = "Lasse Sandø",
-            email = "publisher@test.com"
-        ),
-        onLocationLongClick = {},
-        onDateClick = {},
+        geoLocation = GeoLocation(latitude = 55.6761, longitude = 12.5683),
+        publisher = User.mockUserWithCounter(1).first(),
+        participants = User.mockUserWithCounter(5),
         onEditEvent = {},
         onDeleteEvent = {},
         isPublisher = false,
@@ -357,13 +360,8 @@ private fun EventDetailScreenIsPublisherPreview() {
         modifier = Modifier,
         event = event,
         geoLocation = null, // Test without map
-        publisher = User(
-            id = "user1",
-            displayName = "Zlatan Stadler",
-            email = "publisher@test.com",
-        ),
-        onLocationLongClick = {},
-        onDateClick = {},
+        publisher = User.mockUserWithCounter(1).first(),
+        participants = User.mockUserWithCounter(5),
         onEditEvent = {},
         onDeleteEvent = {},
         isPublisher = true,

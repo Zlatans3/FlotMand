@@ -94,6 +94,14 @@ data class Event(
             }
         }
 
+    @get:Exclude
+    val streetAddress: String
+        get() = location?.substringBeforeLast(',', location)?.trim() ?: ""
+
+    @get:Exclude
+    val city: String
+        get() = location?.substringAfterLast(',', "")?.trim() ?: ""
+
     companion object {
         // Factory method for creating Event with LocalDate/LocalTime
         fun create(
