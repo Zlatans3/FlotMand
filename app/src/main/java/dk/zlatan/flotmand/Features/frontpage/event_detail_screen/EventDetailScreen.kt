@@ -2,18 +2,28 @@ package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -44,6 +55,10 @@ import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.GeoLocation
 import dk.zlatan.flotmand.model.User
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -213,87 +228,125 @@ private fun EventDetailScreenContent(
     participants: List<User>
 ) {
     val eventOrganizerName = if (isPublisher) "Dig" else publisher?.displayName.orEmpty()
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        DetailHeader(
-            eventStatus = event.status,
-            name = eventOrganizerName,
-            eventTitle = event.eventName.orEmpty(),
-            eventDescription = event.description,
-            publisherProfileImageUrl = publisher?.photoUrl,
-            isPublisher = isPublisher,
-            onEditClick = onEditEvent,
-            onDeleteClick = onDeleteEvent,
-            onBackClick = onDismiss
-        )
-        VSpacer(20.dp)
+    val scrollState = rememberScrollState()
+    var showFab by remember { mutableStateOf(true) }
 
-        // Date and Time Info Boxes
-        DateTimeInfoBox(
-            date = event.eventDate,
-            time = event.eventStartTime,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
+    LaunchedEffect(scrollState) {
+        var previous = 0
+        snapshotFlow { scrollState.value }
+            .map { value ->
+                val delta = value - previous
+                previous = value
+                delta
+            }
+            .distinctUntilChanged()
+            .collectLatest { delta ->
+                if (abs(delta) > 4) {
+                    showFab = delta < 0
+                }
+            }
+    }
 
-        VSpacer(20.dp)
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            DetailHeader(
+                eventStatus = event.status,
+                name = eventOrganizerName,
+                eventTitle = event.eventName.orEmpty(),
+                eventDescription = event.description,
+                publisherProfileImageUrl = publisher?.photoUrl,
+                isPublisher = isPublisher,
+                onEditClick = onEditEvent,
+                onDeleteClick = onDeleteEvent,
+                onBackClick = onDismiss
+            )
+            VSpacer(20.dp)
 
-        // Participants Info Box
-        ParticipantsInfoBox(
-            participants = event.participantIds?.mapNotNull { participantId ->
-                participants.find { it.id == participantId }
-            } ?: emptyList(),
-            onClick = onParticipantsClick,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-
-        VSpacer(20.dp)
-
-        HorizontalDivider(
-            modifier = Modifier.padding(horizontal = 20.dp)
-        )
-
-        VSpacer(20.dp)
-
-        // Only show map if we have valid coordinates
-        if (geoLocation != null && geoLocation.isValid()) {
-            Text(
-                text = "Lokation",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground,
+            // Date and Time Info Boxes
+            DateTimeInfoBox(
+                date = event.eventDate,
+                time = event.eventStartTime,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
-            VSpacer(12.dp)
-            AddressMapCard(
-                addressName = event.streetAddress,
-                cityName = event.city,
-                geoLocation = geoLocation,
-                onCardClick = onMapClick,
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+
+            VSpacer(20.dp)
+
+            // Participants Info Box
+            ParticipantsInfoBox(
+                participants = event.participantIds?.mapNotNull { participantId ->
+                    participants.find { it.id == participantId }
+                } ?: emptyList(),
+                onClick = onParticipantsClick,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
+
+            VSpacer(20.dp)
+
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 20.dp)
+            )
+
+            VSpacer(20.dp)
+
+            // Only show map if we have valid coordinates
+            if (geoLocation != null && geoLocation.isValid()) {
+                Text(
+                    text = "Lokation",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                VSpacer(12.dp)
+                AddressMapCard(
+                    addressName = event.streetAddress,
+                    cityName = event.city,
+                    geoLocation = geoLocation,
+                    onCardClick = onMapClick,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+
+            VSpacer(40.dp)
+
+            Spacer(modifier = Modifier.height(80.dp)) // Padding for FAB overlap
         }
 
-        VSpacer(80.dp)
-
-        Spacer(modifier = Modifier.weight(1f))
         if (!isPublisher && event.status == EventStatus.UPCOMING) {
             val participationText = if (isParticipating == true) "deltager" else "Deltag"
-            FmPrimaryButton(
-                text = participationText,
-                onClick = onParticipateClick,
-                leadingIcon = if (isParticipating == true) FmIcons.Check else null,
-                isLoading = (isParticipating == null),
-                isAffirmed = (isParticipating == true),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
+            AnimatedVisibility(
+                visible = showFab,
+                modifier = Modifier.align(Alignment.BottomEnd),
+                enter = fadeIn(animationSpec = tween(200)) + slideInVertically(initialOffsetY = { it / 2 }),
+                exit = fadeOut(animationSpec = tween(200)) + slideOutVertically(targetOffsetY = { it / 2 })
+            ) {
+                ExtendedFloatingActionButton(
+                    text = {
+                        Text(
+                            text = participationText,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    icon = {
+                        if (isParticipating == true) {
+                            Icon(imageVector = FmIcons.Check, contentDescription = null)
+                        }
+                    },
+                    onClick = onParticipateClick,
+                    expanded = true,
+                    containerColor = if (isParticipating == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 24.dp)
+                )
+            }
         }
     }
 }
