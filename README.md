@@ -43,11 +43,21 @@ I love being creative, but designing is hard. I created a figma but most of it i
 
 [FIGMA](https://www.figma.com/design/ABW0FggMW6D8578ptpNgAx/Flotmand-App?node-id=0-1&t=AW1gJDiwbwg9VJYZ-1)
 
-<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/4962817b-3784-4a07-8397-6a8d6c133c35" />
+## 📱 Some nice looking screenshots
 
-<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/f6c12e31-0df7-4061-aaf2-f06bcb0a97d7" />
+<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/a00794d6-fd7a-4974-a603-2bdfd94f93c6" />
 
-<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/66f0b76f-1b14-4746-bbb8-00a69e2ab544" />
+
+<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/cf3ee348-9955-485b-bb0f-0bcd9847dfce" />
+
+
+<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/14ccd8a8-c211-4c16-83f8-a8f555200e1c" />
+
+
+
+## 🗺️ Adress lookup when creating event 
+
+![lille](https://github.com/user-attachments/assets/585135dd-b50d-4d85-bec6-fc7d4c911072)
 
 
 # ✍️ technical details 
