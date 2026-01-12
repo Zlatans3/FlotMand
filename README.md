@@ -59,7 +59,7 @@ I love being creative, but designing is hard. I created a figma but most of it i
 
 ![lille](https://github.com/user-attachments/assets/585135dd-b50d-4d85-bec6-fc7d4c911072)
 
-## Animated Ez Date polls
+## 🗓️ Animated Ez Date polls
 
 ![afstemning gif](https://github.com/user-attachments/assets/5b5099a8-4dc1-46fc-8152-46ade2323f9d)
 
