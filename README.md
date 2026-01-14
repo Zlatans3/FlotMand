@@ -84,12 +84,37 @@ I am hoping to add a lot of interesting entires to this list. Here you will be a
 - Widget with Glance
 - Using Google maps to show address
 - Use of Room to save user data
-- 
 
-More text to come
+# 🏗️ Structure 
 
+Using MermaidJs to bring you a broad visual representation of how navigation is structered in this app. 
 
-More text to come
+```mermaid
+graph TD;
+  Login[Login] --> B{Firebase};
+  B --> |authentication| C[Front page];
+  C --> D[My Events]
+  C --> E[profile]
+  C --> |Any event| G[Event details]
+  D --> |CurrentUser event| G
+  E --> |Log out| Login
+  E --> j[Account Information]
+  C --> H[Polls]
+  H --> i{Poll details}
+  D --> F[Create event]
+subgraph Bottom Navigation
+            C
+            D
+            E
+end
+subgraph App launch
+            Login
+end
+````
+
+# 👤 Can i use this app? 
+
+As of now. Sadly not really.. Though i am planning to work on a system that lets any user create a group that they can invite they're friends to which would mean anyone would be able to use it 🌞
 
 
 
