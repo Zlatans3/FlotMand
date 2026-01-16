@@ -78,8 +78,8 @@ I am hoping to add a lot of interesting entires to this list. Here you will be a
 
 # 📍 Road Map 
 
-- hoping to recreate this project as Compose multiplatform
-- add retrofit support for adding addresses and rejseplanen app.
+- Hoping to recreate this project as Compose multiplatform
+- Add retrofit support for adding addresses and rejseplanen API.
 - Notifications for reminders
 - Widget with Glance
 - Using Google maps to show address
