@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.design_system.componenets.buttons.FmAnimatableButton
 import dk.zlatan.flotmand.design_system.componenets.buttons.FmPrimaryButton
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
@@ -223,10 +224,16 @@ private fun ParticipantsRow(
 
         val participationText = if (isParticipating == true) "deltager" else "Deltag"
         if (!isPublisher) {
-            FmPrimaryButton(
+            FmAnimatableButton(
                 text = participationText,
                 onClick = onParticipateClick,
-                leadingIcon = if (isParticipating == true) Icons.Filled.Check else null,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = "Check Icon",
+                        modifier = Modifier.size(16.dp)
+                    )
+                },
                 isLoading = (isLoading),
                 isAffirmed = (isParticipating == true),
                 modifier = Modifier

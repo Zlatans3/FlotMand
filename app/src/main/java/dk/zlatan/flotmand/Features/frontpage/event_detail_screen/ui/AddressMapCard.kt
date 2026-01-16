@@ -46,11 +46,14 @@ fun AddressMapCard(
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onCardClick),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(6),
         colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = {
+            val fullAddress = "$addressName, $cityName"
+            clipboardManager.setText(AnnotatedString(fullAddress))
+        }
     ) {
         // Map with badges
         Box(
@@ -71,11 +74,7 @@ fun AddressMapCard(
         Column(
             modifier = Modifier
                 .padding(horizontal = 20.dp, vertical = 16.dp)
-                .clickable(onClick = {
-                    val fullAddress = "$addressName, $cityName"
-                    clipboardManager.setText(AnnotatedString(fullAddress))
-                }
-                )
+
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(

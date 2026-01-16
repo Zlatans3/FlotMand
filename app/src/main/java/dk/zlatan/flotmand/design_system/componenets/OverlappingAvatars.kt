@@ -63,7 +63,7 @@ fun OverlappingAvatars(
     ) {
         visible.forEachIndexed { index, user ->
             AnimatedContent(
-                targetState = user.id ?: user.displayName ?: index.toString(),
+                targetState = user,
                 transitionSpec = {
                     (
                         slideInHorizontally(initialOffsetX = { it }) +
@@ -76,7 +76,7 @@ fun OverlappingAvatars(
                         )
                 },
                 label = "avatar-$index"
-            ) { _ ->
+            ) { animatedUser ->
                 Box(
                     modifier = Modifier
                         .size(avatarSize)
@@ -91,8 +91,8 @@ fun OverlappingAvatars(
                     ProfileImage(
                         modifier = Modifier
                             .size(avatarSize),
-                        profilePic = user.photoUrl,
-                        userName = user.displayName
+                        profilePic = animatedUser.photoUrl,
+                        userName = animatedUser.displayName
                     )
                 }
             }

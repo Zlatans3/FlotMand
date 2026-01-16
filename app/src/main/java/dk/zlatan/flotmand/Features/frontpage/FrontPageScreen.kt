@@ -23,6 +23,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,7 +45,6 @@ import dk.zlatan.flotmand.Features.frontpage.ui.FmAnimatableTopBar
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageNewHeader
 import dk.zlatan.flotmand.Features.frontpage.ui.NextEventSection
 import dk.zlatan.flotmand.design_system.componenets.EventCard
-import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.Event
@@ -196,7 +197,19 @@ internal fun FrontpageContent(
     val eventsToShow = if (showAllEvents) eventList else eventList.take(3)
     val previousEventsToShow = if (showAllPreviousEvents) previousEvents else previousEvents.take(3)
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    var profileClickedMessage by remember { mutableStateOf("") }
+
+    LaunchedEffect(profileClickedMessage) {
+        if (profileClickedMessage.isNotEmpty()) {
+            val message = profileClickedMessage
+            snackbarHostState.showSnackbar(message)
+            profileClickedMessage = ""
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
+        SnackbarHost(hostState = snackbarHostState)
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -208,7 +221,10 @@ internal fun FrontpageContent(
             ) {
                 FmAnimatableTopBar(
                     user = user,
-                    scrollProgress = scrollProgress
+                    scrollProgress = scrollProgress,
+                    onUserClicked = {
+                        profileClickedMessage = "Hov hov hov.. Profilen er ikke tilgængelig endnu 😉"
+                    }
                 )
             }
             item {
@@ -256,9 +272,9 @@ internal fun FrontpageContent(
                     VSpacer(20.dp)
                     SectionHeader(
                         title = "Kommende Events",
-                        actionText = if (showAllEvents) null else "Se alle",
+                        actionText = if (showAllEvents) "Se mindre" else "Se alle",
                         onActionClick = {
-                            showAllEvents = true
+                            showAllEvents = !showAllEvents
                         }
                     )
                 }
@@ -286,9 +302,9 @@ internal fun FrontpageContent(
                     VSpacer(20.dp)
                     SectionHeader(
                         title = "Tidligere Events",
-                        actionText = if (showAllPreviousEvents) null else "Se alle",
+                        actionText = if (showAllPreviousEvents) "Se mindre" else "Se alle",
                         onActionClick = {
-                            showAllPreviousEvents = true
+                            showAllPreviousEvents = !showAllPreviousEvents
                         }
                     )
                 }

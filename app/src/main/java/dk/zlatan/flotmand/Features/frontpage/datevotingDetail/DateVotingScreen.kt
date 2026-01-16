@@ -38,11 +38,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.ui.DateCard
+import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.ui.DeleteDialog
+import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.DateOption
 import dk.zlatan.flotmand.model.DateVotingItem
@@ -69,6 +75,8 @@ internal fun DateVotingDetailRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Show snackbar when there's a message
     LaunchedEffect(uiState.snackbarMessage) {
@@ -119,6 +127,7 @@ internal fun DateVotingDetailRoute(
             onRemoveVote = viewModel::onRemoveVote,
             onAddDate = { showDatePicker = true },
             errorMessage = uiState.errorMessage,
+            publisher = uiState.publisherUser,
             isCreator = uiState.dateVotingItem?.creatorId == uiState.currentUserId,
             onCreateEvent = {
                 // Navigate to AddEvent screen with the voting ID
@@ -126,8 +135,23 @@ internal fun DateVotingDetailRoute(
                     onCreateEvent(votingId)
                 }
             },
-            onDeleteVoting = viewModel::deleteVoting
+            onShowDeleteDialog = {
+                showDeleteDialog = true
+            }
         )
+
+        if (showDeleteDialog) {
+            DeleteDialog(
+                onConfirmDelete = {
+                    viewModel.deleteVoting()
+                    showDeleteDialog = false
+                    onDismiss()
+                },
+                onDismiss = {
+                    showDeleteDialog = false
+                }
+            )
+        }
 
         // Date Picker Dialog
         if (showDatePicker) {
@@ -171,11 +195,12 @@ private fun DateVotingDetailScreen(
     votersByUserId: Map<String, User>,
     onVoteForDate: (LocalDate) -> Unit,
     onRemoveVote: (LocalDate) -> Unit,
+    publisher: User? = null,
     onAddDate: () -> Unit,
     errorMessage: String?,
     isCreator: Boolean,
     onCreateEvent: () -> Unit,
-    onDeleteVoting: () -> Unit
+    onShowDeleteDialog: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -184,7 +209,10 @@ private fun DateVotingDetailScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header Section
-        VotingDetailsHeader(isCreator = isCreator)
+        VotingDetailsHeader(
+            isCreator = isCreator,
+            user = publisher
+        )
 
         // Error message if present
         if (errorMessage != null) {
@@ -215,7 +243,7 @@ private fun DateVotingDetailScreen(
             if (isCreator && dateVotingItem.dateOptions.isNotEmpty()) {
                 CreatorActionsSection(
                     onCreateEvent = onCreateEvent,
-                    onDeleteVoting = onDeleteVoting
+                    onShowDeleteDialog = onShowDeleteDialog
                 )
             }
         }
@@ -223,7 +251,10 @@ private fun DateVotingDetailScreen(
 }
 
 @Composable
-private fun VotingDetailsHeader(isCreator: Boolean) {
+private fun VotingDetailsHeader(
+    isCreator: Boolean,
+    user: User?,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = if (isCreator) "Min Afstemning" else "Afstemning",
@@ -236,6 +267,34 @@ private fun VotingDetailsHeader(isCreator: Boolean) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+
+        if (user != null && !isCreator)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ProfileImage(
+                    profilePic = user.photoUrl,
+                    profileSize = 24.dp,
+                    userName = user.displayName,
+                )
+
+                val creatorText = buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(fontWeight = FontWeight.Light)
+                    ) {
+                        append("Oprettet af ")
+                    }
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                        append(user.getFirstName())
+                    }
+                }
+                Text(
+                    text = creatorText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
     }
 }
 
@@ -388,7 +447,7 @@ private fun AddDateButton(onAddDate: () -> Unit) {
 @Composable
 private fun CreatorActionsSection(
     onCreateEvent: () -> Unit,
-    onDeleteVoting: () -> Unit
+    onShowDeleteDialog: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
@@ -430,7 +489,7 @@ private fun CreatorActionsSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onDeleteVoting)
+                .clickable(onClick = onShowDeleteDialog)
                 .padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -493,7 +552,49 @@ private fun DateVotingDetailScreenPreview() {
             errorMessage = null,
             isCreator = true,
             onCreateEvent = { },
-            onDeleteVoting = { },
+            onShowDeleteDialog = { },
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DateVotingDetailIsNotCreatorScreenPreview() {
+    val mockDateOptions = listOf(
+        DateOption(
+            date = LocalDate.of(2026, 1, 23).toString(),
+            votersId = listOf("user1", "user2", "user3")
+        ),
+        DateOption(
+            date = LocalDate.of(2026, 1, 24).toString(),
+            votersId = listOf("user4", "user5")
+        ),
+        DateOption(
+            date = LocalDate.of(2026, 1, 25).toString(),
+            votersId = listOf("user6")
+        )
+    )
+
+    val mockDateVotingItem = DateVotingItem(
+        votingId = "voting1",
+        creatorId = "1",
+        dateOptions = mockDateOptions
+    )
+
+    FlotMandTheme {
+        DateVotingDetailScreen(
+            modifier = Modifier,
+            dateVotingItem = mockDateVotingItem,
+            currentUserId = "",
+            votersByUserId = emptyMap(),
+            onVoteForDate = { },
+            onRemoveVote = { },
+            publisher = User.mockUserWithCounter(1).first(),
+            onAddDate = { },
+            errorMessage = null,
+            isCreator = false,
+            onCreateEvent = { },
+            onShowDeleteDialog = { },
         )
     }
 }

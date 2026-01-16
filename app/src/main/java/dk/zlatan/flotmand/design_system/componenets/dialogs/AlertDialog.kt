@@ -13,16 +13,17 @@ fun FmAlertDialog(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     isLoading: Boolean = false,
-    onSignOutClick: () -> Unit,
+    onActionClick: () -> Unit,
 ) {
     AlertDialog(
+        modifier = modifier,
         title = { Text("Er du sikker på du vil logge ud?") },
         text = { Text("Hvis du logger ud, kan du ikke se de flotte mænds beskeder") },
         dismissButton = {
             Button(onClick = onDismiss, enabled = !isLoading) { Text(text = "Annuller") }
         },
         confirmButton = {
-            Button(onClick = onSignOutClick, enabled = !isLoading) {
+            Button(onClick = onActionClick, enabled = !isLoading) {
                 if (isLoading) CircularProgressIndicator(modifier = Modifier) else Text(text = "Log ud")
             }
         },
@@ -61,7 +62,7 @@ fun FmConfirmDialog(
 private fun AlertDialogPreview() {
     FmAlertDialog(
         onDismiss = {},
-        onSignOutClick = {}
+        onActionClick = {}
     )
 }
 

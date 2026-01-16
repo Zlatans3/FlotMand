@@ -2,12 +2,16 @@ package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,10 +46,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCard
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
-import dk.zlatan.flotmand.design_system.componenets.buttons.FmPrimaryButton
 import dk.zlatan.flotmand.design_system.componenets.DateTimeInfoBox
 import dk.zlatan.flotmand.design_system.componenets.ParticipantsInfoBox
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
@@ -335,8 +338,15 @@ private fun EventDetailScreenContent(
                         )
                     },
                     icon = {
-                        if (isParticipating == true) {
-                            Icon(imageVector = FmIcons.Check, contentDescription = null)
+                        AnimatedContent(
+                            targetState = isParticipating == true,
+                            transitionSpec = {
+                                fadeIn(tween(220)) + scaleIn(tween(220)) togetherWith  fadeOut(tween(120)) + scaleOut(tween(120))
+                            }
+                        ) { participating ->
+                            if (participating) {
+                                Icon(imageVector = FmIcons.Check, contentDescription = null)
+                            }
                         }
                     },
                     onClick = onParticipateClick,

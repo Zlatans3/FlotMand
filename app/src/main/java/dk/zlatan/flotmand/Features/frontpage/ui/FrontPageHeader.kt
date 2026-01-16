@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.frontpage.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +30,8 @@ import dk.zlatan.flotmand.model.User
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 
 @Composable
@@ -64,8 +67,9 @@ fun FmAnimatableTopBar(
     modifier: Modifier = Modifier,
     user: User,
     scrollProgress: Float = 0f,
-    onClick: () -> Unit = { }
-    ) {
+    onNotificationClick: () -> Unit = {}, // no op for now
+    onUserClicked: (() -> Unit)?
+) {
     val cornerRadius = (24.dp * scrollProgress)
 
     Row(
@@ -102,32 +106,40 @@ fun FmAnimatableTopBar(
         Spacer(modifier = Modifier.weight(1f))
 
         // Notification Bell Icon with circular background
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    shape = CircleShape
+        // TODO: Zlatan 16/01/2026 Implement notification functionality in next release
+        if(false){
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        shape = CircleShape
+                    )
+                    .clickable(onClick = onNotificationClick),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Notifications,
+                    contentDescription = "Notifications",
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.surfaceVariant,
                 )
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Notifications,
-                contentDescription = "Notifications",
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.surfaceVariant,
-            )
+            }
         }
 
         HSpacer(12.dp)
 
         // User Profile Icon
+        val haptic = LocalHapticFeedback.current
         ProfileImage(
             modifier = Modifier,
             profilePic = user.photoUrl,
             userName = user.getFirstName(),
-            onClick = onClick
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                Log.d("FmAnimatableTopBar", "Profile image clicked")
+                onUserClicked?.invoke()
+            }
         )
     }
 }
@@ -174,7 +186,9 @@ fun HeaderContent(
 private fun FmAnimatableTopBarPreview() {
     FmAnimatableTopBar(
         modifier = Modifier.graphicsLayer {},
-        user = User.mockUserWithCounter(1).first()
+        user = User.mockUserWithCounter(1).first(),
+        onUserClicked = { },
+        onNotificationClick = { }
     )
 }
 

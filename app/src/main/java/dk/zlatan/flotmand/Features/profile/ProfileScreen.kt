@@ -66,7 +66,7 @@ fun ProfileScreenRoute(
             onDismiss = {
                 sinOutDialogState = false
             },
-            onSignOutClick = {
+            onActionClick = {
                 viewModel.signOut()
                 sinOutDialogState = false
                 navigateToLogin()
