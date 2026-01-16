@@ -11,7 +11,7 @@
 
 
 <h1 align="center">
-  👋 Hello Flotmnad
+  👋 Hello FlotMand
 </h1> 
 
 
