@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/4af93d7e-e5d0-4734-9b07-abc62c735a06">
     <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/81c0c2c0-bc28-40de-aee6-d2d03f28bad2">
-    <img width="488" height="508" alt="flotmandapp" src="https://github.com/user-attachments/assets/81c0c2c0-bc28-40de-aee6-d2d03f28bad2">
+    <img width="250"  alt="flotmandapp" src="https://github.com/user-attachments/assets/81c0c2c0-bc28-40de-aee6-d2d03f28bad2">
   </picture>
 </div>
 
@@ -10,7 +10,9 @@
 
 
 
-# 👋 Hello Flotmand!
+<h1 align="center">
+  👋 Hello Flotmnad
+</h1> 
 
 
 This project marks a milestone between friends and that hard work can make hard problems go away! 
@@ -23,11 +25,16 @@ This app is for 6 friends who month after month have celebrated each other's com
 
 The purpose of this app is to stay organised and have a helping tool making sure we never have to ask questions.
 
+<BR><BR>
+
 # ❓ What is this app about?
 
 Concretely speaking this app lets us keep track of all our dinner night events, letting us know who's up next, where to meet up, who will participate and hopefully much more to come! 
 
 if you are interested in following the roadmap, i made public [Trello board](https://trello.com/b/1Xu4SSJk/flotmand-app)
+
+
+<BR><BR>
 
 # ⚙️ What makes this app special? 
 
@@ -36,6 +43,8 @@ This is very loosely based on the Now in Android Repo.
 
 The aim is to make my little hobby project look like enterprice quality app material. 
 
+<BR>
+<BR>
 
 # 🎨 Design
 
@@ -63,7 +72,7 @@ I love being creative, but designing is hard. I created a figma but most of it i
 
 ![afstemning gif](https://github.com/user-attachments/assets/5b5099a8-4dc1-46fc-8152-46ade2323f9d)
 
-
+<BR><BR>
 
 # ✍️ technical details 
 
@@ -88,6 +97,8 @@ I am hoping to add a lot of interesting entires to this list. Here you will be a
 # 🏗️ Structure 
 
 Using MermaidJs to bring you a broad visual representation of how navigation is structered in this app. 
+
+<BR><BR>
 
 ```mermaid
 graph TD;
