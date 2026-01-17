@@ -4,10 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -15,12 +18,15 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.GeoLocation
+import java.time.LocalDate
 
 @Composable
 fun AddressMapCard(
     modifier: Modifier = Modifier,
     geoLocation: GeoLocation,
+    eventDate: LocalDate?,
     backgroundColor: Color = Color(0xFFE0E0E0),
     onClick: (() -> Unit)? = null
 ) {
@@ -36,6 +42,20 @@ fun AddressMapCard(
             .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
+        // StatusBadge at top left
+        if(eventDate != null){
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .zIndex(1f)
+                    .padding(8.dp)
+            ) {
+                StatusCountBadge(
+                    eventDate = eventDate
+                )
+            }
+        }
+
         val uiSettings = MapUiSettings(
             zoomControlsEnabled = false,
             scrollGesturesEnabled = false,

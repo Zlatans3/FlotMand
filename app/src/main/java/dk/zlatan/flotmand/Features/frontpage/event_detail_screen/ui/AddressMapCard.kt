@@ -31,12 +31,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.design_system.componenets.AddressMapCard
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.GeoLocation
+import java.time.LocalDate
 
 @Composable
 fun AddressMapCard(
     addressName: String,
     cityName: String,
+    eventDate: LocalDate?,
     onCardClick: () -> Unit,
     geoLocation: GeoLocation,
     containerColor: Color,
@@ -65,6 +68,7 @@ fun AddressMapCard(
             AddressMapCard(
                 modifier = Modifier.fillMaxSize(),
                 geoLocation = geoLocation,
+                eventDate = eventDate,
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
                 onClick = onCardClick
             )
@@ -115,6 +119,7 @@ private fun AddressMapCardPreview() {
         addressName = "Nyhavn 17",
         cityName = "1051 København K",
         onCardClick = {},
+        eventDate = LocalDate.now().plusDays(3),
         geoLocation = GeoLocation(latitude = 55.6761, longitude = 12.5683), // Copenhagen
         containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.padding(16.dp)

@@ -94,6 +94,7 @@ fun ClosestEventCard(
             AddressMapCard(
                 modifier = Modifier.matchParentSize(),
                 geoLocation = geoLocation,
+                eventDate = event.eventDate,
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
                 onClick = onMapClick
             )

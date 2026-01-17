@@ -49,6 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCard
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.PublisherSection
 import dk.zlatan.flotmand.design_system.componenets.DateTimeInfoBox
 import dk.zlatan.flotmand.design_system.componenets.ParticipantsInfoBox
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
@@ -258,15 +259,19 @@ private fun EventDetailScreenContent(
                 .background(MaterialTheme.colorScheme.background)
         ) {
             DetailHeader(
-                eventStatus = event.status,
-                name = eventOrganizerName,
+                eventDate = event.eventDate,
                 eventTitle = event.eventName.orEmpty(),
                 eventDescription = event.description,
-                publisherProfileImageUrl = publisher?.photoUrl,
                 isPublisher = isPublisher,
                 onEditClick = onEditEvent,
                 onDeleteClick = onDeleteEvent,
                 onBackClick = onDismiss
+            )
+            VSpacer(20.dp)
+            PublisherSection(
+                publisher = publisher,
+                isPublisher = isPublisher,
+                modifier = Modifier
             )
             VSpacer(20.dp)
 
@@ -309,6 +314,7 @@ private fun EventDetailScreenContent(
                     addressName = event.streetAddress,
                     cityName = event.city,
                     geoLocation = geoLocation,
+                    eventDate = null, // No date badge in detail screen
                     onCardClick = onMapClick,
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier

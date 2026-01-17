@@ -269,10 +269,15 @@ internal fun FrontpageContent(
             // Section title for upcoming events
             if (eventList.isNotEmpty()) {
                 item {
+                    val seeMoreOrLess = when {
+                        showAllEvents && eventList.size > 3 -> "Se mindre"
+                        !showAllEvents && eventList.size > 3 -> "Se alle"
+                        else -> null
+                    }
                     VSpacer(20.dp)
                     SectionHeader(
                         title = "Kommende Events",
-                        actionText = if (showAllEvents) "Se mindre" else "Se alle",
+                        actionText = seeMoreOrLess,
                         onActionClick = {
                             showAllEvents = !showAllEvents
                         }
@@ -298,11 +303,16 @@ internal fun FrontpageContent(
 
             // Previous events section
             if (previousEvents.isNotEmpty()) {
+                val seeMoreOrLess = when {
+                    showAllPreviousEvents && previousEvents.size > 3 -> "Se mindre"
+                    !showAllPreviousEvents && previousEvents.size > 3 -> "Se alle"
+                    else -> null
+                }
                 item {
                     VSpacer(20.dp)
                     SectionHeader(
                         title = "Tidligere Events",
-                        actionText = if (showAllPreviousEvents) "Se mindre" else "Se alle",
+                        actionText = seeMoreOrLess,
                         onActionClick = {
                             showAllPreviousEvents = !showAllPreviousEvents
                         }

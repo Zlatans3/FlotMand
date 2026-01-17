@@ -30,28 +30,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import java.time.LocalDate
+import dk.zlatan.flotmand.design_system.componenets.StatusBadge
+import dk.zlatan.flotmand.design_system.componenets.StatusCountBadge
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.model.EventStatus
 
 @Composable
 internal fun DetailHeader(
-    eventStatus: EventStatus,
-    name: String,
+    eventDate: LocalDate?,
     eventTitle: String,
     modifier: Modifier = Modifier,
-    publisherProfileImageUrl: String? = null,
     isPublisher: Boolean = false,
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     eventDescription: String? = null
 ) {
-    val (statusText, statusColor) = when (eventStatus) {
-        EventStatus.UPCOMING -> "Kommende" to MaterialTheme.colorScheme.primary
-        EventStatus.ONGOING -> "I gang" to MaterialTheme.colorScheme.tertiary
-        EventStatus.COMPLETED -> "Færdig" to MaterialTheme.colorScheme.outline
-    }
-
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -102,29 +97,10 @@ internal fun DetailHeader(
                 .padding(horizontal = 20.dp)
                 .padding(top = 70.dp, bottom = 24.dp)
         ) {
-            // Status badge
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 6.dp)
-                            .clip(CircleShape)
-                            .background(statusColor)
-                            .padding(4.dp)
-                    )
-                    Text(
-                        text = statusText,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            if (eventDate != null){
+                StatusCountBadge(
+                    eventDate = eventDate
+                )
             }
 
             VSpacer(20.dp)
@@ -187,8 +163,7 @@ internal fun DetailHeader(
 @Composable
 private fun DetailHeaderPreview() {
     DetailHeader(
-        eventStatus = EventStatus.UPCOMING,
-        name = "Mikkel",
+        eventDate = LocalDate.now().plusDays(3),
         eventTitle = "The Italian Feast",
         eventDescription = "An authentic evening of homemade pasta, vintage wines, and great company in the heart of Copenhagen. Join us for a curated tasting experience.",
         isPublisher = true,
