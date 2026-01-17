@@ -53,7 +53,7 @@ internal fun ParticipantsContent(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier.padding(horizontal = 20.dp),
-            text = "Deltagere",
+            text = "Flotte mænd",
             style = MaterialTheme.typography.headlineMedium,
         )
 

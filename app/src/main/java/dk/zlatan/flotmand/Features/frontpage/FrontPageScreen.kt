@@ -36,6 +36,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -195,7 +196,7 @@ internal fun FrontpageContent(
     var showAllEvents by rememberSaveable { mutableStateOf(false) }
     var showAllPreviousEvents by rememberSaveable { mutableStateOf(false) }
     val eventsToShow = if (showAllEvents) eventList else eventList.take(3)
-    val previousEventsToShow = if (showAllPreviousEvents) previousEvents else previousEvents.take(3)
+    val previousEventsToShow = if (showAllPreviousEvents) previousEvents else previousEvents.take(1)
 
     val snackbarHostState = remember { SnackbarHostState() }
     var profileClickedMessage by remember { mutableStateOf("") }
@@ -304,8 +305,8 @@ internal fun FrontpageContent(
             // Previous events section
             if (previousEvents.isNotEmpty()) {
                 val seeMoreOrLess = when {
-                    showAllPreviousEvents && previousEvents.size > 3 -> "Se mindre"
-                    !showAllPreviousEvents && previousEvents.size > 3 -> "Se alle"
+                    showAllPreviousEvents && previousEvents.size > 1 -> "Se mindre"
+                    !showAllPreviousEvents && previousEvents.size > 1 -> "Se alle"
                     else -> null
                 }
                 item {
@@ -323,6 +324,7 @@ internal fun FrontpageContent(
                     val publisher = publishers[eventDetails.publisherId]
                     EventCard(
                         modifier = Modifier
+                            .alpha(0.6f)
                             .padding(vertical = 8.dp, horizontal = 12.dp),
                         userName = publisher?.displayName ?: "Ukendt bruger",
                         eventName = eventDetails.eventName.orEmpty(),

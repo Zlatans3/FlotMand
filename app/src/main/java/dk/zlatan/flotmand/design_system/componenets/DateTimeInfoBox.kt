@@ -152,7 +152,7 @@ fun ParticipantsInfoBox(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "DELTAGERE",
+                    text = "FLOTTE MÆND",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
