@@ -37,11 +37,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationImagesAndNames
 import dk.zlatan.flotmand.Features.frontpage.ui.FmAnimatableTopBar
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageNewHeader
 import dk.zlatan.flotmand.Features.frontpage.ui.NextEventSection
@@ -302,6 +304,20 @@ internal fun FrontpageContent(
                 }
             }
 
+
+            item {
+                VSpacer(20.dp)
+                SectionHeader(
+                    title = "Næste Flotte Mand",
+//                    actionText = "Se mere",
+                    onActionClick = {
+
+                    }
+                )
+                VSpacer(20.dp)
+
+                RotationImagesAndNames()
+            }
             // Previous events section
             if (previousEvents.isNotEmpty()) {
                 val seeMoreOrLess = when {
@@ -366,7 +382,7 @@ private fun SectionHeader(
         )
         if (actionText != null) {
             ClickableText(
-                text = androidx.compose.ui.text.AnnotatedString(actionText),
+                text = AnnotatedString(actionText),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.primary
                 ),
