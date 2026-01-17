@@ -4,8 +4,11 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -71,6 +74,18 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                 EnterTransition.None,
                 slideOutOfContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Right
+                )
+            )
+        },
+        predictivePopTransitionSpec = { progress: Int ->
+            ContentTransform(
+                EnterTransition.None,
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween<IntOffset>(
+                        durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
+                        easing = FastOutSlowInEasing
+                    )
                 )
             )
         },

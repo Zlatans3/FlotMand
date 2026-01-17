@@ -1,9 +1,13 @@
 package dk.zlatan.flotmand.Features.frontpage.navigation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -26,7 +30,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
     NavDisplay(
         backStack = navigationStack,
         onBack = { viewModel.pop() },
-        entryProvider = { key ->
+        entryProvider = { key: FrontPageDestination ->
             when (key) {
                 FrontPageDestination.FrontPageScreen -> NavEntry(key) {
                     FrontPageRoute(
@@ -82,7 +86,8 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
         transitionSpec = {
             ContentTransform(
                 slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween<IntOffset>(durationMillis = 400, easing = FastOutSlowInEasing)
                 ),
                 ExitTransition.None
             )
@@ -91,14 +96,25 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
             ContentTransform(
                 EnterTransition.None,
                 slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween<IntOffset>(durationMillis = 400, easing = FastOutSlowInEasing)
+                )
+            )
+        },
+        predictivePopTransitionSpec = { progress: Int ->
+            ContentTransform(
+                EnterTransition.None,
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween<IntOffset>(
+                        durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
+                        easing = FastOutSlowInEasing
+                    )
                 )
             )
         },
         entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator()
+            rememberSaveableStateHolderNavEntryDecorator<FrontPageDestination>()
         )
     )
 }
-
-

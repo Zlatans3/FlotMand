@@ -1,38 +1,43 @@
 package dk.zlatan.flotmand.Features.frontpage.ui
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import dk.zlatan.flotmand.R
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
-import dk.zlatan.flotmand.model.User
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
+import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
+import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.model.User
 
 @Composable
 internal fun FrontPageNewHeader(
@@ -71,7 +76,6 @@ fun FmAnimatableTopBar(
     onUserClicked: (() -> Unit)?
 ) {
     val cornerRadius = (24.dp * scrollProgress)
-
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -137,11 +141,67 @@ fun FmAnimatableTopBar(
             userName = user.getFirstName(),
             onClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                Log.d("FmAnimatableTopBar", "Profile image clicked")
                 onUserClicked?.invoke()
             }
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun newFmTopAppBar(
+    modifier: Modifier = Modifier,
+    user: User,
+    scrollProgress: Float = 0f,
+    onNotificationClick: () -> Unit = {}, // no op for now
+    onUserClicked: (() -> Unit)?
+    ) {
+    val insert = TopAppBarDefaults.windowInsets
+    val cornerRadius = (24.dp * scrollProgress)
+    TopAppBar(
+        modifier = modifier.clip(
+            RoundedCornerShape(
+                topStart = 0.dp,
+                topEnd = 0.dp,
+                bottomStart = cornerRadius,
+                bottomEnd = cornerRadius
+            )
+        ),
+        title = {
+            Text(
+                text = "Flotmand",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        },
+        navigationIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.flotmandapp),
+                contentDescription = "Flotmand Logo",
+                modifier = Modifier
+                    .size(40.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+            )
+        },
+        actions = {
+            val haptic = LocalHapticFeedback.current
+            ProfileImage(
+                modifier = Modifier,
+                profilePic = user.photoUrl,
+                userName = user.getFirstName(),
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onUserClicked?.invoke()
+                }
+            )
+            HSpacer(12.dp)
+        },
+        windowInsets = insert,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+
+        ),
+    )
 }
 
 @Composable
@@ -179,6 +239,17 @@ fun HeaderContent(
 
         VSpacer(40.dp)
     }
+}
+
+@Preview
+@Composable
+private fun newFmTopAppBarPreview() {
+    newFmTopAppBar(
+        modifier = Modifier.graphicsLayer {},
+        user = User.mockUserWithCounter(1).first(),
+        onUserClicked = { },
+        onNotificationClick = { }
+    )
 }
 
 @Preview

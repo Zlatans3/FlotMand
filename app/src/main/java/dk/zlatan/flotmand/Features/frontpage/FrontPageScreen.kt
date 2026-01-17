@@ -13,30 +13,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -53,6 +47,9 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.Event.Companion.previewEvents
 import dk.zlatan.flotmand.model.User
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.text.ClickableText
+import dk.zlatan.flotmand.Features.frontpage.ui.newFmTopAppBar
 
 @Composable
 internal fun FrontPageRoute(
@@ -63,95 +60,122 @@ internal fun FrontPageRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState) {
-        Log.d("FrontPageRoute", "UI State changed - isLoading: ${uiState.isLoading}, eventCount: ${uiState.eventList.size}, error: ${uiState.errorMessage}")
+    // Move listState and scrollProgress up here
+    val listState = rememberLazyListState()
+    val scrollOffset by remember {
+        derivedStateOf {
+            if (listState.firstVisibleItemIndex == 0) {
+                listState.firstVisibleItemScrollOffset.toFloat()
+            } else {
+                1000f // Fully collapsed when scrolled past first item
+            }
+        }
+    }
+    val scrollProgress by remember {
+        derivedStateOf {
+            (scrollOffset / 200f).coerceIn(0f, 1f)
+        }
     }
 
-    when {
-        uiState.isLoading -> {
-            Box(
-                modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = "Henter events...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-
-        uiState.errorMessage != null -> {
-            Box(
-                modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "😕",
-                        style = MaterialTheme.typography.displayLarge
-                    )
-                    Text(
-                        text = uiState.errorMessage!!,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-        }
-
-        uiState.eventList.isEmpty() -> {
-            Box(
-                modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "🎉",
-                        style = MaterialTheme.typography.displayLarge
-                    )
-                    Text(
-                        text = "Ingen events endnu",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "Vær den første til at oprette et event!",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        else -> {
-            FrontpageContent(
-                modifier = modifier,
-                onClickEvent = onDinnerEventClick,
-                onDateVotingClick = onDateVotingClick,
-                eventList = uiState.eventList,
-                previousEvents = uiState.previousEvents,
-                publishers = uiState.publishers,
+    Scaffold(
+        topBar = {
+            newFmTopAppBar(
                 user = uiState.currentUser,
-                nextEvent = uiState.nextEvent,
-                nextEventPublisher = uiState.nextEventPublisher,
-                nextEventParticipants = uiState.nextEventParticipants,
-                onParticipateClick = viewModel::onParticipateClick
+                scrollProgress = scrollProgress,
+                onUserClicked = {
+                }
             )
+        }
+    ) { paddingValues ->
+
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier = modifier.padding(paddingValues).fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Henter events...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            uiState.errorMessage != null -> {
+                Box(
+                    modifier = modifier.padding(paddingValues).fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "😕",
+                            style = MaterialTheme.typography.displayLarge
+                        )
+                        Text(
+                            text = uiState.errorMessage!!,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
+
+            uiState.eventList.isEmpty() -> {
+                Box(
+                    modifier = modifier.padding(paddingValues).fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "🎉",
+                            style = MaterialTheme.typography.displayLarge
+                        )
+                        Text(
+                            text = "Ingen events endnu",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Vær den første til at oprette et event!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            else -> {
+                FrontpageContent(
+                    modifier = modifier.padding(paddingValues),
+                    onClickEvent = onDinnerEventClick,
+                    onDateVotingClick = onDateVotingClick,
+                    eventList = uiState.eventList,
+                    previousEvents = uiState.previousEvents,
+                    publishers = uiState.publishers,
+                    user = uiState.currentUser,
+                    nextEvent = uiState.nextEvent,
+                    nextEventPublisher = uiState.nextEventPublisher,
+                    nextEventParticipants = uiState.nextEventParticipants,
+                    onParticipateClick = viewModel::onParticipateClick,
+                    listState = listState,
+                    scrollProgress = scrollProgress
+                )
+            }
         }
     }
 }
@@ -168,8 +192,17 @@ internal fun FrontpageContent(
     user: User,
     nextEvent: Event?,
     nextEventPublisher: User?,
-    nextEventParticipants: List<User>
+    nextEventParticipants: List<User>,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    scrollProgress: Float
 ) {
+    // State for showing all events
+    var showAllEvents by remember { mutableStateOf(false) }
+    var showAllPreviousEvents by remember { mutableStateOf(false) }
+    val eventsToShow = if (showAllEvents || eventList.size <= 3) eventList else eventList.take(3)
+    val previousEventsToShow = if (showAllPreviousEvents || previousEvents.size <= 1) previousEvents else previousEvents.take(1)
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(eventList.size) {
         Log.d("FrontpageContent", "Rendering with ${eventList.size} events")
         eventList.forEach { event ->
@@ -177,40 +210,7 @@ internal fun FrontpageContent(
         }
     }
 
-    val listState = rememberLazyListState()
-    val scrollOffset by remember {
-        derivedStateOf {
-            if (listState.firstVisibleItemIndex == 0) {
-                listState.firstVisibleItemScrollOffset.toFloat()
-            } else {
-                1000f // Fully collapsed when scrolled past first item
-            }
-        }
-    }
-
-    // Calculate scroll progress for corner radius animation (0f to 1f over 200px)
-    val scrollProgress by remember {
-        derivedStateOf {
-            (scrollOffset / 200f).coerceIn(0f, 1f)
-        }
-    }
-
-    var showAllEvents by rememberSaveable { mutableStateOf(false) }
-    var showAllPreviousEvents by rememberSaveable { mutableStateOf(false) }
-    val eventsToShow = if (showAllEvents) eventList else eventList.take(3)
-    val previousEventsToShow = if (showAllPreviousEvents) previousEvents else previousEvents.take(1)
-
-    val snackbarHostState = remember { SnackbarHostState() }
-    var profileClickedMessage by remember { mutableStateOf("") }
-
-    LaunchedEffect(profileClickedMessage) {
-        if (profileClickedMessage.isNotEmpty()) {
-            val message = profileClickedMessage
-            snackbarHostState.showSnackbar(message)
-            profileClickedMessage = ""
-        }
-    }
-
+    // Pass scrollProgress to FrontPageNewHeader
     Box(modifier = modifier.fillMaxSize()) {
         SnackbarHost(hostState = snackbarHostState)
         LazyColumn(
@@ -219,17 +219,6 @@ internal fun FrontpageContent(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
         ) {
-            stickyHeader(
-                contentType = "FrontPageTopBar"
-            ) {
-                FmAnimatableTopBar(
-                    user = user,
-                    scrollProgress = scrollProgress,
-                    onUserClicked = {
-                        profileClickedMessage = "Hov hov hov.. Profilen er ikke tilgængelig endnu 😉"
-                    }
-                )
-            }
             item {
                 FrontPageNewHeader(
                     user = user,
@@ -465,6 +454,9 @@ private fun FrontpageContentPreview() {
         )
     )
     FlotMandTheme {
+        // Provide dummy listState and scrollProgress for preview
+        val listState = rememberLazyListState()
+        val scrollProgress = 0f
         FrontpageContent(
             modifier = Modifier,
             eventList = events,
@@ -476,7 +468,9 @@ private fun FrontpageContentPreview() {
             nextEvent = events.firstOrNull(),
             nextEventPublisher = mockPublishers[events.firstOrNull()?.publisherId],
             nextEventParticipants = emptyList(),
-            onParticipateClick = {}
+            onParticipateClick = {},
+            listState = listState,
+            scrollProgress = scrollProgress
         )
     }
 }
@@ -485,6 +479,9 @@ private fun FrontpageContentPreview() {
 @Composable
 private fun FrontpageEmptyStatePreview() {
     FlotMandTheme {
+        // Provide dummy listState and scrollProgress for preview
+        val listState = rememberLazyListState()
+        val scrollProgress = 0f
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -517,6 +514,9 @@ private fun FrontpageEmptyStatePreview() {
 @Composable
 private fun FrontpageErrorStatePreview() {
     FlotMandTheme {
+        // Provide dummy listState and scrollProgress for preview
+        val listState = rememberLazyListState()
+        val scrollProgress = 0f
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
