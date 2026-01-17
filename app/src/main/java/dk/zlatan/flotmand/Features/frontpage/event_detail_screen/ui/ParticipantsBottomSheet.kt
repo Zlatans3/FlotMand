@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +31,6 @@ fun ParticipantsBottomSheet(
     publisherId: String? = null,
     onDismiss: () -> Unit,
 ) {
-
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -60,15 +60,17 @@ internal fun ParticipantsContent(
         VSpacer(12.dp)
         participants.forEach { participant ->
             val isHost = publisherId != null && participant.id == publisherId
-            val displayName = if (isHost) "${participant.displayName} (Host)" else participant.displayName
+            val displayName =
+                if (isHost) "${participant.displayName} (Host)" else participant.displayName
 
             ProfileParticipant(
                 modifier = Modifier,
                 profilePic = participant.photoUrl,
-                userName = displayName
+                userName = displayName,
             )
             HSpacer(16.dp)
         }
+        VSpacer(40.dp)
     }
 }
 
@@ -79,18 +81,18 @@ fun ProfileParticipant(
     userName: String,
 ) {
     Row(
-        modifier = modifier
-            .clickable(
-                onClick = { /* No action for now */ }
-            )
-            .padding(14.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            modifier
+                .clickable(
+                    onClick = { /* No action for now */ },
+                ).padding(14.dp)
+                .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         ProfileImage(
             modifier = Modifier,
             profilePic = profilePic,
-            userName = userName
+            userName = userName,
         )
         HSpacer(12.dp)
         Text(
@@ -103,14 +105,15 @@ fun ProfileParticipant(
 @Preview(showBackground = true)
 @Composable
 private fun ParticipantsContentPreview() {
-    val mockUserList = listOf(
-        User(id = "u1", displayName = "Gustav Rasslan"),
-        User(id = "u2", displayName = "Oliver Payne"),
-        User(id = "u3", displayName = "Mikkel Rahbek"),
-    )
+    val mockUserList =
+        listOf(
+            User(id = "u1", displayName = "Gustav Rasslan"),
+            User(id = "u2", displayName = "Oliver Payne"),
+            User(id = "u3", displayName = "Mikkel Rahbek"),
+        )
     ParticipantsContent(
         modifier = Modifier,
         participants = mockUserList,
-        publisherId = mockUserList[1].id
+        publisherId = mockUserList[1].id,
     )
 }

@@ -9,6 +9,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 /**
  * Created to make sure all TopAppBars in the app consistently use the same top app bar style.
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 fun FmTopAppBar(
     modifier: Modifier = Modifier,
     inserts: WindowInsets = TopAppBarDefaults.windowInsets,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
     leadingIcon: @Composable () -> Unit = {},
     textContent: @Composable () -> Unit = {},
     trailingContent: @Composable () -> Unit = {},
@@ -35,7 +37,7 @@ fun FmTopAppBar(
             windowInsets = inserts,
             colors =
                 TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    containerColor = containerColor,
                 ),
             scrollBehavior = scrollBehavior,
         )

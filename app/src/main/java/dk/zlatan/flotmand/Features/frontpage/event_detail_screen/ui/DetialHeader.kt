@@ -30,134 +30,92 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import java.time.LocalDate
 import dk.zlatan.flotmand.design_system.componenets.StatusBadge
 import dk.zlatan.flotmand.design_system.componenets.StatusCountBadge
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.model.EventStatus
+import java.time.LocalDate
 
 @Composable
 internal fun DetailHeader(
     eventDate: LocalDate?,
     eventTitle: String,
     modifier: Modifier = Modifier,
-    isPublisher: Boolean = false,
-    onBackClick: () -> Unit,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-    eventDescription: String? = null
+    eventDescription: String? = null,
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-    ) {
-        // Top-left back arrow
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 12.dp, start = 8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
-                contentDescription = "Tilbage",
-                tint = MaterialTheme.colorScheme.onSurface
-            )
-        }
-
-        // Top-right action icons when publisher: Edit + Delete
-        if (isPublisher) {
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 12.dp, end = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onEditClick) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Rediger event",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                IconButton(onClick = onDeleteClick) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Slet event",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-
-        Column(
-            modifier = Modifier
+    Column(
+        modifier =
+            modifier
+                .background(MaterialTheme.colorScheme.surface)
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .padding(top = 70.dp, bottom = 24.dp)
-        ) {
-            if (eventDate != null){
-                StatusCountBadge(
-                    eventDate = eventDate
-                )
-            }
-
-            VSpacer(20.dp)
-
-            // Event title
-            Text(
-                text = eventTitle,
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 20.dp),
+    ) {
+        if (eventDate != null) {
+            StatusCountBadge(
+                eventDate = eventDate,
             )
+        }
 
-            VSpacer(12.dp)
+        VSpacer(20.dp)
 
-            // Event description with Read more/Read less
-            eventDescription?.let { description ->
-                var isExpanded by remember { mutableStateOf(false) }
+        // Event title
+        Text(
+            text = eventTitle,
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
-                Column(
-                    modifier = Modifier
+        VSpacer(12.dp)
+
+        // Event description with Read more/Read less
+        eventDescription?.let { description ->
+            var isExpanded by remember { mutableStateOf(false) }
+
+            Column(
+                modifier =
+                    Modifier
                         .fillMaxWidth()
                         .animateContentSize(
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessLow
-                            )
-                        )
-                        .clickable(
+                            animationSpec =
+                                spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow,
+                                ),
+                        ).clickable(
                             indication = null,
-                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                            interactionSource =
+                                remember {
+                                    androidx.compose.foundation.interaction
+                                        .MutableInteractionSource()
+                                },
                         ) {
                             isExpanded = !isExpanded
-                        }
-                ) {
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.fillMaxWidth(),
-                        maxLines = if (isExpanded) Int.MAX_VALUE else 5,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                        },
+            ) {
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = if (isExpanded) Int.MAX_VALUE else 5,
+                    overflow = TextOverflow.Ellipsis,
+                )
 
-                    // Read more/less indicator
-                    if (description.length > 100)  // Show only if description is long enough
+                // Read more/less indicator
+                if (description.length > 100) {
+                    // Show only if description is long enough
                     Text(
                         text = if (isExpanded) "Read less" else "Read more",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(top = 4.dp)
+                        modifier = Modifier.padding(top = 4.dp),
                     )
                 }
             }
         }
     }
 }
-
 
 @PreviewLightDark
 @Composable
@@ -166,9 +124,5 @@ private fun DetailHeaderPreview() {
         eventDate = LocalDate.now().plusDays(3),
         eventTitle = "The Italian Feast",
         eventDescription = "An authentic evening of homemade pasta, vintage wines, and great company in the heart of Copenhagen. Join us for a curated tasting experience.",
-        isPublisher = true,
-        onBackClick = {},
-        onEditClick = {},
-        onDeleteClick = {}
     )
 }

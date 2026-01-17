@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -44,7 +45,8 @@ internal fun DateCard(
     votePercentage: Int,
     isSelected: Boolean,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    onDeleteVoteOption: () -> Unit,
 ) {
     val accentColor = MaterialTheme.colorScheme.primary
     val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
@@ -53,46 +55,49 @@ internal fun DateCard(
     val animatedProgress by animateFloatAsState(
         targetValue = votePercentage / 100f,
         animationSpec = tween(durationMillis = 600),
-        label = "progressAnimation"
+        label = "progressAnimation",
     )
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = surfaceColor
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors =
+            CardDefaults.cardColors(
+                containerColor = surfaceColor,
+            ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             // Top row with date and checkbox
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Left side: Calendar icon and date info
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     // Calendar icon
                     Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(accentColor),
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(accentColor),
+                        contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Filled.CalendarToday,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
                         )
                     }
 
@@ -103,35 +108,23 @@ internal fun DateCard(
                             text = date,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
                             text = subtitle,
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
 
-                // Checkbox (right side)
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(
-                            if (isSelected) accentColor else Color.Transparent
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isSelected) {
-                        Icon(
-                            imageVector = Icons.Filled.Check,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
+                // Optimized right side
+                VoteOptionAction(
+                    votePercentage = votePercentage,
+                    isSelected = isSelected,
+                    accentColor = accentColor,
+                    onDeleteVoteOption = onDeleteVoteOption,
+                )
             }
 
             VSpacer(12.dp)
@@ -139,7 +132,7 @@ internal fun DateCard(
             // Participants row
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 // Overlapping avatars
                 OverlappingAvatars(
@@ -153,7 +146,7 @@ internal fun DateCard(
                     text = "$votePercentage% stemte",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp),
                 )
             }
 
@@ -162,51 +155,111 @@ internal fun DateCard(
             // Progress bar
             LinearProgressIndicator(
                 progress = { animatedProgress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(4.dp)),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp)),
                 color = accentColor,
-                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
             )
         }
     }
 }
 
+@Composable
+private fun VoteOptionAction(
+    votePercentage: Int,
+    isSelected: Boolean,
+    accentColor: Color,
+    onDeleteVoteOption: () -> Unit,
+) {
+    if (votePercentage == 0) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(Color.Transparent)
+                .clickable(onClick = onDeleteVoteOption),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Delete,
+                contentDescription = "Delete vote option",
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    } else {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(
+                    if (isSelected) accentColor else Color.Transparent,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+        }
+    }
+}
+
+
 @Preview
 @Composable
 private fun DateCardPreview() {
     FlotMandTheme {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background).padding(16.dp)) {
+        Box(
+            modifier = Modifier.background(MaterialTheme.colorScheme.background).padding(16.dp),
+        ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 DateCard(
                     date = "Friday, Oct 20th",
                     subtitle = "LEADING CHOICE",
                     voters = listOf(
-                        User(id = "1", displayName = "John"),
-                        User(id = "2", displayName = "Jane"),
-                        User(id = "3", displayName = "Bob")
+                        User(id = "1", displayName = "lasse"),
+                        User(id = "2", displayName = "Zlatan"),
+                        User(id = "3", displayName = "David"),
                     ),
                     votePercentage = 85,
-                    isSelected = true
+                    isSelected = true,
+                    onDeleteVoteOption = {},
                 )
                 DateCard(
                     date = "Saturday, Oct 21st",
                     subtitle = "2 friends voted",
                     voters = listOf(
-                        User(id = "1", displayName = "Alice"),
-                        User(id = "2", displayName = "Charlie")
+                        User(id = "1", displayName = "Mikkel"),
+                        User(id = "2", displayName = "Gustav"),
                     ),
                     votePercentage = 40,
-                    isSelected = false
+                    isSelected = false,
+                    onDeleteVoteOption = {},
                 )
                 DateCard(
                     date = "Thursday, Oct 19th",
                     subtitle = "1 friend voted",
                     voters = listOf(
-                        User(id = "1", displayName = "David")
+                        User(id = "1", displayName = "David"),
                     ),
                     votePercentage = 15,
-                    isSelected = false
+                    isSelected = false,
+                    onDeleteVoteOption = {},
+                )
+                DateCard(
+                    date = "No votes yet",
+                    subtitle = "Be the first to vote",
+                    voters = listOf(),
+                    votePercentage = 0,
+                    isSelected = false,
+                    onDeleteVoteOption = {},
                 )
             }
         }

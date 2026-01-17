@@ -29,52 +29,60 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
         onBack = { viewModel.pop() },
         entryProvider = { key ->
             when (key) {
-                MyEventsDestination.MyEvents -> NavEntry(key) {
-                    MyEventScreenRoute(
-                        onAddEventClick = {
-                            viewModel.navigate(MyEventsDestination.AddEvent)
-                        },
-                        onEventClick = { eventId ->
-                            viewModel.navigate(MyEventsDestination.EventDetail(eventId))
-                        }
-                    )
+                MyEventsDestination.MyEvents -> {
+                    NavEntry(key) {
+                        MyEventScreenRoute(
+                            onAddEventClick = {
+                                viewModel.navigate(MyEventsDestination.AddEvent)
+                            },
+                            onEventClick = { eventId ->
+                                viewModel.navigate(MyEventsDestination.EventDetail(eventId))
+                            },
+                        )
+                    }
                 }
 
-                MyEventsDestination.AddEvent -> NavEntry(key) {
-                    AddEventScreenRoute(
-                        onDismiss = { viewModel.pop() }
-                    )
+                MyEventsDestination.AddEvent -> {
+                    NavEntry(key) {
+                        AddEventScreenRoute(
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
 
-                is MyEventsDestination.AddEventFromVoting -> NavEntry(key) {
-                    AddEventScreenRoute(
-                        votingId = key.votingId,
-                        onDismiss = { viewModel.pop() }
-                    )
+                is MyEventsDestination.AddEventFromVoting -> {
+                    NavEntry(key) {
+                        AddEventScreenRoute(
+                            votingId = key.votingId,
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
 
-                is MyEventsDestination.EventDetail -> NavEntry(key) {
-                    EventDetailScreenRoute(
-                        eventId = key.eventId,
-                        onDismiss = { viewModel.pop() }
-                    )
+                is MyEventsDestination.EventDetail -> {
+                    NavEntry(key) {
+                        EventDetailScreenRoute(
+                            eventId = key.eventId,
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
             }
         },
         transitionSpec = {
             ContentTransform(
                 slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 ),
-                ExitTransition.None
+                ExitTransition.None,
             )
         },
         popTransitionSpec = {
             ContentTransform(
                 EnterTransition.None,
                 slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right
-                )
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                ),
             )
         },
         predictivePopTransitionSpec = { progress: Int ->
@@ -82,15 +90,14 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                 EnterTransition.None,
                 slideOutOfContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween<IntOffset>(
-                        durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
-                        easing = FastOutSlowInEasing
-                    )
-                )
+                    animationSpec =
+                        tween<IntOffset>(
+                            durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
+                            easing = FastOutSlowInEasing,
+                        ),
+                ),
             )
         },
-        entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator())
+        entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator()),
     )
 }
-
-

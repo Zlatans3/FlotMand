@@ -6,6 +6,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.zlatan.flotmand.model.DateOption
 import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
@@ -134,6 +135,17 @@ internal class DateVotingViewModel @AssistedInject constructor(
                 dateVotingService.deleteDateVoting(votingId)
             } catch (e: Exception) {
                 _uiState.update { it.copy(snackbarMessage = "Kunne ikke slette afstemning: ${e.message}") }
+            }
+        }
+    }
+
+    fun onDeleteVotingOption(dateOption: DateOption) {
+        viewModelScope.launch {
+            try {
+                val votingId = uiState.value.dateVotingItem?.votingId ?: return@launch
+                dateVotingService.deleteVoteOption(dateOption, votingId)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(snackbarMessage = "Kunne ikke slette dato: ${e.message}") }
             }
         }
     }

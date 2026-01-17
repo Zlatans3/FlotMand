@@ -33,6 +33,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +55,7 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.Event.Companion.previewEvents
 import dk.zlatan.flotmand.model.User
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun FrontPageRoute(
@@ -64,6 +66,7 @@ internal fun FrontPageRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
     val scrollOffset by remember {
         derivedStateOf {
@@ -79,14 +82,19 @@ internal fun FrontPageRoute(
             (scrollOffset / headerHeightPx).coerceIn(0f, 1f)
         }
     }
+    val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         topBar = {
             newFmTopAppBar(
                 user = uiState.currentUser,
                 onUserClicked = {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Der er vi ikke helt endnu 😉")
+                    }
                 },
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         val topPadding = paddingValues.calculateTopPadding()
         when {

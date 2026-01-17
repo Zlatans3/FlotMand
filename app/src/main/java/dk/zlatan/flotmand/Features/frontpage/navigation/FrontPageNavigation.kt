@@ -58,6 +58,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                     NavEntry(key) {
                         DateVotingRoute(
                             modifier = Modifier,
+                            onDismiss = { viewModel.pop() },
                             onVotingClick = {
                                 viewModel.navigate(FrontPageDestination.VotingDetail(it))
                             },

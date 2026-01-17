@@ -28,7 +28,7 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 internal fun CreateVotingDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var votingName by remember { mutableStateOf("") }
 
@@ -36,28 +36,30 @@ internal fun CreateVotingDialog(
         onDismissRequest = onDismiss,
         content = {
             Surface(
-                modifier = modifier
-                    .fillMaxWidth(0.9f)
-                    .background(MaterialTheme.colorScheme.surface),
+                modifier =
+                    modifier
+                        .fillMaxWidth(0.9f)
+                        .background(MaterialTheme.colorScheme.surface),
                 shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surface
+                color = MaterialTheme.colorScheme.surface,
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
                         text = "Opret ny afstemning",
                         style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
 
                     Text(
                         text = "Giv afstemningen et navn",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
                     OutlinedTextField(
@@ -67,15 +69,15 @@ internal fun CreateVotingDialog(
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("F.eks. hos David") },
                         singleLine = true,
-                        maxLines = 1
+                        maxLines = 1,
                     )
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                     ) {
                         TextButton(
-                            onClick = onDismiss
+                            onClick = onDismiss,
                         ) {
                             Text("Annuller")
                         }
@@ -85,14 +87,14 @@ internal fun CreateVotingDialog(
                                 onConfirm(votingName)
                                 onDismiss()
                             },
-                            enabled = votingName.isNotBlank()
+                            enabled = votingName.isNotBlank(),
                         ) {
                             Text("Opret")
                         }
                     }
                 }
             }
-        }
+        },
     )
 }
 
@@ -102,7 +104,7 @@ private fun CreateVotingDialogPreview() {
     FlotMandTheme {
         CreateVotingDialog(
             onDismiss = {},
-            onConfirm = {}
+            onConfirm = {},
         )
     }
 }

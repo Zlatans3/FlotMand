@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 import java.time.LocalDateTime
+import javax.inject.Inject
 
 data class DateVotingListUiState(
     val votings: List<DateVotingItem> = emptyList(),
@@ -24,87 +24,99 @@ data class DateVotingListUiState(
     val errorMessage: String? = null,
     val snackbarMessage: String? = null,
     val newVotingId: String? = null,
-    val showCreateVotingDialog: Boolean = false
+    val showCreateVotingDialog: Boolean = false,
 )
 
 @HiltViewModel
-class DateVotingListViewModel @Inject constructor(
-    private val dateVotingService: DateVotingService,
-    private val accountService: AccountService
-) : ViewModel() {
-
-    private val _transientState = MutableStateFlow(
-        TransientState()
-    )
-
-    val uiState: StateFlow<DateVotingListUiState> = combine(
-        dateVotingService.allDateVotingsItem,
-        _transientState
-    ) { votings, transient ->
-        DateVotingListUiState(
-            votings = votings,
-            currentUserId = accountService.currentUserId,
-            isLoading = false,
-            errorMessage = null,
-            snackbarMessage = transient.snackbarMessage,
-            newVotingId = transient.newVotingId,
-            showCreateVotingDialog = transient.showCreateVotingDialog
-        )
-    }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = DateVotingListUiState(
-                currentUserId = accountService.currentUserId,
-                isLoading = true
+class DateVotingListViewModel
+    @Inject
+    constructor(
+        private val dateVotingService: DateVotingService,
+        private val accountService: AccountService,
+    ) : ViewModel() {
+        private val _transientState =
+            MutableStateFlow(
+                TransientState(),
             )
+
+        val uiState: StateFlow<DateVotingListUiState> =
+            combine(
+                dateVotingService.allDateVotingsItem,
+                _transientState,
+            ) { votings, transient ->
+
+                val votingByDateCreated = votings.sortedByDescending { it.createdAtString }
+
+                DateVotingListUiState(
+                    votings = votingByDateCreated,
+                    currentUserId = accountService.currentUserId,
+                    isLoading = false,
+                    errorMessage = null,
+                    snackbarMessage = transient.snackbarMessage,
+                    newVotingId = transient.newVotingId,
+                    showCreateVotingDialog = transient.showCreateVotingDialog,
+                )
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue =
+                    DateVotingListUiState(
+                        currentUserId = accountService.currentUserId,
+                        isLoading = true,
+                    ),
+            )
+
+        private data class TransientState(
+            val snackbarMessage: String? = null,
+            val newVotingId: String? = null,
+            val showCreateVotingDialog: Boolean = false,
         )
 
-    private data class TransientState(
-        val snackbarMessage: String? = null,
-        val newVotingId: String? = null,
-        val showCreateVotingDialog: Boolean = false
-    )
+        fun showCreateVotingDialog() {
+            _transientState.update { it.copy(showCreateVotingDialog = true) }
+        }
 
-    fun showCreateVotingDialog() {
-        _transientState.update { it.copy(showCreateVotingDialog = true) }
-    }
+        fun dismissCreateVotingDialog() {
+            _transientState.update { it.copy(showCreateVotingDialog = false) }
+        }
 
-    fun dismissCreateVotingDialog() {
-        _transientState.update { it.copy(showCreateVotingDialog = false) }
-    }
+        fun createNewVoting(votingName: String = "") {
+            viewModelScope.launch {
+                try {
+                    _transientState.update {
+                        it.copy(
+                            snackbarMessage = null,
+                            showCreateVotingDialog = false,
+                        )
+                    }
 
-    fun createNewVoting(votingName: String = "") {
-        viewModelScope.launch {
-            try {
-                _transientState.update { it.copy(snackbarMessage = null, showCreateVotingDialog = false) }
+                    val newVoting =
+                        DateVotingItem(
+                            creatorId = accountService.currentUserId,
+                            name = votingName.ifBlank { null },
+                            status = VotingStatus.OPEN,
+                            dateOptions = emptyList(),
+                            createdAtString = LocalDateTime.now().toString(),
+                        )
 
-                val newVoting = DateVotingItem(
-                    creatorId = accountService.currentUserId,
-                    name = votingName.ifBlank { null },
-                    status = VotingStatus.OPEN,
-                    dateOptions = emptyList(),
-                    createdAtString = LocalDateTime.now().toString()
-                )
+                    val votingId = dateVotingService.createDateVoting(newVoting)
 
-                val votingId = dateVotingService.createDateVoting(newVoting)
-
-                _transientState.update {
-                    it.copy(newVotingId = votingId)
-                }
-            } catch (e: Exception) {
-                _transientState.update {
-                    it.copy(snackbarMessage = "Kunne ikke oprette afstemning: ${e.message}")
+                    _transientState.update {
+                        it.copy(newVotingId = votingId)
+                    }
+                } catch (e: Exception) {
+                    _transientState.update {
+                        it.copy(snackbarMessage = "Kunne ikke oprette afstemning: ${e.message}")
+                    }
                 }
             }
         }
-    }
 
-    fun dismissSnackbar() {
-        _transientState.update { it.copy(snackbarMessage = null) }
-    }
+        fun dismissSnackbar() {
+            _transientState.update { it.copy(snackbarMessage = null) }
+        }
 
-    fun clearNewVotingId() {
-        _transientState.update { it.copy(newVotingId = null) }
+        fun clearNewVotingId() {
+            _transientState.update { it.copy(newVotingId = null) }
+        }
     }
-}
