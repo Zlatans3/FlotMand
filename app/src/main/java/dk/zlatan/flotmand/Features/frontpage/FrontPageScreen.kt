@@ -29,6 +29,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -54,24 +58,23 @@ internal fun FrontPageRoute(
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // Move listState and scrollProgress up here
     val listState = rememberLazyListState()
+    var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
+    val headerHeightDp = with(LocalDensity.current) { headerHeightPx.toDp() }
     val scrollOffset by remember {
         derivedStateOf {
             if (listState.firstVisibleItemIndex == 0) {
                 listState.firstVisibleItemScrollOffset.toFloat()
             } else {
-                1000f // Fully collapsed when scrolled past first item
+                headerHeightPx.toFloat() // Fully collapsed when scrolled past header
             }
         }
     }
     val scrollProgress by remember {
         derivedStateOf {
-            (scrollOffset / 200f).coerceIn(0f, 1f)
+            (scrollOffset / headerHeightPx).coerceIn(0f, 1f)
         }
     }
-
     Scaffold(
         topBar = {
             newFmTopAppBar(
@@ -81,7 +84,6 @@ internal fun FrontPageRoute(
             )
         },
     ) { paddingValues ->
-
         when {
             uiState.isLoading -> {
                 Box(
@@ -101,7 +103,6 @@ internal fun FrontPageRoute(
                     }
                 }
             }
-
             uiState.errorMessage != null -> {
                 Box(
                     modifier = modifier.padding(paddingValues).fillMaxSize(),
@@ -124,7 +125,6 @@ internal fun FrontPageRoute(
                     }
                 }
             }
-
             uiState.eventList.isEmpty() -> {
                 Box(
                     modifier = modifier.padding(paddingValues).fillMaxSize(),
@@ -152,7 +152,6 @@ internal fun FrontPageRoute(
                     }
                 }
             }
-
             else -> {
                 FrontpageContent(
                     modifier = modifier.padding(paddingValues),
@@ -168,6 +167,8 @@ internal fun FrontPageRoute(
                     onParticipateClick = viewModel::onParticipateClick,
                     listState = listState,
                     scrollProgress = scrollProgress,
+                    headerHeightPx = headerHeightPx,
+                    onHeaderMeasured = { headerHeightPx = it }
                 )
             }
         }
@@ -189,6 +190,8 @@ internal fun FrontpageContent(
     nextEventParticipants: List<User>,
     listState: androidx.compose.foundation.lazy.LazyListState,
     scrollProgress: Float,
+    headerHeightPx: Int = 1,
+    onHeaderMeasured: (Int) -> Unit = {},
 ) {
     // State for showing all events
     var showAllEvents by remember { mutableStateOf(false) }
@@ -216,15 +219,15 @@ internal fun FrontpageContent(
         SnackbarHost(hostState = snackbarHostState)
         LazyColumn(
             state = listState,
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
         ) {
             item {
                 FrontPageNewHeader(
                     user = user,
                     scrollProgress = scrollProgress,
+                    modifier = Modifier.onGloballyPositioned { coordinates ->
+                        onHeaderMeasured(coordinates.size.height)
+                    }
                 )
                 VSpacer(8.dp)
             }

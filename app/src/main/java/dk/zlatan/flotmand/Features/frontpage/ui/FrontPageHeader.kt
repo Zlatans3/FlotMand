@@ -1,5 +1,7 @@
 package dk.zlatan.flotmand.Features.frontpage.ui
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,8 +40,12 @@ internal fun FrontPageNewHeader(
     modifier: Modifier = Modifier,
     scrollProgress: Float = 0f,
 ) {
-    // Make the corner radius stay rounded for most of the scroll, only sharpens at the very end
-    val sharpness = scrollProgress.coerceIn(0f, 1f).pow(18)
+    // Sharpening starts on scroll and ends when the top bar takes over (scrollProgress ~1)
+    // Use a gentle curve so the sharpness transition takes a long time
+    val normalized = scrollProgress.coerceIn(0f, 1f)
+    val animatedNormalized by animateFloatAsState(targetValue = normalized)
+    // Use a gentle curve (e.g. pow(1.5)) so the corners sharpen gradually
+    val sharpness = animatedNormalized.pow(1.5f)
     val cornerRadius = 24.dp * (1f - sharpness)
     Column(
         modifier =
