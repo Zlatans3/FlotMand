@@ -7,10 +7,10 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -32,54 +32,64 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
         onBack = { viewModel.pop() },
         entryProvider = { key: FrontPageDestination ->
             when (key) {
-                FrontPageDestination.FrontPageScreen -> NavEntry(key) {
-                    FrontPageRoute(
-                        onDinnerEventClick = { eventId ->
-                            viewModel.navigate(FrontPageDestination.EventDetail(eventId))
-                        },
-                        onDateVotingClick = {
-                            viewModel.navigate(FrontPageDestination.DateVoting)
-                        },
-                    )
+                FrontPageDestination.FrontPageScreen -> {
+                    NavEntry(key) {
+                        FrontPageRoute(
+                            onDinnerEventClick = { eventId ->
+                                viewModel.navigate(FrontPageDestination.EventDetail(eventId))
+                            },
+                            onDateVotingClick = {
+                                viewModel.navigate(FrontPageDestination.DateVoting)
+                            },
+                        )
+                    }
                 }
 
-                is FrontPageDestination.EventDetail -> NavEntry(key) {
-                    EventDetailScreenRoute(
-                        eventId = key.eventId,
-                        onDismiss = { viewModel.pop() }
-                    )
+                is FrontPageDestination.EventDetail -> {
+                    NavEntry(key) {
+                        EventDetailScreenRoute(
+                            eventId = key.eventId,
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
 
-                FrontPageDestination.DateVoting -> NavEntry(key) {
-                    DateVotingRoute(
-                        modifier = Modifier,
-                        onVotingClick = {
-                            viewModel.navigate(FrontPageDestination.VotingDetail(it))
-                        }
-                    )
+                FrontPageDestination.DateVoting -> {
+                    NavEntry(key) {
+                        DateVotingRoute(
+                            modifier = Modifier,
+                            onVotingClick = {
+                                viewModel.navigate(FrontPageDestination.VotingDetail(it))
+                            },
+                        )
+                    }
                 }
 
-                is FrontPageDestination.VotingDetail -> NavEntry(key) {
-
-                    DateVotingDetailRoute(
-                        modifier = Modifier,
-                        onDismiss = { viewModel.pop() },
-                        votingId = key.votingId,
-                        onCreateEvent = { votingId ->
-                            viewModel.navigate(FrontPageDestination.AddEventFromVoting(votingId))
-                        }
-                    )
+                is FrontPageDestination.VotingDetail -> {
+                    NavEntry(key) {
+                        DateVotingDetailRoute(
+                            modifier = Modifier,
+                            onDismiss = { viewModel.pop() },
+                            votingId = key.votingId,
+                            onCreateEvent = { votingId ->
+                                viewModel.navigate(FrontPageDestination.AddEventFromVoting(votingId))
+                            },
+                        )
+                    }
                 }
 
-                is FrontPageDestination.AddEventFromVoting -> NavEntry(key) {
-                    AddEventScreenRoute(
-                        votingId = key.votingId,
-                        onDismiss = { viewModel.pop() }
-                    )
+                is FrontPageDestination.AddEventFromVoting -> {
+                    NavEntry(key) {
+                        AddEventScreenRoute(
+                            votingId = key.votingId,
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
 
-                FrontPageDestination.HostRotation -> NavEntry(key) {
-
+                FrontPageDestination.HostRotation -> {
+                    NavEntry(key) {
+                    }
                 }
             }
         },
@@ -87,9 +97,13 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
             ContentTransform(
                 slideIntoContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween<IntOffset>(durationMillis = 400, easing = FastOutSlowInEasing)
+                    animationSpec =
+                        tween<IntOffset>(
+                            durationMillis = 400,
+                            easing = FastOutSlowInEasing,
+                        ),
                 ),
-                ExitTransition.None
+                ExitTransition.None,
             )
         },
         popTransitionSpec = {
@@ -97,8 +111,12 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                 EnterTransition.None,
                 slideOutOfContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween<IntOffset>(durationMillis = 400, easing = FastOutSlowInEasing)
-                )
+                    animationSpec =
+                        tween<IntOffset>(
+                            durationMillis = 400,
+                            easing = FastOutSlowInEasing,
+                        ),
+                ),
             )
         },
         predictivePopTransitionSpec = { progress: Int ->
@@ -106,15 +124,17 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                 EnterTransition.None,
                 slideOutOfContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween<IntOffset>(
-                        durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
-                        easing = FastOutSlowInEasing
-                    )
-                )
+                    animationSpec =
+                        tween<IntOffset>(
+                            durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
+                            easing = FastOutSlowInEasing,
+                        ),
+                ),
             )
         },
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator<FrontPageDestination>()
-        )
+        entryDecorators =
+            listOf(
+                rememberSaveableStateHolderNavEntryDecorator<FrontPageDestination>(),
+            ),
     )
 }

@@ -31,17 +31,21 @@ import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 
 // Data class for rotation item
-data class RotationItem(val imageRes: Int, val name: String)
+data class RotationItem(
+    val imageRes: Int,
+    val name: String,
+)
 
 @Composable
 fun RotationImagesAndNames(
     modifier: Modifier = Modifier,
-    items: List<RotationItem> = sampleRotationItems
+    items: List<RotationItem> = sampleRotationItems,
 ) {
     val scrollState = rememberScrollState()
     Row(
-        modifier = modifier
-            .horizontalScroll(scrollState),
+        modifier =
+            modifier
+                .horizontalScroll(scrollState),
         horizontalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         // TODO: Zlatan 17/01/2026 Change
@@ -50,44 +54,49 @@ fun RotationImagesAndNames(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.inverseOnSurface
-                ),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.inverseOnSurface,
+                    ),
                 onClick = {
                     // TODO: Zlatan 17/01/2026 Some release
                 },
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
+                modifier =
+                    Modifier
+                        .padding(vertical = 8.dp),
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
-                        .widthIn(min = 72.dp, max = 96.dp)
+                    modifier =
+                        Modifier
+                            .padding(horizontal = 16.dp, vertical = 16.dp)
+                            .widthIn(min = 72.dp, max = 96.dp),
                 ) {
                     Box(
-                        modifier = Modifier
-                            .size(70.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer.copy(0.7f)),
-                        contentAlignment = Alignment.Center
+                        modifier =
+                            Modifier
+                                .size(70.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(0.7f)),
+                        contentAlignment = Alignment.Center,
                     ) {
                         Image(
                             painter = painterResource(id = item.imageRes),
                             contentDescription = item.name,
-                            modifier = Modifier
-                                .size(60.dp)
-                                .shadow(
-                                    elevation = 2.dp,
-                                    shape = CircleShape
-                                )
+                            modifier =
+                                Modifier
+                                    .size(60.dp)
+                                    .shadow(
+                                        elevation = 2.dp,
+                                        shape = CircleShape,
+                                    ),
                         )
                     }
                     Text(
                         text = item.name,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(top = 12.dp)
+                        modifier = Modifier.padding(top = 12.dp),
                     )
                 }
             }
@@ -97,15 +106,16 @@ fun RotationImagesAndNames(
 }
 
 // Sample data (replace with real drawables in your project)
-val sampleRotationItems = listOf(
-    RotationItem(R.drawable.david_loading, "David"),
-    RotationItem(R.drawable.oliver_loading, "Oliver"),
-    RotationItem(R.drawable.lasse_loading, "Lasse"),
-    RotationItem(R.drawable.gustav_loading, "Gustav"),
-    RotationItem(R.drawable.mikkel_loading, "Mikkel"),
-    RotationItem(R.drawable.zlatan_loading, "Zlatan"),
-    RotationItem(R.drawable.elias_loading, "Elias"),
-)
+val sampleRotationItems =
+    listOf(
+        RotationItem(R.drawable.david_loading, "David"),
+        RotationItem(R.drawable.oliver_loading, "Oliver"),
+        RotationItem(R.drawable.lasse_loading, "Lasse"),
+        RotationItem(R.drawable.gustav_loading, "Gustav"),
+        RotationItem(R.drawable.mikkel_loading, "Mikkel"),
+        RotationItem(R.drawable.zlatan_loading, "Zlatan"),
+        RotationItem(R.drawable.elias_loading, "Elias"),
+    )
 
 @Preview(showBackground = true)
 @Composable

@@ -18,7 +18,15 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -30,9 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -60,7 +65,6 @@ internal fun FrontPageRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
-    val headerHeightDp = with(LocalDensity.current) { headerHeightPx.toDp() }
     val scrollOffset by remember {
         derivedStateOf {
             if (listState.firstVisibleItemIndex == 0) {
@@ -84,10 +88,14 @@ internal fun FrontPageRoute(
             )
         },
     ) { paddingValues ->
+        val topPadding = paddingValues.calculateTopPadding()
         when {
             uiState.isLoading -> {
                 Box(
-                    modifier = modifier.padding(paddingValues).fillMaxSize(),
+                    modifier =
+                        modifier
+                            .padding(top = topPadding)
+                            .fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(
@@ -103,6 +111,7 @@ internal fun FrontPageRoute(
                     }
                 }
             }
+
             uiState.errorMessage != null -> {
                 Box(
                     modifier = modifier.padding(paddingValues).fillMaxSize(),
@@ -125,6 +134,7 @@ internal fun FrontPageRoute(
                     }
                 }
             }
+
             uiState.eventList.isEmpty() -> {
                 Box(
                     modifier = modifier.padding(paddingValues).fillMaxSize(),
@@ -152,9 +162,13 @@ internal fun FrontPageRoute(
                     }
                 }
             }
+
             else -> {
                 FrontpageContent(
-                    modifier = modifier.padding(paddingValues),
+                    modifier =
+                        modifier
+                            .padding(top = topPadding)
+                            .fillMaxSize(),
                     onClickEvent = onDinnerEventClick,
                     onDateVotingClick = onDateVotingClick,
                     eventList = uiState.eventList,
@@ -167,8 +181,7 @@ internal fun FrontPageRoute(
                     onParticipateClick = viewModel::onParticipateClick,
                     listState = listState,
                     scrollProgress = scrollProgress,
-                    headerHeightPx = headerHeightPx,
-                    onHeaderMeasured = { headerHeightPx = it }
+                    onHeaderMeasured = { headerHeightPx = it },
                 )
             }
         }
@@ -190,7 +203,6 @@ internal fun FrontpageContent(
     nextEventParticipants: List<User>,
     listState: androidx.compose.foundation.lazy.LazyListState,
     scrollProgress: Float,
-    headerHeightPx: Int = 1,
     onHeaderMeasured: (Int) -> Unit = {},
 ) {
     // State for showing all events
@@ -225,9 +237,10 @@ internal fun FrontpageContent(
                 FrontPageNewHeader(
                     user = user,
                     scrollProgress = scrollProgress,
-                    modifier = Modifier.onGloballyPositioned { coordinates ->
-                        onHeaderMeasured(coordinates.size.height)
-                    }
+                    modifier =
+                        Modifier.onGloballyPositioned { coordinates ->
+                            onHeaderMeasured(coordinates.size.height)
+                        },
                 )
                 VSpacer(8.dp)
             }
@@ -257,6 +270,7 @@ internal fun FrontpageContent(
                         onCardClick = { onClickEvent(nextEvent.eventId.orEmpty()) },
                         onMapClick = { onClickEvent(nextEvent.eventId.orEmpty()) },
                         // TODO: Zlatan 10/01/2026 This is just horrible
+                        // should be handled in ViewModel
                         isParticipating = nextEventParticipants.any { it.id == user.id },
                         isLoading = false,
                         isPublisher = user.id == nextEvent.publisherId,

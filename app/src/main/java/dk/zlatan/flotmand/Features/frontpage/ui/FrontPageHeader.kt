@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -88,15 +89,18 @@ fun newFmTopAppBar(
                 )
             },
             navigationIcon = {
-                Image(
-                    painter = painterResource(id = R.drawable.flotmandapp),
-                    contentDescription = "Flotmand Logo",
-                    modifier =
-                        Modifier
-                            .size(40.dp)
-                            .padding(start = 8.dp),
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                )
+                Row {
+                    HSpacer(10.dp)
+                    Image(
+                        painter = painterResource(id = R.drawable.flotmandapp),
+                        contentDescription = "Flotmand Logo",
+                        modifier =
+                            Modifier
+                                .size(40.dp)
+                                .padding(start = 8.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                    )
+                }
             },
             actions = {
                 val haptic = LocalHapticFeedback.current
@@ -115,7 +119,7 @@ fun newFmTopAppBar(
                         onUserClicked?.invoke()
                     },
                 )
-                HSpacer(16.dp)
+                HSpacer(20.dp)
             },
             windowInsets = insert,
             colors =
