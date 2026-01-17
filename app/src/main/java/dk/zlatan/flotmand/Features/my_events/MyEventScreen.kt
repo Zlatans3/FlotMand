@@ -31,101 +31,108 @@ internal fun MyEventScreenRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState) {
-        Log.d("MyEventScreenRoute", "UI State - isLoading: ${uiState.isLoading}, eventCount: ${uiState.eventList.size}, error: ${uiState.errorMessage}")
+        Log.d(
+            "MyEventScreenRoute",
+            "UI State - isLoading: ${uiState.isLoading}, eventCount: ${uiState.eventList.size}, error: ${uiState.errorMessage}"
+        )
     }
+    Scaffold(
+    ) { paddingValues ->
+        val innerModifier = modifier.padding(paddingValues)
 
-    when {
-        uiState.isLoading -> {
-            Box(
-                modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+        when {
+            uiState.isLoading -> {
+                Box(
+                    modifier = modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = "Henter dine events...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Henter dine events...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
-        }
 
-        uiState.errorMessage != null -> {
-            Box(
-                modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(16.dp)
+            uiState.errorMessage != null -> {
+                Box(
+                    modifier = modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "😕",
-                        style = MaterialTheme.typography.displayLarge
-                    )
-                    Text(
-                        text = uiState.errorMessage!!,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "😕",
+                            style = MaterialTheme.typography.displayLarge
+                        )
+                        Text(
+                            text = uiState.errorMessage!!,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
-        }
 
-        uiState.eventList.isEmpty() -> {
-            Box(modifier = modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "📅",
-                        style = MaterialTheme.typography.displayLarge
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Ingen events endnu",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Opret dit første event!",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                ExtendedFloatingActionButton(
-                    onClick = onAddEventClick,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(24.dp)
-                ) {
-                    Icon(FmIcons.Add, contentDescription = "Add Event")
-                    Spacer(Modifier.width(8.dp))
-                    Text("Opret event", style = MaterialTheme.typography.labelLarge)
+            uiState.eventList.isEmpty() -> {
+                Box(modifier = modifier.padding(paddingValues)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "📅",
+                            style = MaterialTheme.typography.displayLarge
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Ingen events endnu",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Opret dit første event!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    ExtendedFloatingActionButton(
+                        onClick = onAddEventClick,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(24.dp)
+                    ) {
+                        Icon(FmIcons.Add, contentDescription = "Add Event")
+                        Spacer(Modifier.width(8.dp))
+                        Text("Opret event", style = MaterialTheme.typography.labelLarge)
+                    }
                 }
             }
-        }
 
-        else -> {
-            MyEventScreen(
-                modifier = modifier,
-                eventList = uiState.eventList,
-                publishers = uiState.publishers,
-                onAddEventClick = onAddEventClick,
-                onEventClick = onEventClick
-            )
+            else -> {
+                MyEventScreen(
+                    modifier = modifier,
+                    eventList = uiState.eventList,
+                    publishers = uiState.publishers,
+                    onAddEventClick = onAddEventClick,
+                    onEventClick = onEventClick
+                )
+            }
         }
     }
 }
@@ -177,7 +184,9 @@ fun MyEventContent(
                 "Mine arrangementer",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+                modifier = Modifier
+                    .padding(start = 16.dp, bottom = 8.dp)
+                    .statusBarsPadding()
             )
         }
         items(eventList) { event ->

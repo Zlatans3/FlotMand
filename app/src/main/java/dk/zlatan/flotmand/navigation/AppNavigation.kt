@@ -112,10 +112,11 @@ private fun MainAppContent(
             )
         }
     ) { innerPadding ->
+        val bottomPaddingValue = innerPadding.calculateBottomPadding()
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(bottom = bottomPaddingValue)
         ) {
             when (currentTab) {
                 TopLevelDestination.HOME -> {
