@@ -42,39 +42,39 @@ import kotlinx.coroutines.launch
  *
  * @param modifier Modifier for the card
  * @param user The user whose account details to display
- * @param snackbarHostState State for showing snackbar messages (e.g., when ID is copied)
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun AccountDetailsCard(
     modifier: Modifier = Modifier,
     user: User,
-    snackbarHostState: SnackbarHostState
 ) {
     val clipboardManager = LocalClipboardManager.current
-    val coroutineScope = rememberCoroutineScope()
     var isUserIdVisible by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = 2.dp,
+            ),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
         ) {
             Text(
                 text = "Konto Detaljer",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
             VSpacer(12.dp)
 
@@ -85,39 +85,37 @@ internal fun AccountDetailsCard(
                         text = "Bruger ID",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
                     )
                     VSpacer(4.dp)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = if (isUserIdVisible) user.id else "••••••••",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier
-                                .weight(1f)
-                                .combinedClickable(
-                                    onClick = { },
-                                    onLongClick = {
-                                        clipboardManager.setText(AnnotatedString(user.id))
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar("Bruger ID kopieret til udklipsholder")
-                                        }
-                                    }
-                                )
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .combinedClickable(
+                                        onClick = { },
+                                        onLongClick = {
+                                            clipboardManager.setText(AnnotatedString(user.id))
+                                        },
+                                    ),
                         )
                         IconButton(
                             onClick = { isUserIdVisible = !isUserIdVisible },
-                            modifier = Modifier.padding(0.dp)
+                            modifier = Modifier.padding(0.dp),
                         ) {
                             Icon(
                                 imageVector = if (isUserIdVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                                 contentDescription = if (isUserIdVisible) "Skjul ID" else "Vis ID",
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(18.dp),
                             )
                         }
                     }
@@ -131,7 +129,7 @@ internal fun AccountDetailsCard(
                 }
                 InfoRow(
                     label = "Log ind med",
-                    value = user.provider
+                    value = user.provider,
                 )
             }
         }

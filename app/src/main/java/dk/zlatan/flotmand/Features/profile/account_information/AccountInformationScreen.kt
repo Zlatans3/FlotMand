@@ -32,33 +32,64 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.profile.account_information.ui.AccountDetailsCard
 import dk.zlatan.flotmand.Features.profile.account_information.ui.PersonalInfoCard
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AccountInformationScreenRoute(
     modifier: Modifier = Modifier,
     viewModel: AccountInformationViewModel = hiltViewModel(),
-    onDismiss: () -> Unit = {}
+    onDismiss: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            FmTopAppBar(
+                textContent = {
+                    Text(
+                        text = "Konto Information",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                },
+                leadingIcon = {
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Luk",
+                        )
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+            )
+        },
+    ) { paddingValues ->
+        val topPaddingValues = paddingValues.calculateTopPadding()
+        AccountInformationScreenContent(
+            modifier =
+                modifier
+                    .padding(top = topPaddingValues),
+            user = uiState.user ?: User(),
+            isLoading = uiState.isLoading,
+            onUpdateDisplayName = { newName -> viewModel.updateDisplayName(newName) },
+            onUpdatePhoneNumber = { newPhone ->
+                viewModel.updatePhoneNumber(newPhone)
+            },
+        )
+    }
 
-    AccountInformationScreenContent(
-        modifier = modifier,
-        user = uiState.user ?: User(),
-        isLoading = uiState.isLoading,
-        errorMessage = uiState.errorMessage,
-        onDismiss = onDismiss,
-        onUpdateDisplayName = { newName ->
-            viewModel.updateDisplayName(newName)
-        },
-        onUpdatePhoneNumber = { newPhone ->
-            viewModel.updatePhoneNumber(newPhone)
-        },
-        onClearError = {
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Show error message in snackbar
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
             viewModel.clearError()
         }
-    )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,78 +98,34 @@ private fun AccountInformationScreenContent(
     modifier: Modifier = Modifier,
     user: User = User(),
     isLoading: Boolean = false,
-    errorMessage: String? = null,
-    onDismiss: () -> Unit,
     onUpdateDisplayName: (String) -> Unit,
     onUpdatePhoneNumber: (String) -> Unit,
-    onClearError: () -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    // Show error message in snackbar
-    LaunchedEffect(errorMessage) {
-        errorMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            onClearError()
-        }
-    }
-
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Konto Information",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Luk"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
+    Column(
+        modifier =
+            modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            VSpacer(8.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        VSpacer(8.dp)
 
-            // Personal Information Card (Editable)
-            PersonalInfoCard(
-                user = user,
-                isLoading = isLoading,
-                onUpdateDisplayName = onUpdateDisplayName,
-                onUpdatePhoneNumber = onUpdatePhoneNumber
-            )
+        // Personal Information Card (Editable)
+        PersonalInfoCard(
+            user = user,
+            isLoading = isLoading,
+            onUpdateDisplayName = onUpdateDisplayName,
+            onUpdatePhoneNumber = onUpdatePhoneNumber,
+        )
 
-            // Account Details Card
-            AccountDetailsCard(
-                user = user,
-                snackbarHostState = snackbarHostState
-            )
+        // Account Details Card
+        AccountDetailsCard(user = user)
 
-            VSpacer(16.dp)
-        }
+        VSpacer(16.dp)
     }
 }
-
 
 @Preview
 @Composable
@@ -146,21 +133,18 @@ private fun AccountInformationScreenPreview() {
     FlotMandTheme {
         AccountInformationScreenContent(
             modifier = Modifier,
-            user = User(
-                id = "123456789",
-                email = "user@example.com",
-                phoneNumber = "+45 12 34 56 78",
-                provider = "Google",
-                displayName = "Oliver Payne",
-                isAnonymous = false
-            ),
-            onDismiss = {},
+            user =
+                User(
+                    id = "123456789",
+                    email = "user@example.com",
+                    phoneNumber = "+45 12 34 56 78",
+                    provider = "Google",
+                    displayName = "Oliver Payne",
+                    isAnonymous = false,
+                ),
             isLoading = false,
-            errorMessage = null,
             onUpdateDisplayName = {},
             onUpdatePhoneNumber = {},
-            onClearError = {},
         )
     }
 }
-

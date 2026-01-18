@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.R
 import kotlinx.coroutines.launch
@@ -28,26 +29,26 @@ fun DisplayName(
     modifier: Modifier = Modifier,
     displayName: String,
     isLoading: Boolean,
-    onUpdateDisplayNameClick: (String) -> Unit
-    ) {
+    onUpdateDisplayNameClick: (String) -> Unit,
+) {
     var showDisplayNameDialog by remember { mutableStateOf(false) }
     var newDisplayName by remember { mutableStateOf(displayName) }
 
     val scope = rememberCoroutineScope()
 
     Text(
-        text = "Hej!\n$displayName",
+        text = displayName,
         style = MaterialTheme.typography.displayMedium,
         color = MaterialTheme.colorScheme.onSurface,
         textAlign = TextAlign.Center,
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(
-            onClick = {
-                showDisplayNameDialog = true
-            }
-        )
-            .padding(bottom = 20.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = {
+                        showDisplayNameDialog = true
+                    },
+                ).padding(bottom = 20.dp),
     )
 
     if (showDisplayNameDialog) {
@@ -58,7 +59,7 @@ fun DisplayName(
                     TextField(
                         value = newDisplayName,
                         onValueChange = { newDisplayName = it },
-                        enabled = !isLoading
+                        enabled = !isLoading,
                     )
                 }
             },
@@ -81,7 +82,17 @@ fun DisplayName(
                     }
                 }
             },
-            onDismissRequest = { if (!isLoading) showDisplayNameDialog = false }
+            onDismissRequest = { if (!isLoading) showDisplayNameDialog = false },
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DisplayNamePreview() {
+    DisplayName(
+        displayName = "Zlatan Ibrahimovic",
+        isLoading = false,
+        onUpdateDisplayNameClick = {},
+    )
 }

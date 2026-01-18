@@ -28,39 +28,39 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
         onBack = { viewModel.pop() },
         entryProvider = { key ->
             when (key) {
-                ProfileDestination.ProfileScreen -> NavEntry(key) {
-                    ProfileScreenRoute(
-                        navigateToLogin = {
-                            // Navigation to login handled by app-level navigation
-                            // When user logs out, the auth state change will trigger navigation
-                        },
-                        navigateToAccountInformation = {
-                            viewModel.navigate(ProfileDestination.AccountInformation)
-                        }
-                    )
+                ProfileDestination.ProfileScreen -> {
+                    NavEntry(key) {
+                        ProfileScreenRoute(
+                            navigateToAccountInformation = {
+                                viewModel.navigate(ProfileDestination.AccountInformation)
+                            },
+                        )
+                    }
                 }
 
-                ProfileDestination.AccountInformation -> NavEntry(key) {
-                    AccountInformationScreenRoute(
-                        onDismiss = { viewModel.pop() }
-                    )
+                ProfileDestination.AccountInformation -> {
+                    NavEntry(key) {
+                        AccountInformationScreenRoute(
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
             }
         },
         transitionSpec = {
             ContentTransform(
                 slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 ),
-                ExitTransition.None
+                ExitTransition.None,
             )
         },
         popTransitionSpec = {
             ContentTransform(
                 EnterTransition.None,
                 slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right
-                )
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                ),
             )
         },
         predictivePopTransitionSpec = { progress: Int ->
@@ -68,16 +68,18 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                 EnterTransition.None,
                 slideOutOfContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween<IntOffset>(
-                        durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
-                        easing = FastOutSlowInEasing
-                    )
-                )
+                    animationSpec =
+                        tween<IntOffset>(
+                            durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
+                            easing = FastOutSlowInEasing,
+                        ),
+                ),
             )
         },
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
+        entryDecorators =
+            listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
 //            rememberViewModelStoreNavEntryDecorator()
-        )
+            ),
     )
 }
