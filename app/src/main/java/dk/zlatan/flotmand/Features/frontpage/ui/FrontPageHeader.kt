@@ -1,133 +1,132 @@
 package dk.zlatan.flotmand.Features.frontpage.ui
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import dk.zlatan.flotmand.R
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
-import dk.zlatan.flotmand.model.User
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Icon
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
+import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
+import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.model.User
+import kotlin.math.pow
 
 @Composable
 internal fun FrontPageNewHeader(
     user: User,
     modifier: Modifier = Modifier,
     scrollProgress: Float = 0f,
-    ) {
+) {
+    // Sharpening starts on scroll and ends when the top bar takes over (scrollProgress ~1)
+    // Use a gentle curve so the sharpness transition takes a long time
+    val normalized = scrollProgress.coerceIn(0f, 1f)
+    val animatedNormalized by animateFloatAsState(targetValue = normalized)
+    // Use a gentle curve (e.g. pow(1.5)) so the corners sharpen gradually
+    val sharpness = animatedNormalized.pow(1.5f)
+    val cornerRadius = 24.dp * (1f - sharpness)
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(
-                    topStart = 0.dp,
-                    topEnd = 0.dp,
-                    bottomStart = 24.dp,
-                    bottomEnd = 24.dp
-                )
-            ),
-
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape =
+                        RoundedCornerShape(
+                            topStart = 0.dp,
+                            topEnd = 0.dp,
+                            bottomStart = cornerRadius,
+                            bottomEnd = cornerRadius,
+                        ),
+                ),
     ) {
         HeaderContent(
             modifier = Modifier,
             name = user.getFirstName(),
-            scrollProgress = scrollProgress
+            scrollProgress = scrollProgress,
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FmAnimatableTopBar(
+fun newFmTopAppBar(
     modifier: Modifier = Modifier,
     user: User,
-    scrollProgress: Float = 0f,
-    onClick: () -> Unit = { }
-    ) {
-    val cornerRadius = (24.dp * scrollProgress)
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(
-                    topStart = 0.dp,
-                    topEnd = 0.dp,
-                    bottomStart = cornerRadius,
-                    bottomEnd = cornerRadius
+    onUserClicked: (() -> Unit)?,
+) {
+    val insert = TopAppBarDefaults.windowInsets
+    Column(modifier = modifier) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Flotmand",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
                 )
-            )
-            .padding(horizontal = 24.dp, vertical = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.flotmandapp),
-            contentDescription = "Flotmand Logo",
-            modifier = Modifier
-                .size(40.dp),
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
-        )
-
-        HSpacer(12.dp)
-
-        Text(
-            text = "Flotmand",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Notification Bell Icon with circular background
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    shape = CircleShape
+            },
+            navigationIcon = {
+                Row {
+                    HSpacer(10.dp)
+                    Image(
+                        painter = painterResource(id = R.drawable.flotmandapp),
+                        contentDescription = "Flotmand Logo",
+                        modifier =
+                            Modifier
+                                .size(40.dp)
+                                .padding(start = 8.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                    )
+                }
+            },
+            actions = {
+                val haptic = LocalHapticFeedback.current
+                // Profile image with border and shadow
+                ProfileImage(
+                    modifier =
+                        Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                    profilePic = user.photoUrl,
+                    userName = user.getFirstName(),
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onUserClicked?.invoke()
+                    },
                 )
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Notifications,
-                contentDescription = "Notifications",
-                modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.surfaceVariant,
-            )
-        }
-
-        HSpacer(12.dp)
-
-        // User Profile Icon
-        ProfileImage(
-            modifier = Modifier,
-            profilePic = user.photoUrl,
-            userName = user.getFirstName(),
-            onClick = onClick
+                HSpacer(20.dp)
+            },
+            windowInsets = insert,
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+            scrollBehavior = null, // can be set if needed
         )
     }
 }
@@ -136,21 +135,22 @@ fun FmAnimatableTopBar(
 fun HeaderContent(
     modifier: Modifier = Modifier,
     name: String,
-    scrollProgress: Float = 0f
-    ) {
+    scrollProgress: Float = 0f,
+) {
     val alpha = 1f - scrollProgress
     val translationY = -80f * scrollProgress
 
     Column(
-        modifier = modifier
-            .graphicsLayer {
-                this.alpha = alpha
-                this.translationY = translationY
-            }
+        modifier =
+            modifier
+                .graphicsLayer {
+                    this.alpha = alpha
+                    this.translationY = translationY
+                },
     ) {
         VSpacer(40.dp)
         Text(
-            text = "Hej, ${name}! 👋",
+            text = "Hej, $name! 👋",
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.padding(horizontal = 24.dp),
@@ -171,10 +171,11 @@ fun HeaderContent(
 
 @Preview
 @Composable
-private fun FmAnimatableTopBarPreview() {
-    FmAnimatableTopBar(
+private fun NewFmTopAppBarPreview() {
+    newFmTopAppBar(
         modifier = Modifier.graphicsLayer {},
-        user = User.mockUserWithCounter(1).first()
+        user = User.mockUserWithCounter(1).first(),
+        onUserClicked = { },
     )
 }
 
@@ -183,6 +184,6 @@ private fun FmAnimatableTopBarPreview() {
 private fun FrontPageTopBarPreview() {
     FrontPageNewHeader(
         modifier = Modifier.graphicsLayer {},
-        user = User.mockUserWithCounter(1).first()
+        user = User.mockUserWithCounter(1).first(),
     )
 }

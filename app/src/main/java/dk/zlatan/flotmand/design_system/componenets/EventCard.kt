@@ -1,28 +1,24 @@
 package dk.zlatan.flotmand.design_system.componenets
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -39,14 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
+import dk.zlatan.flotmand.design_system.componenets.buttons.FmAnimatableButton
 import dk.zlatan.flotmand.design_system.componenets.buttons.FmPrimaryButton
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
@@ -102,18 +91,10 @@ fun ClosestEventCard(
                 .height(170.dp)
                 .clip(cardShape.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp)))
         ) {
-            val uiSettings = MapUiSettings(
-                zoomControlsEnabled = false,
-                scrollGesturesEnabled = false,
-                zoomGesturesEnabled = false,
-                rotationGesturesEnabled = false,
-                tiltGesturesEnabled = false,
-                mapToolbarEnabled = false
-            )
-
             AddressMapCard(
                 modifier = Modifier.matchParentSize(),
                 geoLocation = geoLocation,
+                eventDate = event.eventDate,
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
                 onClick = onMapClick
             )
@@ -124,7 +105,6 @@ fun ClosestEventCard(
                     .matchParentSize()
                     .clickable(onClick = onMapClick)
             )
-
         }
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
@@ -245,10 +225,16 @@ private fun ParticipantsRow(
 
         val participationText = if (isParticipating == true) "deltager" else "Deltag"
         if (!isPublisher) {
-            FmPrimaryButton(
+            FmAnimatableButton(
                 text = participationText,
                 onClick = onParticipateClick,
-                leadingIcon = if (isParticipating == true) Icons.Filled.Check else null,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Check,
+                        contentDescription = "Check Icon",
+                        modifier = Modifier.size(16.dp)
+                    )
+                },
                 isLoading = (isLoading),
                 isAffirmed = (isParticipating == true),
                 modifier = Modifier
@@ -318,7 +304,7 @@ fun EventCard(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.CalendarToday,
-                            contentDescription = "Date",
+                            contentDescription = "Dato",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(14.dp)
                         )
@@ -345,64 +331,6 @@ fun EventCard(
     }
 }
 
-@Composable
-private fun AddressMapCard(
-    modifier: Modifier = Modifier,
-    geoLocation: GeoLocation,
-    backgroundColor: Color = Color(0xFFE0E0E0),
-    onClick: () -> Unit = {}
-) {
-    val latLng = LatLng(geoLocation.latitude, geoLocation.longitude)
-
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(latLng, 14f)
-    }
-
-    val topRoundedShape =
-        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(160.dp),
-        shape = topRoundedShape,
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            val uiSettings = MapUiSettings(
-                zoomControlsEnabled = false,
-                scrollGesturesEnabled = false,
-                zoomGesturesEnabled = false,
-                rotationGesturesEnabled = false,
-                tiltGesturesEnabled = false,
-                mapToolbarEnabled = false
-            )
-
-            GoogleMap(
-                modifier = Modifier.fillMaxWidth(),
-                cameraPositionState = cameraPositionState,
-                uiSettings = uiSettings
-            ) {
-                Marker(
-                    state = MarkerState(position = latLng),
-                    title = "Event location"
-                )
-            }
-
-            // Full overlay to capture taps (gestures are disabled on the map)
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(topRoundedShape)
-                    .clickable(onClick = onClick)
-            )
-        }
-    }
-}
 
 
 @Composable

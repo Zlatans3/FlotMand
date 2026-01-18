@@ -164,6 +164,19 @@ class DateVotingServiceImpl @Inject constructor() : DateVotingService {
         }
     }
 
+    override suspend fun deleteVoteOption(voteOption: DateOption, votingId: String) {
+        try {
+            val voting = getDateVoting(votingId) ?: return
+            val updatedOptions = voting.dateOptions.filterNot { it.localDate == voteOption.localDate }
+            val updatedVoting = voting.copy(dateOptions = updatedOptions)
+            updateDateVoting(updatedVoting)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting vote option: ${e.message}", e)
+            throw e
+        }
+    }
+
     override suspend fun addDateOption(votingId: String, date: LocalDate, userId: String) {
         try {
             val voting = getDateVoting(votingId) ?: return

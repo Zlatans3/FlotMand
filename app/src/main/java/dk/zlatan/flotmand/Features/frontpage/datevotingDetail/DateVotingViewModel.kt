@@ -6,6 +6,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.zlatan.flotmand.model.DateOption
 import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
@@ -22,6 +23,7 @@ data class DateVotingUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val snackbarMessage: String? = null,
+    val publisherUser: User? = null,
     val votersByUserId: Map<String, User> = emptyMap()
 )
 
@@ -58,6 +60,7 @@ internal class DateVotingViewModel @AssistedInject constructor(
                         // Fetch voter data when voting updates
                         if (updatedVoting != null) {
                             fetchVoterData(updatedVoting)
+                            fetchPublisherUser(updatedVoting)
                         }
                     }
                 } else {
@@ -65,6 +68,22 @@ internal class DateVotingViewModel @AssistedInject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(errorMessage = "Error loading voting: ${e.message}", isLoading = false) }
+            }
+        }
+    }
+
+    private fun fetchPublisherUser(voting: DateVotingItem) {
+        viewModelScope.launch {
+            try {
+                val creatorId = voting.creatorId
+                if (creatorId != null) {
+                    val user = accountService.getUserById(creatorId)
+                    _uiState.update { it.copy(publisherUser = user) }
+                } else {
+                    _uiState.update { it.copy(publisherUser = null) }
+                }
+            } catch (_: Exception) {
+                // Don't update error state, this is non-critical
             }
         }
     }
@@ -116,6 +135,17 @@ internal class DateVotingViewModel @AssistedInject constructor(
                 dateVotingService.deleteDateVoting(votingId)
             } catch (e: Exception) {
                 _uiState.update { it.copy(snackbarMessage = "Kunne ikke slette afstemning: ${e.message}") }
+            }
+        }
+    }
+
+    fun onDeleteVotingOption(dateOption: DateOption) {
+        viewModelScope.launch {
+            try {
+                val votingId = uiState.value.dateVotingItem?.votingId ?: return@launch
+                dateVotingService.deleteVoteOption(dateOption, votingId)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(snackbarMessage = "Kunne ikke slette dato: ${e.message}") }
             }
         }
     }

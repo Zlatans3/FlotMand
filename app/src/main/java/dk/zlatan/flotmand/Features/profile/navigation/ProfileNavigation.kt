@@ -4,8 +4,11 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -25,44 +28,58 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
         onBack = { viewModel.pop() },
         entryProvider = { key ->
             when (key) {
-                ProfileDestination.ProfileScreen -> NavEntry(key) {
-                    ProfileScreenRoute(
-                        navigateToLogin = {
-                            // Navigation to login handled by app-level navigation
-                            // When user logs out, the auth state change will trigger navigation
-                        },
-                        navigateToAccountInformation = {
-                            viewModel.navigate(ProfileDestination.AccountInformation)
-                        }
-                    )
+                ProfileDestination.ProfileScreen -> {
+                    NavEntry(key) {
+                        ProfileScreenRoute(
+                            navigateToAccountInformation = {
+                                viewModel.navigate(ProfileDestination.AccountInformation)
+                            },
+                        )
+                    }
                 }
 
-                ProfileDestination.AccountInformation -> NavEntry(key) {
-                    AccountInformationScreenRoute(
-                        onDismiss = { viewModel.pop() }
-                    )
+                ProfileDestination.AccountInformation -> {
+                    NavEntry(key) {
+                        AccountInformationScreenRoute(
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
             }
         },
         transitionSpec = {
             ContentTransform(
                 slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 ),
-                ExitTransition.None
+                ExitTransition.None,
             )
         },
         popTransitionSpec = {
             ContentTransform(
                 EnterTransition.None,
                 slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right
-                )
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                ),
             )
         },
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
+        predictivePopTransitionSpec = { progress: Int ->
+            ContentTransform(
+                EnterTransition.None,
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec =
+                        tween<IntOffset>(
+                            durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
+                            easing = FastOutSlowInEasing,
+                        ),
+                ),
+            )
+        },
+        entryDecorators =
+            listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
 //            rememberViewModelStoreNavEntryDecorator()
-        )
+            ),
     )
 }

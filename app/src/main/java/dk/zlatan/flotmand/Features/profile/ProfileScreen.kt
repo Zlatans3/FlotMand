@@ -2,10 +2,12 @@ package dk.zlatan.flotmand.Features.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,12 +23,14 @@ import dk.zlatan.flotmand.design_system.componenets.HeaderContainer
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmAlertDialog
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
 
 private const val set_name = "opsæt navn"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenRoute(
     modifier: Modifier = Modifier,
@@ -35,30 +39,32 @@ fun ProfileScreenRoute(
     navigateToAccountInformation: () -> Unit = {},
 ) {
     val user by viewModel.user.collectAsState(initial = User(displayName = set_name))
-    val signedOut by viewModel.signedOut.collectAsState()
     val isLoading by viewModel.signOutLoading.collectAsState()
     var sinOutDialogState by remember { mutableStateOf(false) }
-    var newDisplayName by remember { mutableStateOf(user.displayName) }
-
-    // Navigate to login when signed out
-    if (signedOut) {
-        LaunchedEffect(signedOut) {
-            navigateToLogin()
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            FmTopAppBar(
+            )
         }
-    }
+    ) { paddingValues ->
+        val topPaddingValues = paddingValues.calculateTopPadding()
+        ProfileScreen(
+            modifier = modifier
+                .padding(top = topPaddingValues)
+                .fillMaxSize(),
+            userName = user.displayName,
+            userImage = user.photoUrl,
+            onLogoutClicked = {
+                sinOutDialogState = true
+            },
+            onUpdateDisplayNameClick = { newName ->
+                viewModel.onUpdateDisplayNameClick(newName)
+            },
+            onAccountInformationClick = navigateToAccountInformation
+        )
 
-    ProfileScreen(
-        modifier = modifier.fillMaxSize(),
-        userName = user.displayName,
-        userImage = user.photoUrl,
-        onLogoutClicked = {
-            sinOutDialogState = true
-        },
-        onUpdateDisplayNameClick = { newName ->
-            viewModel.onUpdateDisplayNameClick(newName)
-        },
-        onAccountInformationClick = navigateToAccountInformation
-    )
+    }
 
     if (sinOutDialogState)
         FmAlertDialog(
@@ -66,7 +72,7 @@ fun ProfileScreenRoute(
             onDismiss = {
                 sinOutDialogState = false
             },
-            onSignOutClick = {
+            onActionClick = {
                 viewModel.signOut()
                 sinOutDialogState = false
                 navigateToLogin()

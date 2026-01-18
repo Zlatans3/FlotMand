@@ -1,6 +1,7 @@
 package dk.zlatan.flotmand.Features.bottomnavigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.BottomAppBar
@@ -26,23 +27,24 @@ fun FmBottomNavigationBar(
     currentTab: TopLevelDestination,
     selectedTabIconColor: Color,
     onBottomNavigationClicked: (TopLevelDestination) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavigationBar(
-        windowInsets = NavigationBarDefaults.windowInsets,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        modifier = modifier
+        containerColor = MaterialTheme.colorScheme.background,
+        modifier = modifier,
     ) {
-
         TopLevelDestination.entries.forEach { menuItem ->
             val isSelected = menuItem == currentTab
 
-            val selectedColor = if (isSelected) {
-                selectedTabIconColor
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            }
+            val selectedColor =
+                if (isSelected) {
+                    selectedTabIconColor
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
             NavigationBarItem(
+                modifier = Modifier,
                 icon = {
                     BottomNavigationIcon(
                         item = menuItem,
@@ -55,11 +57,11 @@ fun FmBottomNavigationBar(
                         style = MaterialTheme.typography.labelMedium,
                         color = selectedColor,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 },
                 selected = isSelected,
-                onClick = { onBottomNavigationClicked(menuItem) }
+                onClick = { onBottomNavigationClicked(menuItem) },
             )
         }
     }
@@ -72,15 +74,16 @@ private fun BottomNavigationIcon(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .width(56.dp)
-            .padding(vertical = 3.dp)
+        modifier =
+            modifier
+                .width(56.dp)
+                .padding(vertical = 3.dp),
     ) {
         Icon(
             contentDescription = stringResource(item.iconTextId),
             tint = color,
             imageVector = item.unselectedIcon,
-            modifier = Modifier.align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center),
         )
     }
 }
@@ -91,6 +94,6 @@ private fun FmBottomNavigationBarPreview() {
     FmBottomNavigationBar(
         currentTab = TopLevelDestination.HOME,
         selectedTabIconColor = MaterialTheme.colorScheme.primary,
-        onBottomNavigationClicked = {}
+        onBottomNavigationClicked = {},
     )
 }

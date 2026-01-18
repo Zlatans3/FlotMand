@@ -2,14 +2,62 @@ package dk.zlatan.flotmand.design_system.theme
 
 import androidx.compose.ui.graphics.Color
 
-val PrimaryBlue = Color(0xFF132B45) // #132B45
-val PrimaryBlueVariant = Color(0xFF0D1C2C) // darker variant
-val LightBlue = Color(0xFFB3E7FF) // #B3E7FF
-val LightBlueVariant = Color(0xFF7FCFFF) // slightly deeper light blue
-val BackgroundBlue = Color(0xFFF7FBFF) // very light blue for background
-val SurfaceWhite = Color(0xFFFFFFFF) // white for surfaces
-val ErrorRed = Color(0xFFB00020) // Material default error
-val OnPrimary = Color(0xFFFFFFFF) // white on dark blue
-val OnSecondary = Color(0xFF132B45) // dark blue on light blue
-val OnBackground = Color(0xFF132B45) // dark blue for text/icons on background
-val OnSurface = Color(0xFF132B45) // dark blue for text/icons on surfaces
+// ==================== PRIMARY COLORS ====================
+val PrimaryBlue = Color(0xFF0D47A1)
+val PrimaryBlueDark = Color(0xFF051C3C)
+val PrimaryBlueLight = Color(0xFF1976D2)
+
+// ==================== SECONDARY COLORS ====================
+val SecondaryBlue = Color(0xFF00BCD4)
+val SecondaryBlueDark = Color(0xFF0097A7)
+val SecondaryBlueLight = Color(0xFF4DD0E1)
+
+// ==================== BACKGROUND & SURFACE ====================
+val BackgroundLightBlue = Color(0xFFFAFBFC)
+val SurfaceLight = Color(0xFFFFFFFF)
+val SurfaceLightVariant = Color(0xFFF5F5F5)
+
+val BackgroundDark = Color(0xFF121212)
+val SurfaceDark = Color(0xFF1E1E1E)
+val SurfaceDarkVariant = Color(0xFF2C2C2C)
+val SurfaceDarkHighlight = Color(0xFF3A3A3A)
+
+// ==================== TEXT & FOREGROUND ====================
+val TextDark = Color(0xFF1F1F1F)
+val TextDarkSecondary = Color(0xFF616161)
+val TextDarkTertiary = Color(0xFF9E9E9E)
+
+val TextLight = Color(0xFFFFFFFF)
+val TextLightSecondary = Color(0xFFB0B0B0)
+val TextLightTertiary = Color(0xFF808080)
+
+// ==================== SEMANTIC COLORS ====================
+val SuccessGreen = Color(0xFF4CAF50)
+val SuccessGreenDark = Color(0xFF388E3C)
+val WarningOrange = Color(0xFFFF9800)
+val WarningOrangeDark = Color(0xFFF57C00)
+val ErrorRed = Color(0xFFD32F2F)
+val ErrorRedLight = Color(0xFFEF5350)
+val InfoBlue = Color(0xFF2196F3)
+
+// ==================== UTILITY COLORS ====================
+val Transparent = Color(0x00000000)
+val White = Color(0xFFFFFFFF)
+val Black = Color(0xFF000000)
+val Divider = Color(0xFFE0E0E0)
+val DividerDark = Color(0xFF404040)
+val Overlay = Color(0x4D000000)
+val OverlayLight = Color(0x1F000000)
+
+// ==================== LEGACY COMPATIBILITY ====================
+val OnPrimary = TextLight
+val OnSecondary = TextDark
+val OnBackground = TextDark
+val OnSurface = TextDark
+val PrimaryBlueVariant = PrimaryBlueDark
+val LightBlue = SecondaryBlueLight
+val LightBlueVariant = SecondaryBlue
+val BackgroundBlue = BackgroundLightBlue
+val SurfaceWhite = SurfaceLight
+
+

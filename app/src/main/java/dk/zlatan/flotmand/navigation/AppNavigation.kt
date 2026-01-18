@@ -5,8 +5,10 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -17,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -35,7 +38,7 @@ import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigationViewModel
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
-    viewModel: AppNavigationViewModel = hiltViewModel()
+    viewModel: AppNavigationViewModel = hiltViewModel(),
 ) {
     val navigationStack: List<AppDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
     val isCheckingAuth: Boolean by viewModel.isCheckingAuth.collectAsStateWithLifecycle()
@@ -51,37 +54,40 @@ fun AppNavigation(
         onBack = { /* Don't allow back at app level */ },
         entryProvider = { key ->
             when (key) {
-                AppDestination.Authentication -> NavEntry(key) {
-                    AuthenticationNavigation()
+                AppDestination.Authentication -> {
+                    NavEntry(key) {
+                        AuthenticationNavigation()
+                    }
                 }
 
-                AppDestination.MainApp -> NavEntry(key) {
-                    MainAppContent(modifier = modifier)
+                AppDestination.MainApp -> {
+                    NavEntry(key) {
+                        MainAppContent(modifier = modifier)
+                    }
                 }
             }
         },
         transitionSpec = {
             ContentTransform(
                 fadeIn(),
-                fadeOut()
+                fadeOut(),
             )
         },
         popTransitionSpec = {
             ContentTransform(
                 fadeIn(),
-                fadeOut()
+                fadeOut(),
             )
         },
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator()
-        )
+        entryDecorators =
+            listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+            ),
     )
 }
 
 @Composable
-private fun MainAppContent(
-    modifier: Modifier = Modifier
-) {
+private fun MainAppContent(modifier: Modifier = Modifier) {
     var currentTab: TopLevelDestination by rememberSaveable {
         mutableStateOf(TopLevelDestination.HOME)
     }
@@ -92,7 +98,7 @@ private fun MainAppContent(
     val profileViewModel: ProfileNavigationViewModel = hiltViewModel()
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier,
         bottomBar = {
             FmBottomNavigationBar(
                 currentTab = currentTab,
@@ -108,22 +114,26 @@ private fun MainAppContent(
                     } else {
                         currentTab = destination
                     }
-                }
+                },
             )
-        }
+        },
     ) { innerPadding ->
+        val bottomPaddingValue = innerPadding.calculateBottomPadding()
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(bottom = bottomPaddingValue),
         ) {
             when (currentTab) {
                 TopLevelDestination.HOME -> {
                     FrontPageNavigation(viewModel = frontPageViewModel)
                 }
+
                 TopLevelDestination.MY_EVENTS -> {
                     MyEventsNavigation(viewModel = myEventsViewModel)
                 }
+
                 TopLevelDestination.PROFILE -> {
                     ProfileNavigation(viewModel = profileViewModel)
                 }
@@ -136,11 +146,14 @@ private fun MainAppContent(
     LaunchedEffect(currentTab) {
         when (currentTab) {
             TopLevelDestination.HOME,
-            TopLevelDestination.PROFILE -> {
+            TopLevelDestination.PROFILE,
+            -> {
                 window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
-            else -> window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+            else -> {
+                window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
         }
     }
 }
-

@@ -2,39 +2,57 @@ package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCard
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.EventDetailTopAppBar
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
-import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionItem
-import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.SectionsParticipationItem
-import dk.zlatan.flotmand.design_system.componenets.buttons.FmPrimaryButton
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.PublisherSection
+import dk.zlatan.flotmand.design_system.componenets.DateTimeInfoBox
+import dk.zlatan.flotmand.design_system.componenets.ParticipantsInfoBox
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
@@ -42,6 +60,11 @@ import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.GeoLocation
 import dk.zlatan.flotmand.model.User
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,119 +72,113 @@ internal fun EventDetailScreenRoute(
     eventId: String,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    viewModel: EventDetailViewModel = hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
-        key = eventId,
-        creationCallback = { factory ->
-            factory.create(eventId)
-        }
-    )
+    viewModel: EventDetailViewModel =
+        hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
+            key = eventId,
+            creationCallback = { factory ->
+                factory.create(eventId)
+            },
+        ),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDeleted by viewModel.isDeleted.collectAsState(initial = false)
-    val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Debounced loading indicator to prevent flash on fast loads
-    var showLoading by remember { mutableStateOf(false) }
-    LaunchedEffect(uiState.isLoadingEvent) {
-        if (uiState.isLoadingEvent) {
-            // Wait a short period; only show loader if still loading
-            kotlinx.coroutines.delay(300)
-            if (uiState.isLoadingEvent) showLoading = true
-        } else {
-            showLoading = false
-        }
-    }
-
     // Navigate away immediately when deleted, before content can update
-    LaunchedEffect(isDeleted) {
-        if (isDeleted) {
+    LaunchedEffect(uiState.isDeleted) {
+        if (uiState.isDeleted) {
             onDismiss()
         }
     }
 
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            EventDetailTopAppBar(
+                onBackClick = onDismiss,
+                isPublisher = uiState.isPublisher,
+                onDeleteClick = {
+                    showDeleteDialog = true
+                },
+                onEditClick = {
+//                    viewModel.onEditEvent(context, uiState.event, uiState.publisher)
+                },
+            )
+        },
+    ) { paddingValues ->
+        val topBarPadding = paddingValues.calculateTopPadding()
         when {
             // Show content if event exists OR if we're in the process of deleting
             // This prevents the empty state flash during deletion
-            uiState.event != null || isDeleted -> {
-                if (uiState.event != null) {
-                    val event = uiState.event!!
+            uiState.event != null -> {
+                val event = uiState.event
+                if (event != null) {
                     EventDetailScreenContent(
+                        modifier = Modifier.padding(top = topBarPadding),
                         event = event,
                         isParticipating = uiState.isParticipated,
                         publisher = uiState.publisher,
-                        onDismiss = onDismiss,
                         geoLocation = event.geoLocation,
                         onParticipantsClick = {
                             if (!event.participantIds.isNullOrEmpty()) {
                                 viewModel.showParticipants()
                             }
                         },
-                        onDateClick = {
-                            val dateTimeString = "${
-                                event.eventDate?.toString().orEmpty()
-                            } ${event.eventStartTime.toString()}"
-                            clipboardManager.setText(AnnotatedString(dateTimeString))
-                        },
-                        onLocationLongClick = {
-                            val locationString = event.location.orEmpty()
-                            clipboardManager.setText(AnnotatedString(locationString))
-                        },
-                        onEditEvent = {
-                            // TODO: Zlatan 06/01/2026 WILL BE ADDED IN LATER PATCH
-                        },
-                        onDeleteEvent = { showDeleteDialog = true },
                         isPublisher = uiState.isPublisher,
                         onParticipateClick = {
                             viewModel.onUserParticipate()
                         },
                         onMapClick = {
-                            val intent = buildDirectionsChooserIntent(
-                                latitude = event.geoLocation?.latitude,
-                                longitude = event.geoLocation?.longitude,
-                                address = event.location
-                            )
+                            val intent =
+                                buildDirectionsChooserIntent(
+                                    latitude = event.geoLocation?.latitude,
+                                    longitude = event.geoLocation?.longitude,
+                                    address = event.location,
+                                )
                             context.startActivity(intent)
-                        }
+                        },
+                        participants = uiState.participants,
                     )
                 }
-                // If isDeleted is true, content will navigate away before empty state renders
             }
 
-            // Show loader if loading (or within debounce window)
-            uiState.isLoadingEvent || showLoading -> {
+            uiState.isLoadingEvent || uiState.isDeleted -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    CircularProgressIndicator()
-                    Spacer(modifier = Modifier.padding(8.dp))
-                    Text(text = "Henter et flot event...")
+                    var show by remember { mutableStateOf(false) }
+                    LaunchedEffect(Unit) {
+                        // Just a small delay to ensure smooth appearance
+                        delay(300)
+                        show = true
+                    }
+                    if (show) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.padding(8.dp))
+                        Text(text = "Henter et flot event...")
+                    }
                 }
             }
 
             // Only show null state when not loading and event is still null and not deleted
-            else -> {
+            uiState.event == null && !uiState.isDeleted -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
                         text = "Event ikke fundet",
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
                     )
                     Spacer(modifier = Modifier.padding(8.dp))
                     Text(
                         text = "Eventet kunne ikke indlæses eller eksisterer ikke",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -174,7 +191,7 @@ internal fun EventDetailScreenRoute(
                 viewModel.onDismissParticipantsSheet()
             },
             participants = uiState.participants,
-            publisherId = uiState.publisher?.id
+            publisherId = uiState.publisher?.id,
         )
     }
 
@@ -187,7 +204,7 @@ internal fun EventDetailScreenRoute(
             onConfirmClick = {
                 showDeleteDialog = false
                 viewModel.deleteEvent(eventId)
-            }
+            },
         )
     }
 }
@@ -200,92 +217,151 @@ private fun EventDetailScreenContent(
     isParticipating: Boolean?,
     publisher: User?,
     isPublisher: Boolean,
-    onDismiss: () -> Unit,
     onParticipantsClick: () -> Unit,
     onParticipateClick: () -> Unit,
-    onEditEvent: () -> Unit,
-    onDeleteEvent: () -> Unit,
-    onDateClick: () -> Unit,
-    onLocationLongClick: () -> Unit,
     onMapClick: () -> Unit,
+    participants: List<User>,
 ) {
-    val eventOrganizerName = if (isPublisher) "Dig" else publisher?.displayName.orEmpty()
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background) // Use background color
-    ) {
-        DetailHeader(
-            eventStatus = event.status,
-            name = eventOrganizerName,
-            eventTitle = event.eventName.orEmpty(),
-            publisherProfileImageUrl = publisher?.photoUrl,
-            isPublisher = isPublisher,
-            onEditClick = onEditEvent,
-            onDeleteClick = onDeleteEvent,
-            onBackClick = onDismiss
-        )
-        VSpacer(20.dp)
-        SectionItem(
-            modifier = Modifier,
-            leadingIcon = FmIcons.Calendar,
-            title = "${event.eventDate?.toString().orEmpty()} ${event.eventStartTime.toString()}",
-            onLongClick = onDateClick,
-            iconTint = MaterialTheme.colorScheme.primary,
-            textColor = MaterialTheme.colorScheme.onSurface
-        )
+    val scrollState = rememberScrollState()
+    var showFab by remember { mutableStateOf(true) }
 
-        SectionsParticipationItem(
-            modifier = Modifier,
-            leadingIcon = FmIcons.Person,
-            trailingIcon = FmIcons.chevronRight,
-            title = "Deltagere: ${event.participantIds?.size ?: 0}/6",
-            onClick = onParticipantsClick,
-            iconTint = MaterialTheme.colorScheme.secondary,
-            textColor = MaterialTheme.colorScheme.onSurface
-        )
+    LaunchedEffect(scrollState) {
+        var previous = 0
+        snapshotFlow { scrollState.value }
+            .map { value ->
+                val delta = value - previous
+                previous = value
+                delta
+            }.distinctUntilChanged()
+            .collectLatest { delta ->
+                if (abs(delta) > 4) {
+                    showFab = delta < 0
+                }
+            }
+    }
 
-        SectionItem(
-            modifier = Modifier,
-            leadingIcon = FmIcons.mapPin,
-            title = event.location.orEmpty(),
-            onLongClick = onLocationLongClick,
-            iconTint = MaterialTheme.colorScheme.tertiary,
-            textColor = MaterialTheme.colorScheme.onSurface
-        )
-
-        VSpacer(20.dp)
-
-        // Only show map if we have valid coordinates
-        if (geoLocation != null && geoLocation.isValid()) {
-            AddressMapCard(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp),
-                backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                geoLocation = geoLocation,
-                onClick = onMapClick // Handle map click
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .background(MaterialTheme.colorScheme.background),
+        ) {
+            VSpacer(20.dp)
+            DetailHeader(
+                eventDate = event.eventDate,
+                eventTitle = event.eventName.orEmpty(),
+                eventDescription = event.description,
             )
+            VSpacer(20.dp)
+            PublisherSection(
+                publisher = publisher,
+                isPublisher = isPublisher,
+                modifier = Modifier,
+            )
+            VSpacer(20.dp)
+
+            // Date and Time Info Boxes
+            DateTimeInfoBox(
+                date = event.eventDate,
+                time = event.eventStartTime,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+
+            VSpacer(20.dp)
+
+            // Participants Info Box
+            ParticipantsInfoBox(
+                participants =
+                    event.participantIds?.mapNotNull { participantId ->
+                        participants.find { it.id == participantId }
+                    } ?: emptyList(),
+                onClick = onParticipantsClick,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+
+            VSpacer(20.dp)
+
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 20.dp),
+            )
+
+            VSpacer(20.dp)
+
+            // Only show map if we have valid coordinates
+            if (geoLocation != null && geoLocation.isValid()) {
+                Text(
+                    text = "Lokation",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+                VSpacer(12.dp)
+                AddressMapCard(
+                    addressName = event.streetAddress,
+                    cityName = event.city,
+                    geoLocation = geoLocation,
+                    eventDate = null, // No date badge in detail screen
+                    onCardClick = onMapClick,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                )
+            }
+
+            VSpacer(40.dp)
+
+            Spacer(modifier = Modifier.height(80.dp)) // Padding for FAB overlap
         }
 
-        Spacer(modifier = Modifier.weight(1f))
-        val participationText = if (isParticipating == true) {
-            "deltager"
-        } else {
-            "Deltag"
-        }
         if (!isPublisher && event.status == EventStatus.UPCOMING) {
             val participationText = if (isParticipating == true) "deltager" else "Deltag"
-            FmPrimaryButton(
-                text = participationText,
-                onClick = onParticipateClick,
-                leadingIcon = if (isParticipating == true) FmIcons.Check else null,
-                isLoading = (isParticipating == null),
-                isAffirmed = (isParticipating == true),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
+            AnimatedVisibility(
+                visible = showFab,
+                modifier = Modifier.align(Alignment.BottomEnd),
+                enter = fadeIn(animationSpec = tween(200)) + slideInVertically(initialOffsetY = { it / 2 }),
+                exit = fadeOut(animationSpec = tween(200)) + slideOutVertically(targetOffsetY = { it / 2 }),
+            ) {
+                ExtendedFloatingActionButton(
+                    elevation =
+                        FloatingActionButtonDefaults.elevation(
+                            defaultElevation = 8.dp,
+                            pressedElevation = 12.dp,
+                        ),
+                    text = {
+                        Text(
+                            text = participationText,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    },
+                    icon = {
+                        AnimatedContent(
+                            targetState = isParticipating == true,
+                            transitionSpec = {
+                                fadeIn(tween(220)) + scaleIn(tween(220)) togetherWith fadeOut(
+                                    tween(
+                                        120,
+                                    ),
+                                ) + scaleOut(tween(120))
+                            },
+                        ) { participating ->
+                            if (participating) {
+                                Icon(imageVector = FmIcons.Check, contentDescription = null)
+                            }
+                        }
+                    },
+                    onClick = onParticipateClick,
+                    expanded = true,
+                    containerColor = if (isParticipating == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    modifier =
+                        Modifier
+                            .padding(horizontal = 16.dp, vertical = 24.dp),
+                )
+            }
         }
     }
 }
@@ -293,17 +369,18 @@ private fun EventDetailScreenContent(
 private fun buildDirectionsChooserIntent(
     latitude: Double?,
     longitude: Double?,
-    address: String?
+    address: String?,
 ): Intent {
     // Prefer precise lat/lng if available
-    val primaryUri: Uri = if (latitude != null && longitude != null) {
-        // Google Maps direction URI with coordinates
-        Uri.parse("google.navigation:q=$latitude,$longitude")
-    } else {
-        // Fall back to address text
-        val encoded = Uri.encode(address ?: "")
-        Uri.parse("google.navigation:q=$encoded")
-    }
+    val primaryUri: Uri =
+        if (latitude != null && longitude != null) {
+            // Google Maps direction URI with coordinates
+            Uri.parse("google.navigation:q=$latitude,$longitude")
+        } else {
+            // Fall back to address text
+            val encoded = Uri.encode(address ?: "")
+            Uri.parse("google.navigation:q=$encoded")
+        }
 
     val mapIntent = Intent(Intent.ACTION_VIEW, primaryUri)
     mapIntent.setPackage("com.google.android.apps.maps")
@@ -312,11 +389,12 @@ private fun buildDirectionsChooserIntent(
     val chooser = Intent.createChooser(mapIntent, "Åbn navigation med")
 
     // Also add a generic geo: fallback without package (some map apps listen to this)
-    val geoQuery = if (latitude != null && longitude != null) {
-        "geo:0,0?q=$latitude,$longitude"
-    } else {
-        "geo:0,0?q=" + Uri.encode(address ?: "")
-    }
+    val geoQuery =
+        if (latitude != null && longitude != null) {
+            "geo:0,0?q=$latitude,$longitude"
+        } else {
+            "geo:0,0?q=" + Uri.encode(address ?: "")
+        }
     val geoIntent = Intent(Intent.ACTION_VIEW, Uri.parse(geoQuery))
     chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(geoIntent))
 
@@ -330,22 +408,14 @@ private fun EventDetailScreenPreview() {
     EventDetailScreenContent(
         modifier = Modifier,
         event = event,
-        geoLocation = GeoLocation(latitude = 55.6761, longitude = 12.5683), // Copenhagen
-        publisher = User(
-            id = "test-publisher",
-            displayName = "Lasse Sandø",
-            email = "publisher@test.com"
-        ),
-        onLocationLongClick = {},
-        onDateClick = {},
-        onEditEvent = {},
-        onDeleteEvent = {},
+        geoLocation = GeoLocation(latitude = 55.6761, longitude = 12.5683),
+        publisher = User.mockUserWithCounter(1).first(),
+        participants = User.mockUserWithCounter(5),
         isPublisher = false,
         onParticipantsClick = {},
         onParticipateClick = {},
         isParticipating = true,
-        onDismiss = {},
-        onMapClick = {}
+        onMapClick = {},
     )
 }
 
@@ -357,21 +427,13 @@ private fun EventDetailScreenIsPublisherPreview() {
         modifier = Modifier,
         event = event,
         geoLocation = null, // Test without map
-        publisher = User(
-            id = "user1",
-            displayName = "Zlatan Stadler",
-            email = "publisher@test.com",
-        ),
-        onLocationLongClick = {},
-        onDateClick = {},
-        onEditEvent = {},
-        onDeleteEvent = {},
+        publisher = User.mockUserWithCounter(1).first(),
+        participants = User.mockUserWithCounter(5),
         isPublisher = true,
         onParticipantsClick = {},
         onParticipateClick = {},
         isParticipating = false,
-        onDismiss = {},
-        onMapClick = {}
+        onMapClick = {},
     )
 }
 
@@ -379,18 +441,19 @@ private fun EventDetailScreenIsPublisherPreview() {
 @Composable
 private fun PrintListPreview() {
     val event = Event.staticTestEvents.first()
-    val publisher = User(
-        id = "test-publisher",
-        displayName = "Test Publisher",
-        email = "publisher@test.com"
-    )
+    val publisher =
+        User(
+            id = "test-publisher",
+            displayName = "Test Publisher",
+            email = "publisher@test.com",
+        )
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = "Event: ${event.eventName}\nDate: ${event.eventDate}\nTime: ${event.eventStartTime}\nHost: ${publisher.displayName}"
+            text = "Event: ${event.eventName}\nDate: ${event.eventDate}\nTime: ${event.eventStartTime}\nHost: ${publisher.displayName}",
         )
     }
 }
@@ -401,7 +464,7 @@ private fun EventDetailScreenLoadingPreview() {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         CircularProgressIndicator()
         Spacer(modifier = Modifier.padding(8.dp))

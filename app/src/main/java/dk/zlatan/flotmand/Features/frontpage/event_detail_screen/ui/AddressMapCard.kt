@@ -1,82 +1,113 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
+import dk.zlatan.flotmand.design_system.componenets.AddressMapCard
+import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.GeoLocation
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.draw.clip
+import java.time.LocalDate
 
 @Composable
-internal fun AddressMapCard(
-    modifier: Modifier = Modifier,
+fun AddressMapCard(
+    addressName: String,
+    cityName: String,
+    eventDate: LocalDate?,
+    onCardClick: () -> Unit,
     geoLocation: GeoLocation,
-    backgroundColor: Color = Color(0xFFE0E0E0),
-    onClick: () -> Unit = {}
+    containerColor: Color,
+    modifier: Modifier = Modifier,
 ) {
-    val latLng = LatLng(geoLocation.latitude, geoLocation.longitude)
-
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(latLng, 14f)
-    }
+    val clipboardManager = LocalClipboardManager.current
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .height(160.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(6),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = {
+            val fullAddress = "$addressName, $cityName"
+            clipboardManager.setText(AnnotatedString(fullAddress))
+        }
     ) {
+        // Map with badges
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp),
-            contentAlignment = Alignment.Center
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .height(200.dp)
         ) {
-            val uiSettings = MapUiSettings(
-                zoomControlsEnabled = false,
-                scrollGesturesEnabled = false,
-                zoomGesturesEnabled = false,
-                rotationGesturesEnabled = false,
-                tiltGesturesEnabled = false,
-                mapToolbarEnabled = false
+            AddressMapCard(
+                modifier = Modifier.fillMaxSize(),
+                geoLocation = geoLocation,
+                eventDate = eventDate,
+                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                onClick = onCardClick
             )
 
-            GoogleMap(
-                modifier = Modifier.fillMaxWidth().height(160.dp),
-                cameraPositionState = cameraPositionState,
-                uiSettings = uiSettings
-            ) {
-                Marker(
-                    state = MarkerState(position = latLng),
-                    title = "Event location"
+        }
+
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = addressName,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
+                    VSpacer(6.dp)
+                    Text(
+                        text = cityName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Icon(
+                    imageVector = Icons.Filled.ContentCopy,
+                    contentDescription = "Kopier adresse",
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp)
                 )
             }
-
-            // Full overlay to capture taps (gestures are disabled on the map)
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable(onClick = onClick)
-            )
         }
     }
 }
@@ -85,7 +116,12 @@ internal fun AddressMapCard(
 @Composable
 private fun AddressMapCardPreview() {
     AddressMapCard(
-        modifier = Modifier,
-        geoLocation = GeoLocation(latitude = 55.6761, longitude = 12.5683) // Copenhagen
+        addressName = "Nyhavn 17",
+        cityName = "1051 København K",
+        onCardClick = {},
+        eventDate = LocalDate.now().plusDays(3),
+        geoLocation = GeoLocation(latitude = 55.6761, longitude = 12.5683), // Copenhagen
+        containerColor = MaterialTheme.colorScheme.surface,
+        modifier = Modifier.padding(16.dp)
     )
 }

@@ -4,8 +4,11 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
@@ -26,56 +29,75 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
         onBack = { viewModel.pop() },
         entryProvider = { key ->
             when (key) {
-                MyEventsDestination.MyEvents -> NavEntry(key) {
-                    MyEventScreenRoute(
-                        onAddEventClick = {
-                            viewModel.navigate(MyEventsDestination.AddEvent)
-                        },
-                        onEventClick = { eventId ->
-                            viewModel.navigate(MyEventsDestination.EventDetail(eventId))
-                        }
-                    )
+                MyEventsDestination.MyEvents -> {
+                    NavEntry(key) {
+                        MyEventScreenRoute(
+                            onAddEventClick = {
+                                viewModel.navigate(MyEventsDestination.AddEvent)
+                            },
+                            onEventClick = { eventId ->
+                                viewModel.navigate(MyEventsDestination.EventDetail(eventId))
+                            },
+                        )
+                    }
                 }
 
-                MyEventsDestination.AddEvent -> NavEntry(key) {
-                    AddEventScreenRoute(
-                        onDismiss = { viewModel.pop() }
-                    )
+                MyEventsDestination.AddEvent -> {
+                    NavEntry(key) {
+                        AddEventScreenRoute(
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
 
-                is MyEventsDestination.AddEventFromVoting -> NavEntry(key) {
-                    AddEventScreenRoute(
-                        votingId = key.votingId,
-                        onDismiss = { viewModel.pop() }
-                    )
+                is MyEventsDestination.AddEventFromVoting -> {
+                    NavEntry(key) {
+                        AddEventScreenRoute(
+                            votingId = key.votingId,
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
 
-                is MyEventsDestination.EventDetail -> NavEntry(key) {
-                    EventDetailScreenRoute(
-                        eventId = key.eventId,
-                        onDismiss = { viewModel.pop() }
-                    )
+                is MyEventsDestination.EventDetail -> {
+                    NavEntry(key) {
+                        EventDetailScreenRoute(
+                            eventId = key.eventId,
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
                 }
             }
         },
         transitionSpec = {
             ContentTransform(
                 slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left
+                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 ),
-                ExitTransition.None
+                ExitTransition.None,
             )
         },
         popTransitionSpec = {
             ContentTransform(
                 EnterTransition.None,
                 slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right
-                )
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                ),
             )
         },
-        entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator())
+        predictivePopTransitionSpec = { progress: Int ->
+            ContentTransform(
+                EnterTransition.None,
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec =
+                        tween<IntOffset>(
+                            durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
+                            easing = FastOutSlowInEasing,
+                        ),
+                ),
+            )
+        },
+        entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator()),
     )
 }
-
-
