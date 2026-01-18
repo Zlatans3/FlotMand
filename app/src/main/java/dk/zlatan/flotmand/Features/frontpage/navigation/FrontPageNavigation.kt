@@ -7,8 +7,13 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -21,12 +26,28 @@ import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.DateVotingDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
 import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreenRoute
+import kotlinx.coroutines.launch
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
 fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel()) {
     val navigationStack: List<FrontPageDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
     // Navigation overlay for sub-screens
+    val snackbarHostState = SnackbarHostState()
+    val scope = rememberCoroutineScope()
+    var canExitApp by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = navigationStack.isEmpty()) {
+        if (navigationStack.size > 1) {
+            scope.launch {
+                snackbarHostState.showSnackbar("Press back again to exit")
+            }
+            canExitApp = true
+        }
+        if (canExitApp) {
+            viewModel.pop()
+        }
+    }
     NavDisplay(
         backStack = navigationStack,
         onBack = { viewModel.pop() },
@@ -41,6 +62,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                             onDateVotingClick = {
                                 viewModel.navigate(FrontPageDestination.DateVoting)
                             },
+                            snackbarHostState = snackbarHostState,
                         )
                     }
                 }

@@ -16,10 +16,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -55,8 +60,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -66,12 +71,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.ui.focus.FocusManager
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.AddressAutocompleteDropdown
@@ -80,6 +79,7 @@ import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.Event
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -91,13 +91,14 @@ import java.time.format.DateTimeFormatter
 internal fun AddEventScreenRoute(
     modifier: Modifier = Modifier,
     votingId: String? = null,
-    viewModel: AddEventViewModel = hiltViewModel<AddEventViewModel, AddEventViewModel.Factory>(
-        key = votingId ?: "new_event",
-        creationCallback = { factory ->
-            factory.create(votingId)
-        }
-    ),
-    onDismiss: () -> Unit = {}
+    viewModel: AddEventViewModel =
+        hiltViewModel<AddEventViewModel, AddEventViewModel.Factory>(
+            key = votingId ?: "new_event",
+            creationCallback = { factory ->
+                factory.create(votingId)
+            },
+        ),
+    onDismiss: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -132,14 +133,14 @@ internal fun AddEventScreenRoute(
                     Text(
                         text = "Opret nyt event",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Luk"
+                            contentDescription = "Luk",
                         )
                     }
                 },
@@ -147,22 +148,27 @@ internal fun AddEventScreenRoute(
                     // Show "Opret" button in header when keyboard is open
                     AnimatedVisibility(
                         visible = isKeyboardOpen,
-                        enter = slideInHorizontally(
-                            initialOffsetX = { fullWidth -> fullWidth },
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessLow
-                            )
-                        ) + fadeIn(
-                            animationSpec = spring(stiffness = Spring.StiffnessLow)
-                        ),
-                        exit = slideOutHorizontally(
-                            targetOffsetX = { fullWidth -> fullWidth },
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioNoBouncy,
-                                stiffness = Spring.StiffnessMedium
-                            )
-                        ) + fadeOut()
+                        enter =
+                            slideInHorizontally(
+                                initialOffsetX = { fullWidth -> fullWidth },
+                                animationSpec =
+                                    spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessLow,
+                                    ),
+                            ) +
+                                fadeIn(
+                                    animationSpec = spring(stiffness = Spring.StiffnessLow),
+                                ),
+                        exit =
+                            slideOutHorizontally(
+                                targetOffsetX = { fullWidth -> fullWidth },
+                                animationSpec =
+                                    spring(
+                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                        stiffness = Spring.StiffnessMedium,
+                                    ),
+                            ) + fadeOut(),
                     ) {
                         Button(
                             onClick = {
@@ -172,53 +178,56 @@ internal fun AddEventScreenRoute(
                             enabled = !uiState.isLoading,
                             modifier = Modifier.padding(end = 8.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            )
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                                ),
                         ) {
                             if (uiState.isLoading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(20.dp),
                                     color = MaterialTheme.colorScheme.onPrimary,
-                                    strokeWidth = 2.dp
+                                    strokeWidth = 2.dp,
                                 )
                             } else {
                                 Text(
                                     text = "Opret",
                                     style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.padding(vertical = 4.dp)
+                                    modifier = Modifier.padding(vertical = 4.dp),
                                 )
                             }
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
             )
         },
     ) { paddingValues ->
-         AddEventScreenContent(
-             modifier = Modifier
-                 .fillMaxSize()
-                 .padding(
-                    start = paddingValues.calculateLeftPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
-                    top = paddingValues.calculateTopPadding(),
-                    end = paddingValues.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Rtl),
-                    bottom = 0.dp
-                 ),
-             uiState = uiState,
-             onEventNameChange = viewModel::onEventNameChange,
-             onLocationChange = viewModel::onLocationChange,
-             onEventDateChange = viewModel::onEventDateChange,
-             onDescriptionChange = viewModel::onDescriptionChange,
-             onEventTimeChange = viewModel::onEventTimeChange,
-             onAddressSelected = viewModel::onAddressSelected,
-             onClearPredictions = viewModel::clearAddressPredictions,
-             onCreateEvent = viewModel::createEvent,
-             isKeyboardOpen = isKeyboardOpen,
-             focusManager = focusManager
+        AddEventScreenContent(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(
+                        start = paddingValues.calculateLeftPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                        top = paddingValues.calculateTopPadding(),
+                        end = paddingValues.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Rtl),
+                        bottom = 0.dp,
+                    ),
+            uiState = uiState,
+            onEventNameChange = viewModel::onEventNameChange,
+            onLocationChange = viewModel::onLocationChange,
+            onEventDateChange = viewModel::onEventDateChange,
+            onDescriptionChange = viewModel::onDescriptionChange,
+            onEventTimeChange = viewModel::onEventTimeChange,
+            onAddressSelected = viewModel::onAddressSelected,
+            onClearPredictions = viewModel::clearAddressPredictions,
+            onCreateEvent = viewModel::createEvent,
+            isKeyboardOpen = isKeyboardOpen,
+            focusManager = focusManager,
         )
     }
 }
@@ -237,7 +246,7 @@ private fun AddEventScreenContent(
     onClearPredictions: () -> Unit,
     focusManager: FocusManager,
     onCreateEvent: () -> Unit,
-    isKeyboardOpen: Boolean
+    isKeyboardOpen: Boolean,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -262,18 +271,18 @@ private fun AddEventScreenContent(
     }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    focusManager.clearFocus()
-                })
-            }
-            .verticalScroll(scrollState)
-            .padding(horizontal = 20.dp)
-            .imePadding(),
-        verticalArrangement = Arrangement.Top
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        focusManager.clearFocus()
+                    })
+                }.verticalScroll(scrollState)
+                .padding(horizontal = 20.dp)
+                .imePadding(),
+        verticalArrangement = Arrangement.Top,
     ) {
         VSpacer(20.dp)
 
@@ -284,7 +293,8 @@ private fun AddEventScreenContent(
             onValueChange = onEventNameChange,
             placeholder = "Fx. Middag hos Gustav",
             singleLine = true,
-            maxLines = 1
+            maxChar = 100,
+            maxLines = 1,
         )
 
         VSpacer(16.dp)
@@ -296,24 +306,26 @@ private fun AddEventScreenContent(
             onValueChange = { desc -> onDescriptionChange(desc) },
             placeholder = "Tilføj detaljer om eventet",
             singleLine = false,
+            maxChar = 2000,
             minLines = 3,
-            maxLines = 6
+            maxLines = 6,
         )
 
         VSpacer(20.dp)
 
         // Location with Autocomplete
         Box(
-            modifier = Modifier
-                .zIndex(1f)
-                .bringIntoViewRequester(locationFieldRequester)
-                .onFocusChanged { focusState ->
-                    if (focusState.isFocused || focusState.hasFocus) {
-                        coroutineScope.launch {
-                            locationFieldRequester.bringIntoView()
+            modifier =
+                Modifier
+                    .zIndex(1f)
+                    .bringIntoViewRequester(locationFieldRequester)
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused || focusState.hasFocus) {
+                            coroutineScope.launch {
+                                locationFieldRequester.bringIntoView()
+                            }
                         }
-                    }
-                }
+                    },
         ) {
             Column {
                 EventTextField(
@@ -325,7 +337,7 @@ private fun AddEventScreenContent(
                         IconButton(onClick = { /* optional: open map picker in future */ }) {
                             Icon(imageVector = Icons.Filled.Place, contentDescription = "Lokation")
                         }
-                    }
+                    },
                 )
 
                 // Autocomplete dropdown
@@ -335,11 +347,10 @@ private fun AddEventScreenContent(
                     onPredictionSelected = { prediction ->
                         onAddressSelected(prediction)
                         onClearPredictions()
-                    }
+                    },
                 )
             }
         }
-
 
         VSpacer(20.dp)
 
@@ -347,8 +358,9 @@ private fun AddEventScreenContent(
         Row(modifier = Modifier.fillMaxWidth()) {
             EventTextField(
                 label = "Dato",
-                value = uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
-                    ?: "",
+                value =
+                    uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                        ?: "",
                 onValueChange = { }, // Read-only
                 placeholder = "Vælg dato",
                 modifier = Modifier.weight(1f),
@@ -370,8 +382,9 @@ private fun AddEventScreenContent(
 
             EventTextField(
                 label = "Tidspunkt",
-                value = uiState.event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm"))
-                    ?: "",
+                value =
+                    uiState.event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm"))
+                        ?: "",
                 onValueChange = { }, // Read-only
                 placeholder = "tidspunkt",
                 modifier = Modifier.weight(1f),
@@ -387,7 +400,7 @@ private fun AddEventScreenContent(
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Schedule,
-                            contentDescription = "Vælg tidspunkt"
+                            contentDescription = "Vælg tidspunkt",
                         )
                     }
                 },
@@ -398,19 +411,25 @@ private fun AddEventScreenContent(
 
         // DatePicker Dialog
         if (showDatePicker) {
-            val datePickerState = rememberDatePickerState(
-                initialSelectedDateMillis = uiState.event.eventDate?.atStartOfDay(ZoneId.systemDefault())
-                    ?.toInstant()?.toEpochMilli()
-            )
+            val datePickerState =
+                rememberDatePickerState(
+                    initialSelectedDateMillis =
+                        uiState.event.eventDate
+                            ?.atStartOfDay(ZoneId.systemDefault())
+                            ?.toInstant()
+                            ?.toEpochMilli(),
+                )
 
             DatePickerDialog(
                 onDismissRequest = { showDatePicker = false },
                 confirmButton = {
                     TextButton(onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
-                            val localDate = Instant.ofEpochMilli(millis)
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
+                            val localDate =
+                                Instant
+                                    .ofEpochMilli(millis)
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate()
                             onEventDateChange(localDate)
                         }
                         showDatePicker = false
@@ -422,7 +441,7 @@ private fun AddEventScreenContent(
                     TextButton(onClick = { showDatePicker = false }) {
                         Text("Annuller")
                     }
-                }
+                },
             ) {
                 DatePicker(state = datePickerState)
             }
@@ -430,11 +449,12 @@ private fun AddEventScreenContent(
 
         // TimePicker Dialog
         if (showTimePicker) {
-            val timePickerState = rememberTimePickerState(
-                initialHour = uiState.event.eventStartTime?.hour ?: 18,
-                initialMinute = uiState.event.eventStartTime?.minute ?: 0,
-                is24Hour = true
-            )
+            val timePickerState =
+                rememberTimePickerState(
+                    initialHour = uiState.event.eventStartTime?.hour ?: 18,
+                    initialMinute = uiState.event.eventStartTime?.minute ?: 0,
+                    is24Hour = true,
+                )
 
             TimePickerDialog(
                 onDismissRequest = { showTimePicker = false },
@@ -449,11 +469,11 @@ private fun AddEventScreenContent(
                 },
                 dismissButton = {
                     TextButton(
-                        onClick = { showTimePicker = false }
+                        onClick = { showTimePicker = false },
                     ) {
                         Text("Annuller")
                     }
-                }
+                },
             ) {
                 TimePicker(state = timePickerState)
             }
@@ -461,22 +481,27 @@ private fun AddEventScreenContent(
 
         AnimatedVisibility(
             visible = !isKeyboardOpen,
-            enter = slideInVertically(
-                initialOffsetY = { fullHeight -> fullHeight },
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ) + fadeIn(
-                animationSpec = spring(stiffness = Spring.StiffnessLow)
-            ),
-            exit = slideOutVertically(
-                targetOffsetY = { fullHeight -> fullHeight },
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessMedium
-                )
-            ) + fadeOut()
+            enter =
+                slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec =
+                        spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow,
+                        ),
+                ) +
+                    fadeIn(
+                        animationSpec = spring(stiffness = Spring.StiffnessLow),
+                    ),
+            exit =
+                slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec =
+                        spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMedium,
+                        ),
+                ) + fadeOut(),
         ) {
             Button(
                 onClick = {
@@ -484,25 +509,27 @@ private fun AddEventScreenContent(
                     onCreateEvent()
                 },
                 enabled = !uiState.isLoading,
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier =
+                    Modifier
+                        .fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
                     )
                 } else {
                     Text(
                         text = "Opret event",
                         style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier.padding(vertical = 8.dp),
                     )
                 }
             }
@@ -516,13 +543,13 @@ private fun TimePickerDialog(
     onDismissRequest: () -> Unit,
     confirmButton: @Composable () -> Unit,
     dismissButton: @Composable () -> Unit,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = confirmButton,
         dismissButton = dismissButton,
-        text = content
+        text = content,
     )
 }
 
@@ -531,15 +558,17 @@ private fun TimePickerDialog(
 private fun AddEventScreenPreview() {
     FlotMandTheme {
         AddEventScreenContent(
-            uiState = AddEventUiState(
-                event = Event.create(
-                    eventName = "Middag hos Mikkel",
-                    location = "Flotmand Alle 4",
-                    eventDate = LocalDate.now().plusDays(5),
-                    eventStartTime = LocalTime.of(19, 30)
+            uiState =
+                AddEventUiState(
+                    event =
+                        Event.create(
+                            eventName = "Middag hos Mikkel",
+                            location = "Flotmand Alle 4",
+                            eventDate = LocalDate.now().plusDays(5),
+                            eventStartTime = LocalTime.of(19, 30),
+                        ),
+                    locationTextFieldValue = TextFieldValue("Flotmand Alle 4"),
                 ),
-                locationTextFieldValue = TextFieldValue("Flotmand Alle 4")
-            ),
             onEventNameChange = {},
             onLocationChange = {},
             onEventDateChange = {},
@@ -549,7 +578,7 @@ private fun AddEventScreenPreview() {
             onClearPredictions = {},
             onCreateEvent = {},
             isKeyboardOpen = false,
-            focusManager = LocalFocusManager.current
+            focusManager = LocalFocusManager.current,
         )
     }
 }

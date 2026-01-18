@@ -62,6 +62,7 @@ internal fun FrontPageRoute(
     modifier: Modifier = Modifier,
     onDinnerEventClick: (String) -> Unit,
     onDateVotingClick: () -> Unit,
+    snackbarHostState: SnackbarHostState,
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -82,7 +83,6 @@ internal fun FrontPageRoute(
             (scrollOffset / headerHeightPx).coerceIn(0f, 1f)
         }
     }
-    val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         topBar = {
             newFmTopAppBar(
