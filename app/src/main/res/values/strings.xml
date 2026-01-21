@@ -51,4 +51,13 @@
     <string name="error_could_not_create_event">Kunne ikke oprette event: %1$s</string>
     <string name="error_invalid_event_id">Ugyldigt event-id.</string>
     <string name="error_could_not_update_event">Kunne ikke opdatere event.</string>
+    <string name="untitled_event">Uden titel</string>
+    <string name="unknown_location">Ukendt lokation</string>
+    <string name="participants_count">%1$d deltagere</string>
+    <string name="participating">Deltager</string>
+    <string name="participate">Deltag</string>
+    <string name="location_content_description">Lokation</string>
+    <string name="check_icon_content_description">Tjek ikon</string>
+    <string name="date_content_description">Dato</string>
+    <string name="location_icon_content_description">Lokation ikon</string>
 </resources>

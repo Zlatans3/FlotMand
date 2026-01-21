@@ -30,11 +30,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.buttons.FmAnimatableButton
 import dk.zlatan.flotmand.design_system.componenets.buttons.FmPrimaryButton
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
@@ -59,12 +61,13 @@ fun ClosestEventCard(
     isPublisher: Boolean = false,
 ) {
     val containerColor = MaterialTheme.colorScheme.inverseOnSurface
-    val cardShape = RoundedCornerShape(
-        topStart = 16.dp,
-        topEnd = 16.dp,
-        bottomStart = 0.dp,
-        bottomEnd = 0.dp
-    )
+    val cardShape =
+        RoundedCornerShape(
+            topStart = 16.dp,
+            topEnd = 16.dp,
+            bottomStart = 0.dp,
+            bottomEnd = 0.dp,
+        )
 
     val geoLocation = event.geoLocation ?: GeoLocation(0.0, 0.0)
 
@@ -76,44 +79,47 @@ fun ClosestEventCard(
     val participantsCount = event.participantIds?.size ?: 0
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onCardClick),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onCardClick),
         shape = RoundedCornerShape(6),
         colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         // Map with badges
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .height(170.dp)
-                .clip(cardShape.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp)))
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .height(170.dp)
+                    .clip(cardShape.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))),
         ) {
             AddressMapCard(
                 modifier = Modifier.matchParentSize(),
                 geoLocation = geoLocation,
                 eventDate = event.eventDate,
                 backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                onClick = onMapClick
+                onClick = onMapClick,
             )
 
             // Full overlay to catch taps
             Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clickable(onClick = onMapClick)
+                modifier =
+                    Modifier
+                        .matchParentSize()
+                        .clickable(onClick = onMapClick),
             )
         }
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     Text(
-                        text = event.eventName ?: "Untitled Event",
+                        text = event.eventName ?: stringResource(R.string.untitled_event),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
@@ -126,7 +132,7 @@ fun ClosestEventCard(
                         ProfileImage(
                             profilePic = publisher.photoUrl,
                             userName = publisher.displayName,
-                            profileSize = 24.dp
+                            profileSize = 24.dp,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -134,7 +140,7 @@ fun ClosestEventCard(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
 
@@ -143,17 +149,17 @@ fun ClosestEventCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Filled.LocationOn,
-                            contentDescription = "Location",
+                            contentDescription = stringResource(R.string.location_content_description),
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = event.location ?: "Unknown location",
+                            text = event.location ?: stringResource(R.string.unknown_location),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
@@ -163,12 +169,12 @@ fun ClosestEventCard(
                     Text(
                         text = month,
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
                         text = day,
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
@@ -177,7 +183,7 @@ fun ClosestEventCard(
 
             SeparatorLine(
                 modifier = Modifier,
-                horizontalPadding = 0.dp
+                horizontalPadding = 0.dp,
             )
             VSpacer(16.dp)
 
@@ -188,7 +194,7 @@ fun ClosestEventCard(
                 isParticipating = isParticipating,
                 isLoading = isLoading,
                 onParticipateClick = onParticipateClick,
-                isPublisher = isPublisher
+                isPublisher = isPublisher,
             )
         }
     }
@@ -207,23 +213,31 @@ private fun ParticipantsRow(
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         OverlappingAvatars(
             participants = participants,
-            containerColor = containerColor
+            containerColor = containerColor,
         )
 
         Text(
-            text = "$participantsCount Deltagere",
+            text = stringResource(R.string.participants_count, participantsCount),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .weight(1f)
-                .offset(x = (-8).dp)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .offset(x = (-8).dp),
         )
 
-        val participationText = if (isParticipating == true) "deltager" else "Deltag"
+        val participationText =
+            if (isParticipating == true) {
+                stringResource(R.string.participating)
+            } else {
+                stringResource(
+                    R.string.participate,
+                )
+            }
         if (!isPublisher) {
             FmAnimatableButton(
                 text = participationText,
@@ -231,19 +245,19 @@ private fun ParticipantsRow(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Check,
-                        contentDescription = "Check Icon",
-                        modifier = Modifier.size(16.dp)
+                        contentDescription = stringResource(R.string.check_icon_content_description),
+                        modifier = Modifier.size(16.dp),
                     )
                 },
                 isLoading = (isLoading),
                 isAffirmed = (isParticipating == true),
-                modifier = Modifier
-                    .padding(end = 4.dp)
+                modifier =
+                    Modifier
+                        .padding(end = 4.dp),
             )
         }
     }
 }
-
 
 @Composable
 fun EventCard(
@@ -256,31 +270,35 @@ fun EventCard(
     onClick: () -> Unit,
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.inverseOnSurface
-        ), // find nogle farver der passer bedre
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.inverseOnSurface,
+            ),
+        // find nogle farver der passer bedre
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         VSpacer(height = 20.dp)
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
         ) {
             ProfileImage(
                 modifier = Modifier.align(Alignment.CenterVertically),
                 profilePic = userProfilePic,
                 userName = userName,
-                profileSize = 60.dp
+                profileSize = 60.dp,
             )
 
             HSpacer(12.dp)
-            Row() {
+            Row {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = userName,
@@ -300,13 +318,13 @@ fun EventCard(
                     VSpacer(4.dp)
 
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
                             imageVector = Icons.Filled.CalendarToday,
-                            contentDescription = "Dato",
+                            contentDescription = stringResource(R.string.date_content_description),
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(14.dp),
                         )
                         HSpacer(8.dp)
                         Text(
@@ -318,11 +336,12 @@ fun EventCard(
                 }
                 Icon(
                     imageVector = Icons.Filled.ArrowForwardIos,
-                    contentDescription = "Location Icon",
+                    contentDescription = stringResource(R.string.location_icon_content_description),
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .size(16.dp)
-                        .align(Alignment.CenterVertically)
+                    modifier =
+                        Modifier
+                            .size(16.dp)
+                            .align(Alignment.CenterVertically),
                 )
             }
         }
@@ -331,41 +350,42 @@ fun EventCard(
     }
 }
 
-
-
 @Composable
 private fun SeparatorLine(
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = 0.dp,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = horizontalPadding)
-            .height(1.dp)
-            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = horizontalPadding)
+                .height(1.dp)
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
     )
 }
 
 @Preview
 @Composable
 private fun ClosestEventCardPreview() {
-    val mockEvent = Event.create(
-        eventId = "event1",
-        eventName = "The Italian Feast",
-        location = "Amager Boul. 101, 2300 København",
-        geoLocation = GeoLocation(55.6674, 12.5919),
-        eventDate = java.time.LocalDate.of(2026, 1, 28),
-        eventStartTime = java.time.LocalTime.of(18, 0),
-        publisherId = "publisher1",
-        participantIds = listOf("user1", "user2", "user3", "user4", "user5")
-    )
+    val mockEvent =
+        Event.create(
+            eventId = "event1",
+            eventName = "The Italian Feast",
+            location = "Amager Boul. 101, 2300 København",
+            geoLocation = GeoLocation(55.6674, 12.5919),
+            eventDate = java.time.LocalDate.of(2026, 1, 28),
+            eventStartTime = java.time.LocalTime.of(18, 0),
+            publisherId = "publisher1",
+            participantIds = listOf("user1", "user2", "user3", "user4", "user5"),
+        )
 
-    val mockPublisher = User(
-        id = "publisher1",
-        displayName = "Flotmand",
-        email = "flotmand@example.com"
-    )
+    val mockPublisher =
+        User(
+            id = "publisher1",
+            displayName = "Flotmand",
+            email = "flotmand@example.com",
+        )
 
     ClosestEventCard(
         modifier = Modifier,
@@ -391,6 +411,6 @@ private fun EventCardPreview() {
         eventDate = "06-15",
         eventTime = "18:00",
         eventName = "Middag hos Zlatan",
-        onClick = {}
+        onClick = {},
     )
 }
