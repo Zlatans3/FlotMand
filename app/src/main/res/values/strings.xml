@@ -41,5 +41,14 @@
     <string name="preview_event_name">Middag hos Mikkel</string>
     <string name="preview_event_location">Flotmand Alle 4</string>
 
-
+    <!-- Error and validation strings -->
+    <string name="error_could_not_load_event">Kunne ikke indlæse event til redigering.</string>
+    <string name="error_could_not_fetch_address_details">Kunne ikke hente adressedetaljer</string>
+    <string name="error_event_name_required">Event navn er påkrævet</string>
+    <string name="error_location_required">Lokation er påkrævet</string>
+    <string name="error_date_required">Dato er påkrævet</string>
+    <string name="error_time_required">Tidspunkt er påkrævet</string>
+    <string name="error_could_not_create_event">Kunne ikke oprette event: %1$s</string>
+    <string name="error_invalid_event_id">Ugyldigt event-id.</string>
+    <string name="error_could_not_update_event">Kunne ikke opdatere event.</string>
 </resources>

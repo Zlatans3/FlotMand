@@ -8,6 +8,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.Event
@@ -16,6 +17,7 @@ import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DateVotingService
 import dk.zlatan.flotmand.model.service.DinnerEventService
 import dk.zlatan.flotmand.model.service.PlacesService
+import dk.zlatan.flotmand.util.StringProvider
 import dk.zlatan.flotmand.util.combine
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -48,6 +50,7 @@ class AddEventViewModel
         private val accountService: AccountService,
         private val placesService: PlacesService,
         private val dateVotingService: DateVotingService,
+        private val stringProvider: StringProvider,
         @Assisted("votingId") private val votingId: String?,
         @Assisted("eventId") private val eventId: String? = null, // Use identifiers
     ) : ViewModel() {
@@ -103,7 +106,7 @@ class AddEventViewModel
                             _locationTextFieldValue.value = TextFieldValue(event.location ?: "")
                         }
                     } catch (_: Exception) {
-                        _errorMessage.value = "Kunne ikke indlæse event til redigering."
+                        _errorMessage.value = stringProvider.getString(R.string.error_could_not_load_event)
                     }
                 }
             }
@@ -268,7 +271,7 @@ class AddEventViewModel
                         _addressPredictions.value = emptyList() // Clear predictions
                     }
                 } catch (_: Exception) {
-                    _errorMessage.value = "Kunne ikke hente adressedetaljer"
+                    _errorMessage.value = stringProvider.getString(R.string.error_could_not_fetch_address_details)
                 } finally {
                     _isLoadingPredictions.value = false
                 }
@@ -288,22 +291,22 @@ class AddEventViewModel
 
                 // Validate fields
                 if (event.eventName.isNullOrBlank()) {
-                    _errorMessage.value = "Event navn er påkrævet"
+                    _errorMessage.value = stringProvider.getString(R.string.error_event_name_required)
                     return@launch
                 }
 
                 if (event.location.isNullOrBlank()) {
-                    _errorMessage.value = "Lokation er påkrævet"
+                    _errorMessage.value = stringProvider.getString(R.string.error_location_required)
                     return@launch
                 }
 
                 if (event.eventDate == null) {
-                    _errorMessage.value = "Dato er påkrævet"
+                    _errorMessage.value = stringProvider.getString(R.string.error_date_required)
                     return@launch
                 }
 
                 if (event.eventStartTime == null) {
-                    _errorMessage.value = "Tidspunkt er påkrævet"
+                    _errorMessage.value = stringProvider.getString(R.string.error_time_required)
                     return@launch
                 }
 
@@ -347,7 +350,7 @@ class AddEventViewModel
                     _errorMessage.value = null
                 } catch (e: Exception) {
                     _isLoading.value = false
-                    _errorMessage.value = "Kunne ikke oprette event: ${e.message}"
+                    _errorMessage.value = stringProvider.getString(R.string.error_could_not_create_event, e.message ?: "")
                 }
             }
         }
@@ -355,7 +358,7 @@ class AddEventViewModel
         fun updateEvent() {
             val event = _event.value
             if (event.eventId.isNullOrBlank()) {
-                _errorMessage.value = "Ugyldigt event-id."
+                _errorMessage.value = stringProvider.getString(R.string.error_invalid_event_id)
                 return
             }
             viewModelScope.launch {
@@ -364,7 +367,7 @@ class AddEventViewModel
                     dinnerEventService.updateDinnerEvent(event)
                     _isEventCreated.value = true
                 } catch (e: Exception) {
-                    _errorMessage.value = "Kunne ikke opdatere event."
+                    _errorMessage.value = stringProvider.getString(R.string.error_could_not_update_event)
                 } finally {
                     _isLoading.value = false
                 }
