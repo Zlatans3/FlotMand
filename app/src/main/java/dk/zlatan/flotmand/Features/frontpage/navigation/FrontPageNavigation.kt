@@ -72,6 +72,9 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                         EventDetailScreenRoute(
                             eventId = key.eventId,
                             onDismiss = { viewModel.pop() },
+                            onEditEvent = { eventId ->
+                                viewModel.navigate(FrontPageDestination.EditEvent(eventId))
+                            }
                         )
                     }
                 }
@@ -105,6 +108,15 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                     NavEntry(key) {
                         AddEventScreenRoute(
                             votingId = key.votingId,
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
+                }
+
+                is FrontPageDestination.EditEvent -> {
+                    NavEntry(key) {
+                        AddEventScreenRoute(
+                            eventId = key.eventId,
                             onDismiss = { viewModel.pop() },
                         )
                     }

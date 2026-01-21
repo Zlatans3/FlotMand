@@ -91,11 +91,12 @@ import java.time.format.DateTimeFormatter
 internal fun AddEventScreenRoute(
     modifier: Modifier = Modifier,
     votingId: String? = null,
+    eventId: String? = null, // NEW: eventId for edit mode
     viewModel: AddEventViewModel =
         hiltViewModel<AddEventViewModel, AddEventViewModel.Factory>(
-            key = votingId ?: "new_event",
+            key = eventId ?: votingId ?: "new_event",
             creationCallback = { factory ->
-                factory.create(votingId)
+                factory.create(votingId, eventId)
             },
         ),
     onDismiss: () -> Unit = {},
@@ -107,11 +108,10 @@ internal fun AddEventScreenRoute(
     val isKeyboardOpen = imeHeight > 0
     val focusManager = LocalFocusManager.current
 
-    // Navigate back when event is created successfully, then reset state
+    // Navigate back when event is created/updated successfully, then reset state
     LaunchedEffect(uiState.isEventCreated) {
         if (uiState.isEventCreated) {
             onDismiss()
-            // Reset state after dismissing so it's clean for next time
             viewModel.resetState()
         }
     }
@@ -124,6 +124,8 @@ internal fun AddEventScreenRoute(
         }
     }
 
+    val isEditMode = eventId != null
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -131,7 +133,7 @@ internal fun AddEventScreenRoute(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Opret nyt event",
+                        text = if (isEditMode) "Rediger event" else "Opret nyt event",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                     )
@@ -173,7 +175,7 @@ internal fun AddEventScreenRoute(
                         Button(
                             onClick = {
                                 focusManager.clearFocus()
-                                viewModel.createEvent()
+                                if (isEditMode) viewModel.updateEvent() else viewModel.createEvent()
                             },
                             enabled = !uiState.isLoading,
                             modifier = Modifier.padding(end = 8.dp),
@@ -192,7 +194,7 @@ internal fun AddEventScreenRoute(
                                 )
                             } else {
                                 Text(
-                                    text = "Opret",
+                                    text = if (isEditMode) "Opdater" else "Opret",
                                     style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(vertical = 4.dp),
                                 )
@@ -225,9 +227,10 @@ internal fun AddEventScreenRoute(
             onEventTimeChange = viewModel::onEventTimeChange,
             onAddressSelected = viewModel::onAddressSelected,
             onClearPredictions = viewModel::clearAddressPredictions,
-            onCreateEvent = viewModel::createEvent,
+            onCreateEvent = if (isEditMode) viewModel::updateEvent else viewModel::createEvent,
             isKeyboardOpen = isKeyboardOpen,
             focusManager = focusManager,
+            isEditMode = isEditMode,
         )
     }
 }
@@ -246,6 +249,7 @@ private fun AddEventScreenContent(
     onClearPredictions: () -> Unit,
     focusManager: FocusManager,
     onCreateEvent: () -> Unit,
+    isEditMode: Boolean,
     isKeyboardOpen: Boolean,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
@@ -527,7 +531,7 @@ private fun AddEventScreenContent(
                     )
                 } else {
                     Text(
-                        text = "Opret event",
+                        text = if (isEditMode) "Opdater" else "Opret event",
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.padding(vertical = 8.dp),
                     )
@@ -579,6 +583,30 @@ private fun AddEventScreenPreview() {
             onCreateEvent = {},
             isKeyboardOpen = false,
             focusManager = LocalFocusManager.current,
+            isEditMode = false
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Edit Event Preview")
+@Composable
+private fun EditEventScreenPreview() {
+    FlotMandTheme {
+        AddEventScreenContent(
+            uiState = AddEventUiState(
+                event = Event.previewEvents(1).first()
+            ),
+            onEventNameChange = {},
+            onLocationChange = {},
+            onEventDateChange = {},
+            onDescriptionChange = {},
+            onEventTimeChange = {},
+            onAddressSelected = {},
+            onClearPredictions = {},
+            onCreateEvent = {},
+            isKeyboardOpen = false,
+            focusManager = LocalFocusManager.current,
+            isEditMode = true
         )
     }
 }

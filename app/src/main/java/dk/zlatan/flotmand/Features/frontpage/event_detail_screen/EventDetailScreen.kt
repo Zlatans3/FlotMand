@@ -72,6 +72,7 @@ internal fun EventDetailScreenRoute(
     eventId: String,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
+    onEditEvent: (String) -> Unit = {},
     viewModel: EventDetailViewModel =
         hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
             key = eventId,
@@ -101,7 +102,8 @@ internal fun EventDetailScreenRoute(
                     showDeleteDialog = true
                 },
                 onEditClick = {
-//                    viewModel.onEditEvent(context, uiState.event, uiState.publisher)
+                    uiState.event?.eventId?.let { onEditEvent(it) }
+                    viewModel.onEventUnavailable()
                 },
             )
         },

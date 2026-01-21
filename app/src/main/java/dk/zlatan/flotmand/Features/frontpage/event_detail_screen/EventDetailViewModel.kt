@@ -96,7 +96,7 @@ internal class EventDetailViewModel
                 dinnerEventService.observeDinnerEvent(eventId).collectLatest { event ->
                     if (event == null) {
                         Log.w(TAG, "Event not found or deleted: id=$eventId")
-                        clearAll()
+                        onEventUnavailable()
                         _isLoadingEvent.value = false
                         return@collectLatest
                     }
@@ -135,10 +135,6 @@ internal class EventDetailViewModel
                 Log.e(TAG, "Failed to load participants: ${e.message}", e)
                 emptyList()
             }
-        }
-
-        fun onEditEvent() {
-            // Navigation handled in the UI layer; this is a placeholder for any pre-navigation logic
         }
 
         fun onUserParticipate() {
@@ -190,6 +186,11 @@ internal class EventDetailViewModel
             _isPublisher.value = false
             _isParticipated.value = false
             _isDeleted.value = false
+        }
+
+        // Optionally, add a new function to handle event unavailable state
+        fun onEventUnavailable() {
+            clearAll()
         }
 
         fun onDismissParticipantsSheet() {

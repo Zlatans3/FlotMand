@@ -21,14 +21,6 @@
         <entry key="Firebase Crashlytics">
           <value>
             <InsightsFilterSettings>
-              <option name="connection">
-                <ConnectionSetting>
-                  <option name="appId" value="dk.zlatan.flotmand" />
-                  <option name="mobileSdkAppId" value="1:853949338460:android:4c9e027d5056e2bef2a799" />
-                  <option name="projectId" value="flotmand-e9edf" />
-                  <option name="projectNumber" value="853949338460" />
-                </ConnectionSetting>
-              </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
               <option name="timeIntervalDays" value="THIRTY_DAYS" />
               <option name="visibilityType" value="ALL" />

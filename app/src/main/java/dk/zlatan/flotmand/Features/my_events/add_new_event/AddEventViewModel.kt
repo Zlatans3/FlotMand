@@ -48,12 +48,15 @@ class AddEventViewModel
         private val accountService: AccountService,
         private val placesService: PlacesService,
         private val dateVotingService: DateVotingService,
-        @Assisted private val votingId: String?,
+        @Assisted("votingId") private val votingId: String?,
+        @Assisted("eventId") private val eventId: String? = null, // Use identifiers
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
-            fun create(votingId: String?): AddEventViewModel
+            fun create(@Assisted("votingId") votingId: String?, @Assisted("eventId") eventId: String? = null): AddEventViewModel
         }
+
+        val isEditMode = eventId != null
 
         private val _event = MutableStateFlow(Event())
         private val _isLoading = MutableStateFlow(false)
@@ -87,6 +90,20 @@ class AddEventViewModel
                         }
                     } catch (_: Exception) {
                         // Silently fail if voting not found
+                    }
+                }
+            }
+            // Load event if eventId is provided (edit mode)
+            eventId?.let { id ->
+                viewModelScope.launch {
+                    try {
+                        val event = dinnerEventService.readDinnerEvent(id)
+                        if (event != null) {
+                            _event.value = event
+                            _locationTextFieldValue.value = TextFieldValue(event.location ?: "")
+                        }
+                    } catch (_: Exception) {
+                        _errorMessage.value = "Kunne ikke indlæse event til redigering."
                     }
                 }
             }
@@ -331,6 +348,25 @@ class AddEventViewModel
                 } catch (e: Exception) {
                     _isLoading.value = false
                     _errorMessage.value = "Kunne ikke oprette event: ${e.message}"
+                }
+            }
+        }
+
+        fun updateEvent() {
+            val event = _event.value
+            if (event.eventId.isNullOrBlank()) {
+                _errorMessage.value = "Ugyldigt event-id."
+                return
+            }
+            viewModelScope.launch {
+                _isLoading.value = true
+                try {
+                    dinnerEventService.updateDinnerEvent(event)
+                    _isEventCreated.value = true
+                } catch (e: Exception) {
+                    _errorMessage.value = "Kunne ikke opdatere event."
+                } finally {
+                    _isLoading.value = false
                 }
             }
         }

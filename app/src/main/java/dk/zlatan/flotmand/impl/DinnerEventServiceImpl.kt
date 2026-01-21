@@ -137,9 +137,18 @@ class DinnerEventServiceImpl @Inject constructor(private val auth: AccountServic
     }
 
     override suspend fun updateDinnerEvent(event: Event) {
+        val eventId = event.eventId.orEmpty()
+        if (eventId.isBlank()) {
+            Log.e(TAG, "updateDinnerEvent: eventId is blank, cannot update event")
+            throw IllegalArgumentException("Event ID must not be blank when updating an event")
+        }
+        Log.d(TAG, "updateDinnerEvent: Attempting to update event with id=$eventId")
         Firebase.firestore
             .collection(DINNER_EVENTS_COLLECTION)
-            .document(event.eventId.orEmpty()).set(event).await()
+            .document(eventId)
+            .set(event)
+            .await()
+        Log.d(TAG, "updateDinnerEvent: Successfully updated event with id=$eventId")
     }
 
     override suspend fun deleteDinnerEvent(dinnerEventId: String) {
