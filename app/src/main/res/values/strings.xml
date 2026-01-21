@@ -60,4 +60,14 @@
     <string name="check_icon_content_description">Tjek ikon</string>
     <string name="date_content_description">Dato</string>
     <string name="location_icon_content_description">Lokation ikon</string>
+    <string name="event_location_marker_title">Event lokation</string>
+
+    <!-- New strings for DateTimeInfoBox.kt -->
+    <string name="date_label_upper">DATO</string>
+    <string name="time_label_upper">TIDSPUNKT</string>
+    <string name="participants_label">FLOTTE MÆND</string>
+    <string name="participants_answered">%1$d har svaret</string>
+    <string name="participants_content_description">Deltagere</string>
+    <string name="time_content_description">Tidspunkt</string>
+    <string name="view_all_participants_content_description">Se alle deltagere</string>
 </resources>

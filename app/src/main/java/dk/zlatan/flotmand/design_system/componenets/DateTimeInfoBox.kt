@@ -21,8 +21,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
@@ -34,45 +36,46 @@ import java.time.format.DateTimeFormatter
 fun DateTimeInfoBox(
     date: LocalDate?,
     time: LocalTime?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        modifier =
+            modifier
+                .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         // Date Box
         if (date != null) {
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .padding(16.dp),
-                contentAlignment = Alignment.CenterStart
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(12.dp),
+                        ).padding(16.dp),
+                contentAlignment = Alignment.CenterStart,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Filled.DateRange,
-                        contentDescription = "Dato",
+                        contentDescription = stringResource(R.string.date_content_description),
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
                     )
                     Column {
                         Text(
-                            text = "DATO",
+                            text = stringResource(R.string.date_label_upper),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
                             text = date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
@@ -82,35 +85,35 @@ fun DateTimeInfoBox(
         // Time Box
         if (time != null) {
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .padding(16.dp),
-                contentAlignment = Alignment.CenterStart
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(12.dp),
+                        ).padding(16.dp),
+                contentAlignment = Alignment.CenterStart,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Icon(
                         imageVector = Icons.Filled.AccessTime,
-                        contentDescription = "Time",
+                        contentDescription = stringResource(R.string.time_content_description),
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
                     )
                     Column {
                         Text(
-                            text = "TIDSPUNKT",
+                            text = stringResource(R.string.time_label_upper),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
                             text = time.format(DateTimeFormatter.ofPattern("HH:mm")),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
@@ -123,62 +126,62 @@ fun DateTimeInfoBox(
 fun ParticipantsInfoBox(
     participants: List<User>,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        contentAlignment = Alignment.CenterStart
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                ).clickable(onClick = onClick)
+                .padding(16.dp),
+        contentAlignment = Alignment.CenterStart,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(
                 imageVector = Icons.Filled.People,
-                contentDescription = "Participants",
+                contentDescription = stringResource(R.string.participants_content_description),
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
 
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(
-                    text = "FLOTTE MÆND",
+                    text = stringResource(R.string.participants_label),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = "${participants.size} har svaret",
+                    text = stringResource(R.string.participants_answered, participants.size),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
 
             // Overlapping Avatars
             Row(
                 modifier = Modifier.padding(end = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 OverlappingAvatars(
                     participants = participants,
                     avatarSize = 32.dp,
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
                 )
                 HSpacer(4.dp)
                 Icon(
                     imageVector = Icons.Filled.ChevronRight,
-                    contentDescription = "View all participants",
+                    contentDescription = stringResource(R.string.view_all_participants_content_description),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -191,7 +194,7 @@ private fun DateTimeInfoBoxPreview() {
     FlotMandTheme {
         DateTimeInfoBox(
             date = LocalDate.of(2026, 1, 28),
-            time = LocalTime.of(19, 0)
+            time = LocalTime.of(19, 0),
         )
     }
 }
@@ -201,15 +204,15 @@ private fun DateTimeInfoBoxPreview() {
 private fun ParticipantsInfoBoxPreview() {
     FlotMandTheme {
         ParticipantsInfoBox(
-            participants = listOf(
-                User(id = "1", displayName = "Alice"),
-                User(id = "2", displayName = "Bob"),
-                User(id = "3", displayName = "Charlie"),
-                User(id = "4", displayName = "Diana"),
-                User(id = "5", displayName = "Eve"),
-            ),
-            onClick = {}
+            participants =
+                listOf(
+                    User(id = "1", displayName = "Alice"),
+                    User(id = "2", displayName = "Bob"),
+                    User(id = "3", displayName = "Charlie"),
+                    User(id = "4", displayName = "Diana"),
+                    User(id = "5", displayName = "Eve"),
+                ),
+            onClick = {},
         )
     }
 }
-

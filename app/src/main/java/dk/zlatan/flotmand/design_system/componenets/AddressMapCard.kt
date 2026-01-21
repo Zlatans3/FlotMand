@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.google.android.gms.maps.model.CameraPosition
@@ -18,6 +19,7 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.GeoLocation
 import java.time.LocalDate
@@ -73,7 +75,7 @@ fun AddressMapCard(
         ) {
             Marker(
                 state = MarkerState(position = latLng),
-                title = "Event location"
+                title = stringResource(R.string.event_location_marker_title)
             )
         }
 
