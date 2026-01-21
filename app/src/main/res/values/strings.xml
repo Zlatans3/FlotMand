@@ -12,4 +12,34 @@
     <string name="cancel">Annuller</string>
     <string name="update">Opdater</string>
 
+<!--    add event-->
+
+    <string name="add_event_title">Tilføj Event</string>
+    <string name="event_name_hint">Event Navn</string>
+    <string name="event_date_hint">Event Dato</string>
+    <string name="event_location_hint">Event Lokation</string>
+    <string name="create_event_button">Opret Event</string>
+    <string name="edit_event_title">Rediger event</string>
+    <string name="create_new_event_title">Opret nyt event</string>
+    <string name="close">Luk</string>
+    <string name="create">Opret</string>
+    <string name="create_event">Opret event</string>
+    <string name="event_name_label">Event navn</string>
+    <string name="event_name_placeholder">Fx. Middag hos Gustav</string>
+    <string name="description_label">Beskrivelse (valgfrit)</string>
+    <string name="description_placeholder">Tilføj detaljer om eventet</string>
+    <string name="location_label">Lokation</string>
+    <string name="location_placeholder">Fx. Flotmand alle 4, København</string>
+    <string name="date_label">Dato</string>
+    <string name="date_placeholder">Vælg dato</string>
+    <string name="time_label">Tidspunkt</string>
+    <string name="time_placeholder">tidspunkt</string>
+    <string name="select_date">Vælg dato</string>
+    <string name="select_time">Vælg tidspunkt</string>
+    <string name="ok">OK</string>
+    <!-- 'Annuller' already exists as 'cancel' -->
+    <string name="preview_event_name">Middag hos Mikkel</string>
+    <string name="preview_event_location">Flotmand Alle 4</string>
+
+
 </resources>

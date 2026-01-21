@@ -66,6 +66,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,6 +76,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.AddressAutocompleteDropdown
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.EventTextField
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.AddressPrediction
@@ -133,7 +135,7 @@ internal fun AddEventScreenRoute(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (isEditMode) "Rediger event" else "Opret nyt event",
+                        text = if (isEditMode) stringResource(R.string.edit_event_title) else stringResource(R.string.create_new_event_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                     )
@@ -142,7 +144,7 @@ internal fun AddEventScreenRoute(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Luk",
+                            contentDescription = stringResource(R.string.close),
                         )
                     }
                 },
@@ -194,7 +196,7 @@ internal fun AddEventScreenRoute(
                                 )
                             } else {
                                 Text(
-                                    text = if (isEditMode) "Opdater" else "Opret",
+                                    text = if (isEditMode) stringResource(R.string.update) else stringResource(R.string.create),
                                     style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(vertical = 4.dp),
                                 )
@@ -292,10 +294,10 @@ private fun AddEventScreenContent(
 
         // Event Name
         EventTextField(
-            label = "Event navn",
+            label = stringResource(R.string.event_name_label),
             value = uiState.event.eventName.orEmpty(),
             onValueChange = onEventNameChange,
-            placeholder = "Fx. Middag hos Gustav",
+            placeholder = stringResource(R.string.event_name_placeholder),
             singleLine = true,
             maxChar = 100,
             maxLines = 1,
@@ -305,10 +307,10 @@ private fun AddEventScreenContent(
 
         // Description (optional) directly under name, larger multi-line
         EventTextField(
-            label = "Beskrivelse (valgfrit)",
+            label = stringResource(R.string.description_label),
             value = uiState.event.description.orEmpty(),
             onValueChange = { desc -> onDescriptionChange(desc) },
-            placeholder = "Tilføj detaljer om eventet",
+            placeholder = stringResource(R.string.description_placeholder),
             singleLine = false,
             maxChar = 2000,
             minLines = 3,
@@ -333,13 +335,13 @@ private fun AddEventScreenContent(
         ) {
             Column {
                 EventTextField(
-                    label = "Lokation",
+                    label = stringResource(R.string.location_label),
                     value = uiState.locationTextFieldValue,
                     onValueChange = onLocationChange,
-                    placeholder = "Fx. Flotmand alle 4, København",
+                    placeholder = stringResource(R.string.location_placeholder),
                     trailingIcon = {
                         IconButton(onClick = { /* optional: open map picker in future */ }) {
-                            Icon(imageVector = Icons.Filled.Place, contentDescription = "Lokation")
+                            Icon(imageVector = Icons.Filled.Place, contentDescription = stringResource(R.string.location_label))
                         }
                     },
                 )
@@ -361,12 +363,12 @@ private fun AddEventScreenContent(
         // Date & Time on the same line
         Row(modifier = Modifier.fillMaxWidth()) {
             EventTextField(
-                label = "Dato",
+                label = stringResource(R.string.date_label),
                 value =
                     uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
                         ?: "",
                 onValueChange = { }, // Read-only
-                placeholder = "Vælg dato",
+                placeholder = stringResource(R.string.date_placeholder),
                 modifier = Modifier.weight(1f),
                 onClick = {
                     focusManager.clearFocus()
@@ -377,7 +379,7 @@ private fun AddEventScreenContent(
                         focusManager.clearFocus()
                         showDatePicker = true
                     }) {
-                        Icon(imageVector = Icons.Filled.Today, contentDescription = "Vælg dato")
+                        Icon(imageVector = Icons.Filled.Today, contentDescription = stringResource(R.string.select_date))
                     }
                 },
             )
@@ -385,12 +387,12 @@ private fun AddEventScreenContent(
             Spacer(modifier = Modifier.size(12.dp))
 
             EventTextField(
-                label = "Tidspunkt",
+                label = stringResource(R.string.time_label),
                 value =
                     uiState.event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm"))
                         ?: "",
                 onValueChange = { }, // Read-only
-                placeholder = "tidspunkt",
+                placeholder = stringResource(R.string.time_placeholder),
                 modifier = Modifier.weight(1f),
                 singleLine = true,
                 onClick = {
@@ -404,7 +406,7 @@ private fun AddEventScreenContent(
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Schedule,
-                            contentDescription = "Vælg tidspunkt",
+                            contentDescription = stringResource(R.string.select_time),
                         )
                     }
                 },
@@ -438,12 +440,12 @@ private fun AddEventScreenContent(
                         }
                         showDatePicker = false
                     }) {
-                        Text("OK")
+                        Text(stringResource(R.string.ok))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Annuller")
+                        Text(stringResource(R.string.cancel))
                     }
                 },
             ) {
@@ -468,14 +470,14 @@ private fun AddEventScreenContent(
                         onEventTimeChange(localTime)
                         showTimePicker = false
                     }) {
-                        Text("OK")
+                        Text(stringResource(R.string.ok))
                     }
                 },
                 dismissButton = {
                     TextButton(
                         onClick = { showTimePicker = false },
                     ) {
-                        Text("Annuller")
+                        Text(stringResource(R.string.cancel))
                     }
                 },
             ) {
@@ -531,7 +533,7 @@ private fun AddEventScreenContent(
                     )
                 } else {
                     Text(
-                        text = if (isEditMode) "Opdater" else "Opret event",
+                        text = if (isEditMode) stringResource(R.string.update) else stringResource(R.string.create_event),
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.padding(vertical = 8.dp),
                     )
