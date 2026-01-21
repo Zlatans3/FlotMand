@@ -6,7 +6,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import dk.zlatan.flotmand.R
 
 @Composable
 fun FmAlertDialog(
@@ -17,14 +19,14 @@ fun FmAlertDialog(
 ) {
     AlertDialog(
         modifier = modifier,
-        title = { Text("Er du sikker på du vil logge ud?") },
-        text = { Text("Hvis du logger ud, kan du ikke se de flotte mænds beskeder") },
+        title = { Text(stringResource(R.string.logout_confirm_title)) },
+        text = { Text(stringResource(R.string.logout_confirm_message)) },
         dismissButton = {
-            Button(onClick = onDismiss, enabled = !isLoading) { Text(text = "Annuller") }
+            Button(onClick = onDismiss, enabled = !isLoading) { Text(text = stringResource(R.string.cancel)) }
         },
         confirmButton = {
             Button(onClick = onActionClick, enabled = !isLoading) {
-                if (isLoading) CircularProgressIndicator(modifier = Modifier) else Text(text = "Log ud")
+                if (isLoading) CircularProgressIndicator(modifier = Modifier) else Text(text = stringResource(R.string.logout))
             }
         },
         onDismissRequest = onDismiss
@@ -37,7 +39,7 @@ fun FmConfirmDialog(
     title: String,
     message: String,
     confirmText: String,
-    dismissText: String = "Annuller",
+    dismissText: String = stringResource(R.string.cancel),
     isLoading: Boolean = false,
     onDismiss: () -> Unit,
     onConfirmClick: () -> Unit,
@@ -70,9 +72,9 @@ private fun AlertDialogPreview() {
 @Composable
 private fun ConfirmDialogPreview() {
     FmConfirmDialog(
-        title = "Slet event?",
-        message = "Denne handling kan ikke fortrydes.",
-        confirmText = "Slet",
+        title = stringResource(R.string.delete_event_title),
+        message = stringResource(R.string.delete_event_message),
+        confirmText = stringResource(R.string.delete),
         onDismiss = {},
         onConfirmClick = {}
     )

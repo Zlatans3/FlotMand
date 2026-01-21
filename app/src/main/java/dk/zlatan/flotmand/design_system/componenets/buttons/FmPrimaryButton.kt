@@ -1,4 +1,6 @@
-// ktlint-disable package-name function-naming max-line-length
+
+@file:Suppress("ktlint:standard:function-naming", "ktlint:standard:max-line-length", "ktlint:standard:package-name")
+
 package dk.zlatan.flotmand.design_system.componenets.buttons
 
 import androidx.compose.animation.AnimatedContent
@@ -11,9 +13,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -32,8 +34,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 
@@ -50,11 +52,12 @@ fun FmPrimaryButton(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        ),
-        modifier = modifier
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
+        modifier = modifier,
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -63,9 +66,11 @@ fun FmPrimaryButton(
             AnimatedContent(
                 targetState = Triple(isLoading, isAffirmed, leadingIcon),
                 transitionSpec = {
-                    (slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) togetherWith slideOutHorizontally(
-                        targetOffsetX = { fullWidth -> -fullWidth })).using(SizeTransform(false))
-                }
+                    (
+                        slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth }) togetherWith
+                            slideOutHorizontally(targetOffsetX = { fullWidth -> -fullWidth })
+                    ).using(SizeTransform(false))
+                },
             ) { state ->
                 val (loading, affirmed, icon) = state
                 when {
@@ -74,7 +79,7 @@ fun FmPrimaryButton(
                             CircularProgressIndicator(
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 strokeWidth = 2.dp,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
                             )
                             Spacer(modifier = Modifier.size(8.dp))
                         }
@@ -86,22 +91,24 @@ fun FmPrimaryButton(
                             LaunchedEffect(affirmed) {
                                 scale.animateTo(
                                     targetValue = 1f,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioNoBouncy,
-                                        stiffness = Spring.StiffnessLow,
-                                    )
+                                    animationSpec =
+                                        spring(
+                                            dampingRatio = Spring.DampingRatioNoBouncy,
+                                            stiffness = Spring.StiffnessLow,
+                                        ),
                                 )
                             }
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .graphicsLayer {
-                                        scaleX = scale.value
-                                        scaleY = scale.value
-                                    }
+                                modifier =
+                                    Modifier
+                                        .size(20.dp)
+                                        .graphicsLayer {
+                                            scaleX = scale.value
+                                            scaleY = scale.value
+                                        },
                             )
                             Spacer(modifier = Modifier.size(8.dp))
                         }
@@ -126,11 +133,12 @@ fun FmAnimatableButton(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        ),
-        modifier = modifier
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
+        modifier = modifier,
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -139,8 +147,11 @@ fun FmAnimatableButton(
             AnimatedContent(
                 targetState = Triple(isLoading, isAffirmed, leadingIcon),
                 transitionSpec = {
-                    fadeIn(tween(220)) + scaleIn(tween(220)) togetherWith  fadeOut(tween(120)) + scaleOut(tween(120))
-                }
+                    fadeIn(tween(220)) + scaleIn(tween(220)) togetherWith fadeOut(tween(120)) +
+                        scaleOut(
+                            tween(120),
+                        )
+                },
             ) { state ->
                 val (loading, affirmed, icon) = state
                 when {
@@ -149,14 +160,14 @@ fun FmAnimatableButton(
                             CircularProgressIndicator(
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 strokeWidth = 2.dp,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
                             )
                             Spacer(modifier = Modifier.size(8.dp))
                         }
                     }
 
                     affirmed -> {
-                        Row() {
+                        Row {
                             icon?.invoke()
                             HSpacer(8.dp)
                         }

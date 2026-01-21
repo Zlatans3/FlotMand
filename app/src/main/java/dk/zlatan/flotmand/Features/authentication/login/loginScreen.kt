@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -99,7 +100,7 @@ private fun LoginContent(
 
             FlotHeader(
                 modifier = Modifier.fillMaxWidth(),
-                headerTitle = "Log ind",
+                headerTitle = stringResource(R.string.login_title),
                 headerTopPadding = 200.dp
             )
 
@@ -171,13 +172,13 @@ private fun LoginCard(
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.google_g_logo),
-                    contentDescription = "Google Logo",
+                    contentDescription = stringResource(R.string.google_logo_content_description),
                     modifier = Modifier.size(24.dp)
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "Login med din google konto",
+                text = stringResource(R.string.login_with_google),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )

@@ -70,4 +70,30 @@
     <string name="participants_content_description">Deltagere</string>
     <string name="time_content_description">Tidspunkt</string>
     <string name="view_all_participants_content_description">Se alle deltagere</string>
+    <string name="back_content_description">Tilbage</string>
+    <string name="flotmand_logo_content_description">Flotmand logo</string>
+    <string name="frontpage_title">Forside</string>
+
+    <!-- Status and countdown strings -->
+    <string name="status_upcoming">Kommende</string>
+    <string name="status_ongoing">I gang</string>
+    <string name="status_completed">Færdig</string>
+    <string name="status_days_until_event">%1$d dage indtil event</string>
+    <string name="status_tomorrow">I morgen</string>
+    <string name="status_today">Event i dag</string>
+    <string name="status_event_finished">Event er afsluttet</string>
+
+    <!-- Dialog-related strings for AlertDialog.kt -->
+    <string name="logout_confirm_title">Er du sikker på du vil logge ud?</string>
+    <string name="logout_confirm_message">Hvis du logger ud, kan du ikke se de flotte mænds beskeder</string>
+    <string name="logout">Log ud</string>
+    <string name="delete_event_title">Slet event?</string>
+    <string name="delete_event_message">Denne handling kan ikke fortrydes.</string>
+    <string name="delete">Slet</string>
+
+    <!-- Login screen strings -->
+    <string name="login_title">Log ind</string>
+    <string name="login_with_google">Login med din Google-konto</string>
+    <string name="google_logo_content_description">Google logo</string>
+
 </resources>
