@@ -90,10 +90,70 @@
     <string name="delete_event_title">Slet event?</string>
     <string name="delete_event_message">Denne handling kan ikke fortrydes.</string>
     <string name="delete">Slet</string>
+    <string name="delete_date_title">Slet dato</string>
+    <string name="delete_date_message">Er du sikker på du vil slette denne dato? Denne handling kan ikke fortrydes.</string>
 
     <!-- Login screen strings -->
     <string name="login_title">Log ind</string>
     <string name="login_with_google">Login med din Google-konto</string>
     <string name="google_logo_content_description">Google logo</string>
+
+    <!-- Error strings for LoginViewModel -->
+    <string name="error_unexpected_credential_type">Uventet credential-type: %1$s</string>
+    <string name="error_sign_in_generic">Noget gik galt under login.</string>
+
+    <!-- Create Voting Dialog strings -->
+    <string name="create_voting_title">Opret ny afstemning</string>
+    <string name="create_voting_subtitle">Giv afstemningen et navn</string>
+    <string name="create_voting_label">Navn på afstemning</string>
+    <string name="create_voting_placeholder">F.eks. hos David</string>
+    <string name="voting_list_title">Afstemninger</string>
+    <string name="voting_list_loading">Henter afstemninger...</string>
+    <string name="create_voting_content_description">Opret ny afstemning</string>
+    <string name="error_could_not_create_voting">Kunne ikke oprette afstemning: %1$s</string>
+    <string name="date_icon_content_description">Dato ikon</string>
+    <string name="vote_percentage" formatted="false">%1$d% stemte</string>
+    <string name="delete_vote_option_content_description">Slet stemmemulighed</string>
+
+    <!-- Error and snackbar strings for DateVotingViewModel -->
+    <string name="error_voting_not_found">Afstemning ikke fundet</string>
+    <string name="error_loading_voting">Kunne ikke indlæse afstemning: %1$s</string>
+    <string name="error_vote">Kunne ikke stemme: %1$s</string>
+    <string name="error_delete_voting">Kunne ikke slette afstemning: %1$s</string>
+    <string name="error_delete_date">Kunne ikke slette dato: %1$s</string>
+    <string name="error_remove_vote">Kunne ikke fjerne stemme: %1$s</string>
+    <string name="error_no_voting_found">Ingen afstemning fundet</string>
+    <string name="error_add_date">Kunne ikke tilføje dato: %1$s</string>
+
+    <!-- New strings for DateVotingScreen.kt -->
+    <string name="my_voting">Min Afstemning</string>
+    <string name="voting">Afstemning</string>
+    <string name="vote_on_dates">Stem på alle datoer hvor du er tilgængelig</string>
+    <string name="created_by">Oprettet af </string>
+    <string name="dates">Datoer</string>
+    <string name="users_voted">Brugere Stemt</string>
+    <string name="status">Status</string>
+    <string name="open">Åben</string>
+    <string name="closed">Lukket</string>
+    <string name="available_dates">Tilgængelige datoer</string>
+    <string name="unknown_date">Ukendt Dato</string>
+    <string name="no_votes_yet">Ingen stemmer endnu</string>
+    <string name="one_person_voted">1 person stemte</string>
+    <string name="n_persons_voted">%1$d personer stemte</string>
+    <string name="add_date_content_description">Tilføj dato</string>
+    <string name="add_date">Tilføj dato</string>
+    <string name="actions">Handlinger</string>
+    <string name="create_event_content_description">Opret event</string>
+    <string name="date_voting_create_event">Opret Event</string>
+    <string name="convert_to_event">Konverter denne afstemning til et event</string>
+    <string name="delete_voting_content_description">Slet afstemning</string>
+    <string name="delete_voting">Slet Afstemning</string>
+    <string name="remove_voting_permanently">Fjern denne afstemning permanent</string>
+
+    <!-- New strings for EventDetailScreen -->
+    <string name="loading_event">Henter et flot event...</string>
+    <string name="event_not_found">Event ikke fundet</string>
+    <string name="event_not_loaded">Eventet kunne ikke indlæses eller eksisterer ikke</string>
+    <string name="open_navigation_with">Åbn navigation med</string>
 
 </resources>

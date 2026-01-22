@@ -19,10 +19,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
+import dk.zlatan.flotmand.R
 
 @Composable
 internal fun CreateVotingDialog(
@@ -51,13 +53,13 @@ internal fun CreateVotingDialog(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
-                        text = "Opret ny afstemning",
+                        text = stringResource(R.string.create_voting_title),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
 
                     Text(
-                        text = "Giv afstemningen et navn",
+                        text = stringResource(R.string.create_voting_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -65,9 +67,9 @@ internal fun CreateVotingDialog(
                     OutlinedTextField(
                         value = votingName,
                         onValueChange = { votingName = it },
-                        label = { Text("Navn på afstemning") },
+                        label = { Text(stringResource(R.string.create_voting_label)) },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("F.eks. hos David") },
+                        placeholder = { Text(stringResource(R.string.create_voting_placeholder)) },
                         singleLine = true,
                         maxLines = 1,
                     )
@@ -79,7 +81,7 @@ internal fun CreateVotingDialog(
                         TextButton(
                             onClick = onDismiss,
                         ) {
-                            Text("Annuller")
+                            Text(stringResource(R.string.cancel))
                         }
 
                         Button(
@@ -89,7 +91,7 @@ internal fun CreateVotingDialog(
                             },
                             enabled = votingName.isNotBlank(),
                         ) {
-                            Text("Opret")
+                            Text(stringResource(R.string.create))
                         }
                     }
                 }

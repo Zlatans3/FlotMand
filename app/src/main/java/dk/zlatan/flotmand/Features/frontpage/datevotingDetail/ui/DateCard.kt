@@ -28,9 +28,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.OverlappingAvatars
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
@@ -95,7 +97,7 @@ internal fun DateCard(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.CalendarToday,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.date_icon_content_description),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp),
                         )
@@ -143,7 +145,7 @@ internal fun DateCard(
 
                 // Vote percentage (right side)
                 Text(
-                    text = "$votePercentage% stemte",
+                    text = stringResource(R.string.vote_percentage, votePercentage),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 8.dp),
@@ -184,7 +186,7 @@ private fun VoteOptionAction(
         ) {
             Icon(
                 imageVector = Icons.Filled.Delete,
-                contentDescription = "Delete vote option",
+                contentDescription = stringResource(R.string.delete_vote_option_content_description),
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(18.dp),
             )

@@ -13,14 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -39,8 +37,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +49,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.ui.DateCard
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.ui.DeleteDialog
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.FmBackButton
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
@@ -175,12 +174,12 @@ internal fun DateVotingDetailRoute(
                             showDatePicker = false
                         },
                     ) {
-                        Text("OK")
+                        Text(stringResource(R.string.ok))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Annuller")
+                        Text(stringResource(R.string.cancel))
                     }
                 },
             ) {
@@ -270,13 +269,13 @@ private fun VotingDetailsHeader(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = if (isCreator) "Min Afstemning" else "Afstemning",
+            text = if (isCreator) stringResource(R.string.my_voting) else stringResource(R.string.voting),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
 
         Text(
-            text = "Stem på alle datoer hvor du er tilgængelig",
+            text = stringResource(R.string.vote_on_dates),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -297,7 +296,7 @@ private fun VotingDetailsHeader(
                         withStyle(
                             style = SpanStyle(fontWeight = FontWeight.Light),
                         ) {
-                            append("Oprettet af ")
+                            append(stringResource(R.string.created_by))
                         }
                         withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
                             append(user.getFirstName())
@@ -323,11 +322,11 @@ private fun VotingStatsSection(dateVotingItem: DateVotingItem) {
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         VotingStat(
-            label = "Datoer",
+            label = stringResource(R.string.dates),
             value = dateVotingItem.dateOptions.size.toString(),
         )
         VotingStat(
-            label = "Brugere Stemt",
+            label = stringResource(R.string.users_voted),
             value =
                 dateVotingItem.dateOptions
                     .flatMap { it.votersId }
@@ -336,8 +335,8 @@ private fun VotingStatsSection(dateVotingItem: DateVotingItem) {
                     .toString(),
         )
         VotingStat(
-            label = "Status",
-            value = if (dateVotingItem.status.name == "OPEN") "Åben" else "Lukket",
+            label = stringResource(R.string.status),
+            value = if (dateVotingItem.status.name == "OPEN") stringResource(R.string.open) else stringResource(R.string.closed),
         )
     }
 }
@@ -375,7 +374,7 @@ private fun VotingDatesSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            text = "Tilgængelige datoer",
+            text = stringResource(R.string.available_dates),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
@@ -413,16 +412,14 @@ private fun VotingDatesSection(
                 val dateString =
                     dateOption.localDate?.let {
                         DanishDateFormatter.formatDateDanishWithWeekday(it)
-                    } ?: "Ukendt Dato"
+                    } ?: stringResource(R.string.unknown_date)
 
                 val votingCount = dateOption.voteCount
                 val subtitle =
-                    if (votingCount == 0) {
-                        "Ingen stemmer endnu"
-                    } else if (votingCount == 1) {
-                        "1 person stemte"
-                    } else {
-                        "$votingCount personer stemte"
+                    when (votingCount) {
+                        0 -> stringResource(R.string.no_votes_yet)
+                        1 -> stringResource(R.string.one_person_voted)
+                        else -> stringResource(R.string.n_persons_voted, votingCount)
                     }
 
                 val isSelected = dateOption.votersId.contains(currentUserId)
@@ -464,11 +461,11 @@ private fun AddDateButton(onAddDate: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Filled.Add,
-            contentDescription = "Tilføj dato",
+            contentDescription = stringResource(R.string.add_date_content_description),
             tint = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = "Tilføj dato",
+            text = stringResource(R.string.add_date),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
         )
@@ -482,7 +479,7 @@ private fun CreatorActionsSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
-            text = "Handlinger",
+            text = stringResource(R.string.actions),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
@@ -499,18 +496,18 @@ private fun CreatorActionsSection(
         ) {
             Icon(
                 imageVector = Icons.Filled.Add,
-                contentDescription = "Create event",
+                contentDescription = stringResource(R.string.create_event_content_description),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(8.dp),
             )
             Column {
                 Text(
-                    text = "Opret Event",
+                    text = stringResource(R.string.create_event),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = "Konverter denne afstemning til et event",
+                    text = stringResource(R.string.convert_to_event),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -529,18 +526,18 @@ private fun CreatorActionsSection(
         ) {
             Icon(
                 imageVector = Icons.Filled.Delete,
-                contentDescription = "Delete voting",
+                contentDescription = stringResource(R.string.delete_voting_content_description),
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(8.dp),
             )
             Column {
                 Text(
-                    text = "Slet Afstemning",
+                    text = stringResource(R.string.delete_voting),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.error,
                 )
                 Text(
-                    text = "Fjern denne afstemning permanent",
+                    text = stringResource(R.string.remove_voting_permanently),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
