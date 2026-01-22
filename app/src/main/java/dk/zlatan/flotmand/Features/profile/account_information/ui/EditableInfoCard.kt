@@ -31,8 +31,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.Features.profile.account_information.model.EditableInfoItem
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 
@@ -49,38 +51,41 @@ internal fun EditableInfoCard(
     modifier: Modifier = Modifier,
     title: String,
     items: List<EditableInfoItem>,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = 2.dp,
+            ),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.padding(4.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
                     )
                 }
             }
@@ -89,7 +94,7 @@ internal fun EditableInfoCard(
             items.forEachIndexed { index, item ->
                 EditableInfoRow(
                     item = item,
-                    isLoading = isLoading
+                    isLoading = isLoading,
                 )
                 if (index < items.size - 1) {
                     VSpacer(12.dp)
@@ -103,40 +108,48 @@ internal fun EditableInfoCard(
 private fun EditableInfoRow(
     modifier: Modifier = Modifier,
     item: EditableInfoItem,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .animateContentSize(
+                    animationSpec =
+                        spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow,
+                        ),
+                ),
     ) {
         Text(
             text = item.label,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
         VSpacer(4.dp)
 
         AnimatedVisibility(
             visible = item.isEditing,
-            enter = fadeIn() + expandVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ),
-            exit = fadeOut() + shrinkVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
+            enter =
+                fadeIn() +
+                    expandVertically(
+                        animationSpec =
+                            spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow,
+                            ),
+                    ),
+            exit =
+                fadeOut() +
+                    shrinkVertically(
+                        animationSpec =
+                            spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessLow,
+                            ),
+                    ),
         ) {
             Column {
                 OutlinedTextField(
@@ -150,27 +163,28 @@ private fun EditableInfoRow(
                     },
                     enabled = !isLoading,
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = item.keyboardType
-                    )
+                    keyboardOptions =
+                        KeyboardOptions(
+                            keyboardType = item.keyboardType,
+                        ),
                 )
                 VSpacer(8.dp)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.End,
                 ) {
                     TextButton(
                         onClick = item.onCancel,
-                        enabled = !isLoading
+                        enabled = !isLoading,
                     ) {
-                        Text("Annuller")
+                        Text(stringResource(R.string.cancel))
                     }
                     Button(
                         onClick = item.onSave,
                         enabled = !isLoading,
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
                     ) {
-                        Text("Gem")
+                        Text(stringResource(R.string.save))
                     }
                 }
             }
@@ -178,45 +192,52 @@ private fun EditableInfoRow(
 
         AnimatedVisibility(
             visible = !item.isEditing,
-            enter = fadeIn() + expandVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMedium
-                )
-            ),
-            exit = fadeOut() + shrinkVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
+            enter =
+                fadeIn() +
+                    expandVertically(
+                        animationSpec =
+                            spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessMedium,
+                            ),
+                    ),
+            exit =
+                fadeOut() +
+                    shrinkVertically(
+                        animationSpec =
+                            spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow,
+                            ),
+                    ),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = item.value.ifEmpty { "Ikke angivet" },
+                    text = item.value.ifEmpty { stringResource(R.string.not_specified) },
                     style = MaterialTheme.typography.bodyLarge,
-                    color = if (item.value.isEmpty()) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                    modifier = Modifier.weight(1f)
+                    color =
+                        if (item.value.isEmpty()) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
+                    modifier = Modifier.weight(1f),
                 )
                 if (item.canEdit) {
                     IconButton(
                         onClick = item.onEditClick,
                         enabled = !isLoading,
-                        modifier = Modifier.padding(0.dp)
+                        modifier = Modifier.padding(0.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Rediger ${item.label}",
+                            contentDescription = stringResource(R.string.edit_content_description, item.label),
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(18.dp),
                         )
                     }
                 }

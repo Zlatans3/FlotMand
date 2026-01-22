@@ -1,4 +1,4 @@
-package dk.zlatan.flotmand.util
+package dk.zlatan.flotmand.util.easter_eggs
 
 fun randomColor(): Int {
     val colors = listOf(

@@ -3,8 +3,10 @@ package dk.zlatan.flotmand.Features.profile.account_information
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
+import dk.zlatan.flotmand.util.StringProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +23,8 @@ data class AccountInformationUiState(
 
 @HiltViewModel
 class AccountInformationViewModel @Inject constructor(
-    private val accountService: AccountService
+    private val accountService: AccountService,
+    private val stringProvider: StringProvider
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -45,7 +48,7 @@ class AccountInformationViewModel @Inject constructor(
 
     fun updateDisplayName(newDisplayName: String) {
         if (newDisplayName.isBlank()) {
-            _errorMessage.value = "Navn kan ikke være tomt"
+            _errorMessage.value = stringProvider.getString(R.string.error_display_name_blank)
             return
         }
 
@@ -57,7 +60,7 @@ class AccountInformationViewModel @Inject constructor(
                 // Reload user to trigger AuthStateListener and update UI
                 accountService.reloadUser()
             } catch (e: Exception) {
-                _errorMessage.value = "Kunne ikke opdatere navn: ${e.message}"
+                _errorMessage.value = stringProvider.getString(R.string.error_update_display_name, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }
@@ -67,7 +70,7 @@ class AccountInformationViewModel @Inject constructor(
     fun updatePhoneNumber(newPhoneNumber: String) {
         // Basic validation
         if (newPhoneNumber.isNotBlank() && !isValidPhoneNumber(newPhoneNumber)) {
-            _errorMessage.value = "Indtast et gyldigt telefonnummer (f.eks. +45 12 34 56 78)"
+            _errorMessage.value = stringProvider.getString(R.string.error_invalid_phone_number)
             return
         }
 
@@ -81,7 +84,7 @@ class AccountInformationViewModel @Inject constructor(
             } catch (e: UnsupportedOperationException) {
                 _errorMessage.value = e.message
             } catch (e: Exception) {
-                _errorMessage.value = "Kunne ikke opdatere telefonnummer: ${e.message}"
+                _errorMessage.value = stringProvider.getString(R.string.error_update_phone_number, e.message ?: "")
             } finally {
                 _isLoading.value = false
             }

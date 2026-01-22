@@ -14,11 +14,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dk.zlatan.flotmand.Features.profile.ui.DisplayName
 import dk.zlatan.flotmand.Features.profile.ui.SectionCard
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.HeaderContainer
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmAlertDialog
@@ -44,15 +46,15 @@ fun ProfileScreenRoute(
     Scaffold(
         modifier = modifier,
         topBar = {
-            FmTopAppBar(
-            )
-        }
+            FmTopAppBar()
+        },
     ) { paddingValues ->
         val topPaddingValues = paddingValues.calculateTopPadding()
         ProfileScreen(
-            modifier = modifier
-                .padding(top = topPaddingValues)
-                .fillMaxSize(),
+            modifier =
+                modifier
+                    .padding(top = topPaddingValues)
+                    .fillMaxSize(),
             userName = user.displayName,
             userImage = user.photoUrl,
             onLogoutClicked = {
@@ -61,12 +63,11 @@ fun ProfileScreenRoute(
             onUpdateDisplayNameClick = { newName ->
                 viewModel.onUpdateDisplayNameClick(newName)
             },
-            onAccountInformationClick = navigateToAccountInformation
+            onAccountInformationClick = navigateToAccountInformation,
         )
-
     }
 
-    if (sinOutDialogState)
+    if (sinOutDialogState) {
         FmAlertDialog(
             isLoading = isLoading,
             onDismiss = {
@@ -76,8 +77,9 @@ fun ProfileScreenRoute(
                 viewModel.signOut()
                 sinOutDialogState = false
                 navigateToLogin()
-            }
+            },
         )
+    }
 }
 
 @Composable
@@ -90,19 +92,20 @@ internal fun ProfileScreen(
     onAccountInformationClick: () -> Unit = {},
 ) {
     LazyColumn(
-        modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceContainer),
+        modifier =
+            modifier
+                .background(MaterialTheme.colorScheme.surfaceContainer),
     ) {
         item {
             HeaderContainer(
-                modifier = Modifier
+                modifier = Modifier,
             ) {
                 VSpacer(90.dp)
                 ProfileImage(
                     modifier = Modifier,
                     profilePic = userImage,
                     profileSize = 100.dp,
-                    userName = userName
+                    userName = userName,
                 )
                 VSpacer(20.dp)
                 DisplayName(
@@ -110,7 +113,7 @@ internal fun ProfileScreen(
                     isLoading = false,
                     onUpdateDisplayNameClick = { updatedName ->
                         onUpdateDisplayNameClick(updatedName)
-                    }
+                    },
                 )
                 VSpacer(12.dp)
             }
@@ -118,15 +121,15 @@ internal fun ProfileScreen(
         item {
             VSpacer(24.dp)
             SectionCard(
-                title = "Konto Information",
+                title = stringResource(R.string.account_information_title),
                 iconRes = FmIcons.Person,
-                onClick = onAccountInformationClick
+                onClick = onAccountInformationClick,
             )
             VSpacer(12.dp)
             SectionCard(
-                title = "Log ud",
+                title = stringResource(R.string.logout),
                 iconRes = FmIcons.logout,
-                onClick = onLogoutClicked
+                onClick = onLogoutClicked,
             )
             VSpacer(24.dp)
         }
@@ -136,7 +139,7 @@ internal fun ProfileScreen(
 @Preview
 @Composable
 private fun ProfileScreenPreview() {
-    FlotMandTheme() {
+    FlotMandTheme {
         ProfileScreen(
             modifier = Modifier,
             userName = "Oliver Payne",

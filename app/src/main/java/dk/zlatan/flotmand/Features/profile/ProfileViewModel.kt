@@ -16,9 +16,6 @@ class ProfileViewModel @Inject constructor(
     private val _user = MutableStateFlow(User())
     val user: StateFlow<User> = _user.asStateFlow()
 
-    private val _signedOut = MutableStateFlow(false)
-    val signedOut: StateFlow<Boolean> = _signedOut.asStateFlow()
-
     private val _signOutLoading = MutableStateFlow(false)
     val signOutLoading: StateFlow<Boolean> = _signOutLoading.asStateFlow()
 
@@ -39,7 +36,6 @@ class ProfileViewModel @Inject constructor(
         launchCatching {
             _signOutLoading.value = true
             accountService.signOut()
-            _signedOut.value = true
             _signOutLoading.value = false
         }
     }

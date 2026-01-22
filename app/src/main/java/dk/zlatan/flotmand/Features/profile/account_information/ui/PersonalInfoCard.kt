@@ -6,9 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import dk.zlatan.flotmand.Features.profile.account_information.model.EditableInfoItem
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.User
 
 /**
@@ -27,7 +29,7 @@ internal fun PersonalInfoCard(
     user: User,
     isLoading: Boolean = false,
     onUpdateDisplayName: (String) -> Unit = {},
-    onUpdatePhoneNumber: (String) -> Unit = {}
+    onUpdatePhoneNumber: (String) -> Unit = {},
 ) {
     var isEditingDisplayName by remember { mutableStateOf(false) }
     var editedDisplayName by remember(user.displayName) { mutableStateOf(user.displayName) }
@@ -36,59 +38,60 @@ internal fun PersonalInfoCard(
 
     EditableInfoCard(
         modifier = modifier,
-        title = "Personlige Oplysninger",
-        items = buildList {
-            if (user.displayName.isNotEmpty() || isEditingDisplayName) {
+        title = stringResource(R.string.personal_info_title),
+        items =
+            buildList {
+                if (user.displayName.isNotEmpty() || isEditingDisplayName) {
+                    add(
+                        EditableInfoItem(
+                            label = stringResource(R.string.personal_info_name),
+                            value = user.displayName,
+                            isEditing = isEditingDisplayName,
+                            editedValue = editedDisplayName,
+                            onEditClick = { isEditingDisplayName = true },
+                            onValueChange = { editedDisplayName = it },
+                            onSave = {
+                                onUpdateDisplayName(editedDisplayName)
+                                isEditingDisplayName = false
+                            },
+                            onCancel = {
+                                editedDisplayName = user.displayName
+                                isEditingDisplayName = false
+                            },
+                        ),
+                    )
+                }
+                if (user.email.isNotEmpty()) {
+                    add(
+                        EditableInfoItem(
+                            label = stringResource(R.string.personal_info_email),
+                            value = user.email,
+                            canEdit = false,
+                        ),
+                    )
+                }
                 add(
                     EditableInfoItem(
-                        label = "Navn",
-                        value = user.displayName,
-                        isEditing = isEditingDisplayName,
-                        editedValue = editedDisplayName,
-                        onEditClick = { isEditingDisplayName = true },
-                        onValueChange = { editedDisplayName = it },
+                        label = stringResource(R.string.personal_info_phone),
+                        value = user.phoneNumber,
+                        isEditing = isEditingPhoneNumber,
+                        editedValue = editedPhoneNumber,
+                        onEditClick = { isEditingPhoneNumber = true },
+                        onValueChange = { editedPhoneNumber = it },
                         onSave = {
-                            onUpdateDisplayName(editedDisplayName)
-                            isEditingDisplayName = false
+                            onUpdatePhoneNumber(editedPhoneNumber)
+                            isEditingPhoneNumber = false
                         },
                         onCancel = {
-                            editedDisplayName = user.displayName
-                            isEditingDisplayName = false
-                        }
-                    )
+                            editedPhoneNumber = user.phoneNumber
+                            isEditingPhoneNumber = false
+                        },
+                        placeholder = stringResource(R.string.personal_info_add_phone),
+                        keyboardType = KeyboardType.Phone,
+                    ),
                 )
-            }
-            if (user.email.isNotEmpty()) {
-                add(
-                    EditableInfoItem(
-                        label = "Email",
-                        value = user.email,
-                        canEdit = false
-                    )
-                )
-            }
-            add(
-                EditableInfoItem(
-                    label = "Telefon",
-                    value = user.phoneNumber,
-                    isEditing = isEditingPhoneNumber,
-                    editedValue = editedPhoneNumber,
-                    onEditClick = { isEditingPhoneNumber = true },
-                    onValueChange = { editedPhoneNumber = it },
-                    onSave = {
-                        onUpdatePhoneNumber(editedPhoneNumber)
-                        isEditingPhoneNumber = false
-                    },
-                    onCancel = {
-                        editedPhoneNumber = user.phoneNumber
-                        isEditingPhoneNumber = false
-                    },
-                    placeholder = "Tilføj telefonnummer",
-                    keyboardType = KeyboardType.Phone
-                )
-            )
-        },
-        isLoading = isLoading
+            },
+        isLoading = isLoading,
     )
 }
 

@@ -14,16 +14,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.profile.account_information.ui.AccountDetailsCard
 import dk.zlatan.flotmand.Features.profile.account_information.ui.PersonalInfoCard
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
@@ -50,7 +49,7 @@ internal fun AccountInformationScreenRoute(
             FmTopAppBar(
                 textContent = {
                     Text(
-                        text = "Konto Information",
+                        text = stringResource(R.string.account_information_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                     )
@@ -59,7 +58,7 @@ internal fun AccountInformationScreenRoute(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Luk",
+                            contentDescription = stringResource(R.string.close),
                         )
                     }
                 },

@@ -13,7 +13,5 @@ import javax.inject.Singleton
 abstract class NetworkMonitorModule {
     @Binds
     @Singleton
-    abstract fun bindNetworkMonitor(
-        defaultNetworkMonitor: AlwaysOnlineNetworkMonitor
-    ): NetworkMonitor
+    abstract fun bindNetworkMonitor(defaultNetworkMonitor: AlwaysOnlineNetworkMonitor): NetworkMonitor
 }

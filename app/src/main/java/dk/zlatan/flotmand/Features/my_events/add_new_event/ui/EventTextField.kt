@@ -19,10 +19,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 
@@ -75,12 +77,14 @@ fun EventTextField(
                         transitionSpec = {
                             if (targetState) {
                                 // Slide in from below when focused
-                                slideInVertically(initialOffsetY = { it }) togetherWith slideOutVertically(targetOffsetY = { -it })
+                                slideInVertically(initialOffsetY = { it }) togetherWith
+                                    slideOutVertically(targetOffsetY = { -it })
                             } else {
                                 // Slide out down when unfocused
-                                slideInVertically(initialOffsetY = { -it }) togetherWith slideOutVertically(targetOffsetY = { it })
+                                slideInVertically(initialOffsetY = { -it }) togetherWith
+                                    slideOutVertically(targetOffsetY = { it })
                             }
-                        }
+                        },
                     ) { focused ->
                         if (focused) {
                             Text(
@@ -161,11 +165,11 @@ fun EventTextField(
 private fun EventTextFieldPreview() {
     FlotMandTheme {
         EventTextField(
-            label = "Event navn",
+            label = stringResource(id = R.string.event_name_label),
             value = "",
             maxLines = 1,
             onValueChange = { },
-            placeholder = "Fx. Middag hos Gustav",
+            placeholder = stringResource(id = R.string.event_name_placeholder),
         )
     }
 }

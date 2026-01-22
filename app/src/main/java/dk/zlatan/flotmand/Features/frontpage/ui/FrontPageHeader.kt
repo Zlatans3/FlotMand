@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.R
@@ -83,7 +84,7 @@ fun newFmTopAppBar(
         TopAppBar(
             title = {
                 Text(
-                    text = "Flotmand",
+                    text = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -93,7 +94,7 @@ fun newFmTopAppBar(
                     HSpacer(10.dp)
                     Image(
                         painter = painterResource(id = R.drawable.flotmandapp),
-                        contentDescription = "Flotmand Logo",
+                        contentDescription = stringResource(R.string.flotmand_logo_content_description),
                         modifier =
                             Modifier
                                 .size(40.dp)
@@ -150,7 +151,7 @@ fun HeaderContent(
     ) {
         VSpacer(40.dp)
         Text(
-            text = "Hej, $name! 👋",
+            text = stringResource(R.string.greeting_with_name, name),
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.padding(horizontal = 24.dp),
@@ -159,7 +160,7 @@ fun HeaderContent(
         VSpacer(8.dp)
 
         Text(
-            text = "Velkommen tilbage til Flotte Mand!",
+            text = stringResource(R.string.welcome_back),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
             modifier = Modifier.padding(horizontal = 24.dp),
