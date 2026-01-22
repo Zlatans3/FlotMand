@@ -7,12 +7,12 @@
     <string name="profile_title">Profil</string>
 
 
-<!--    PROFILE SCREEN-->
+    <!--    PROFILE SCREEN-->
     <string name="profile_name">Profil navn</string>
     <string name="cancel">Annuller</string>
     <string name="update">Opdater</string>
 
-<!--    add event-->
+    <!--    add event-->
 
     <string name="add_event_title">Tilføj Event</string>
     <string name="event_name_hint">Event Navn</string>
@@ -156,4 +156,18 @@
     <string name="event_not_loaded">Eventet kunne ikke indlæses eller eksisterer ikke</string>
     <string name="open_navigation_with">Åbn navigation med</string>
 
+
+<!--     strings for -->
+    <string name="date_options_and_users_voted">%1$d dates • %2$d users voted</string>
+    <string name="today">I dag</string>
+    <string name="yesterday">I går</string>
+    <string name="days_ago">%1$d dage siden</string>
+
+    <string name="read_more">Læs mere</string>
+    <string name="read_less">Læs mindre</string>
+    <string name="edit_event_content_description">Rediger event</string>
+    <string name="delete_event_content_description">Slet event</string>
+    <string name="participant_host">%1$s (Vært)</string>
+    <string name="organizer_label">Arrangør</string>
+    <string name="you_label">Dig</string>
 </resources>

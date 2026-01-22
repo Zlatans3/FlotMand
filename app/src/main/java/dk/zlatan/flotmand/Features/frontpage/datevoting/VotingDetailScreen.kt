@@ -34,7 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dk.zlatan.flotmand.Features.frontpage.datevoting.ui.VotingListItem
+import dk.zlatan.flotmand.Features.frontpage.datevoting.ui.votingListItem
 import dk.zlatan.flotmand.design_system.componenets.FmBackButton
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
@@ -157,7 +157,7 @@ internal fun DateVotingScreen(
                     }
 
                     items(uiState.votings) { voting ->
-                        VotingListItem(
+                        votingListItem(
                             voting = voting,
                             isCreator = voting.creatorId == uiState.currentUserId,
                             onClick = {
