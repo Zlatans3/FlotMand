@@ -176,4 +176,15 @@
     <string name="error_update_display_name">Nije moguće ažurirati ime</string>
     <string name="error_invalid_phone_number">Unesite važeći broj telefona (npr. +387 61 123 456)</string>
     <string name="error_update_phone_number">Nije moguće ažurirati telefon</string>
+    <string name="language_screen_title">Jezik</string>
+    <string name="danish">Danski</string>
+    <string name="danish_english">Danski</string>
+    <string name="bosnian">Bosanski</string>
+    <string name="bosnian_english">Bosanski</string>
+    <string name="portuguese">Portugalski</string>
+    <string name="portuguese_english">Portugalski</string>
+    <string name="faroese">Farski</string>
+    <string name="faroese_english">Farski</string>
+    <string name="profile_section_settings">Postavke</string>
+    <string name="profile_section_user">Korisnik</string>
 </resources>

@@ -176,4 +176,15 @@
     <string name="error_update_display_name">Kundi ikki dagføra navn</string>
     <string name="error_invalid_phone_number">Skriva eitt gyldigt telefonnummar (t.d. +298 123456)</string>
     <string name="error_update_phone_number">Kundi ikki dagføra telefonnummar</string>
+    <string name="language_screen_title">Mál</string>
+    <string name="danish">Danskt</string>
+    <string name="danish_english">Danskt</string>
+    <string name="bosnian">Bosniskt</string>
+    <string name="bosnian_english">Bosniskt</string>
+    <string name="portuguese">Portugisiskt</string>
+    <string name="portuguese_english">Portugisiskt</string>
+    <string name="faroese">Føroyskt</string>
+    <string name="faroese_english">Føroyskt</string>
+    <string name="profile_section_settings">Stillingar</string>
+    <string name="profile_section_user">Brúkari</string>
 </resources>

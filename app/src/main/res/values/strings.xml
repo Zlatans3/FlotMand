@@ -221,4 +221,19 @@
     <string name="error_update_display_name">Kunne ikke opdatere navn</string>
     <string name="error_invalid_phone_number">Indtast et gyldigt telefonnummer (f.eks. +45 12 34 56 78)</string>
     <string name="error_update_phone_number">Kunne ikke opdatere telefonnummer</string>
+
+    <!-- Language screen strings -->
+    <string name="language_screen_title">Sprog</string>
+    <string name="danish">Dansk</string>
+    <string name="danish_english">Danish</string>
+    <string name="bosnian">Bosnisk</string>
+    <string name="bosnian_english">Bosnian</string>
+    <string name="portuguese">Portugisisk</string>
+    <string name="portuguese_english">Portuguese</string>
+    <string name="faroese">Færøsk</string>
+    <string name="faroese_english">Faroese</string>
+
+    <!-- New profile section strings -->
+    <string name="profile_section_settings">Indstillinger</string>
+    <string name="profile_section_user">Bruger</string>
 </resources>

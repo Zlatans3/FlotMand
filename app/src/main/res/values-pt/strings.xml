@@ -176,4 +176,15 @@
     <string name="error_update_display_name">Não foi possível atualizar o nome</string>
     <string name="error_invalid_phone_number">Digite um número de telefone válido (ex: +55 12 3456 7890)</string>
     <string name="error_update_phone_number">Não foi possível atualizar o telefone</string>
+    <string name="language_screen_title">Idioma</string>
+    <string name="danish">Dinamarquês</string>
+    <string name="danish_english">Danish</string>
+    <string name="bosnian">Bósnio</string>
+    <string name="bosnian_english">Bosnian</string>
+    <string name="portuguese">Português</string>
+    <string name="portuguese_english">Portuguese</string>
+    <string name="faroese">Feroês</string>
+    <string name="faroese_english">Faroese</string>
+    <string name="profile_section_settings">Configurações</string>
+    <string name="profile_section_user">Usuário</string>
 </resources>
