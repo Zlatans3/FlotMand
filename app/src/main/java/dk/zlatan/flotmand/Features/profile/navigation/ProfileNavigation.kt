@@ -16,6 +16,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.profile.ProfileScreenRoute
 import dk.zlatan.flotmand.Features.profile.account_information.AccountInformationScreenRoute
+import dk.zlatan.flotmand.Features.profile.switchlanguage.SwitchLanguageScreen
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -34,6 +35,9 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             navigateToAccountInformation = {
                                 viewModel.navigate(ProfileDestination.AccountInformation)
                             },
+                            onLanguageClick = {
+                                viewModel.navigate(ProfileDestination.SwitchLanguage)
+                            },
                         )
                     }
                 }
@@ -44,6 +48,18 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             onDismiss = { viewModel.pop() },
                         )
                     }
+                }
+
+                ProfileDestination.SwitchLanguage -> {
+                    NavEntry(key) {
+                        SwitchLanguageScreen(
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
+                }
+
+                else -> {
+                    error("Unknown destination: $key")
                 }
             }
         },
