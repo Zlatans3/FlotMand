@@ -171,7 +171,7 @@
     <string name="organizer_label">Arrangør</string>
     <string name="you_label">Dig</string>
     <string name="greeting_with_name">Hej, %1$s! 👋</string>
-    <string name="welcome_back">Velkommen tilbage til Flotte Mand!</string>
+    <string name="welcome_back">Velkommen tilbage Flotte Mand!</string>
     <string name="next_event_section_title">Næste event</string>
 
     <!-- FrontPageScreen.kt strings -->

@@ -374,6 +374,8 @@ private fun AddEventScreenContent(
                     focusManager.clearFocus()
                     showDatePicker = true
                 },
+                maxLines = 1,
+                singleLine = true,
                 trailingIcon = {
                     IconButton(onClick = {
                         focusManager.clearFocus()

@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.implementation
 import java.util.Properties
 
 plugins {
@@ -108,4 +109,6 @@ dependencies {
 
     // Google Maps Compose
     implementation("com.google.maps.android:maps-compose:4.4.1")
+
+    implementation("androidx.appcompat:appcompat:1.7.1")
 }

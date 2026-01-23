@@ -1,6 +1,5 @@
 package dk.zlatan.flotmand.Features.my_events
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,17 +19,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.my_events.ui.MyEventTopBar
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.EventCard
-import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
@@ -129,7 +128,7 @@ internal fun MyEventScreenRoute(
                     ) {
                         Icon(FmIcons.Add, contentDescription = "Add Event")
                         Spacer(Modifier.width(8.dp))
-                        Text("Opret event", style = MaterialTheme.typography.labelLarge)
+                        Text(stringResource(R.string.create_event), style = MaterialTheme.typography.labelLarge)
                     }
                 }
             }
@@ -173,7 +172,7 @@ internal fun MyEventScreen(
         ) {
             Icon(FmIcons.Add, contentDescription = "Add Event")
             Spacer(Modifier.width(8.dp))
-            Text("Opret event", style = MaterialTheme.typography.labelLarge)
+            Text(stringResource(R.string.create_event), style = MaterialTheme.typography.labelLarge)
         }
     }
 }

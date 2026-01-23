@@ -59,7 +59,16 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                 }
 
                 else -> {
-                    error("Unknown destination: $key")
+                    NavEntry(key) {
+                        ProfileScreenRoute(
+                            navigateToAccountInformation = {
+                                viewModel.navigate(ProfileDestination.AccountInformation)
+                            },
+                            onLanguageClick = {
+                                viewModel.navigate(ProfileDestination.SwitchLanguage)
+                            },
+                        )
+                    }
                 }
             }
         },

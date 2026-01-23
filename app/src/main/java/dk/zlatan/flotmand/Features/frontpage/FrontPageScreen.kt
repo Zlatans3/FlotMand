@@ -301,7 +301,7 @@ internal fun FrontpageContent(
                         }
                     VSpacer(20.dp)
                     SectionHeader(
-                        title = "Kommende Events",
+                        title = stringResource(R.string.upcoming_events),
                         actionText = seeMoreOrLess,
                         onActionClick = {
                             showAllEvents = !showAllEvents
@@ -330,7 +330,7 @@ internal fun FrontpageContent(
             item {
                 VSpacer(20.dp)
                 SectionHeader(
-                    title = "Næste Flotte Mand",
+                    title = stringResource(R.string.next_flotte_mand),
 //                    actionText = "Se mere",
                     onActionClick = {
                     },
@@ -350,7 +350,7 @@ internal fun FrontpageContent(
                 item {
                     VSpacer(20.dp)
                     SectionHeader(
-                        title = "Tidligere Events",
+                        title = stringResource(R.string.previous_events),
                         actionText = seeMoreOrLess,
                         onActionClick = {
                             showAllPreviousEvents = !showAllPreviousEvents
