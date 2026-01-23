@@ -56,7 +56,7 @@ class AddEventViewModel
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
-            fun create(@Assisted("votingId") votingId: String?, @Assisted("eventId") eventId: String? = null): AddEventViewModel
+            fun create(@Assisted("votingId") votingId: String?): AddEventViewModel
         }
 
         val isEditMode = eventId != null

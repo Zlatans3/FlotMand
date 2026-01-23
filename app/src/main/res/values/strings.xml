@@ -236,4 +236,6 @@
     <!-- New profile section strings -->
     <string name="profile_section_settings">Indstillinger</string>
     <string name="profile_section_user">Bruger</string>
+
+    <string name="error_loading_event">Noget gik galt</string>
 </resources>

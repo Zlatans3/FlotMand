@@ -25,7 +25,8 @@ import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
 import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.DateVotingDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
-import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreenRoute
+import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreen
+import dk.zlatan.flotmand.Features.my_events.add_new_event.EditEventScreen
 import kotlinx.coroutines.launch
 
 @Suppress("CyclomaticComplexMethod")
@@ -106,7 +107,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
 
                 is FrontPageDestination.AddEventFromVoting -> {
                     NavEntry(key) {
-                        AddEventScreenRoute(
+                        AddEventScreen(
                             votingId = key.votingId,
                             onDismiss = { viewModel.pop() },
                         )
@@ -115,7 +116,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
 
                 is FrontPageDestination.EditEvent -> {
                     NavEntry(key) {
-                        AddEventScreenRoute(
+                        EditEventScreen(
                             eventId = key.eventId,
                             onDismiss = { viewModel.pop() },
                         )
@@ -124,6 +125,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
 
                 FrontPageDestination.HostRotation -> {
                     NavEntry(key) {
+                        // TODO: Zlatan 23/01/2026 Later
                     }
                 }
             }

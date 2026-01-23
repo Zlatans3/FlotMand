@@ -74,7 +74,7 @@ internal fun EventDetailScreenRoute(
     eventId: String,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
-    onEditEvent: (String) -> Unit = {},
+    onEditEvent: (String) -> Unit,
     viewModel: EventDetailViewModel =
         hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
             key = eventId,
@@ -105,7 +105,6 @@ internal fun EventDetailScreenRoute(
                 },
                 onEditClick = {
                     uiState.event?.eventId?.let { onEditEvent(it) }
-                    viewModel.onEventUnavailable()
                 },
             )
         },
@@ -163,6 +162,26 @@ internal fun EventDetailScreenRoute(
                         Spacer(modifier = Modifier.padding(8.dp))
                         Text(text = stringResource(R.string.loading_event))
                     }
+                }
+            }
+
+            uiState.eventError != null -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = stringResource(R.string.error_loading_event),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Text(
+                        text = uiState.eventError!!,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
 
@@ -322,7 +341,14 @@ private fun EventDetailScreenContent(
         }
 
         if (!isPublisher && event.status == EventStatus.UPCOMING) {
-            val participationText = if (isParticipating == true) stringResource(R.string.participating) else stringResource(R.string.participate)
+            val participationText =
+                if (isParticipating == true) {
+                    stringResource(R.string.participating)
+                } else {
+                    stringResource(
+                        R.string.participate,
+                    )
+                }
             AnimatedVisibility(
                 visible = showFab,
                 modifier = Modifier.align(Alignment.BottomEnd),

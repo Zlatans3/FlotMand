@@ -102,7 +102,6 @@ fun SwitchLanguageScreen(
                 LocaleHelper.setLocale(context, languageCode)
                 activity?.recreate()
             },
-            enabled = !loading,
         )
         if (loading) {
             Box(

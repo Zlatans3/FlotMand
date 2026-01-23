@@ -12,14 +12,13 @@ import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
 import dk.zlatan.flotmand.util.combine
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
 
 /**
  * UI state for Event Detail screen.
@@ -34,6 +33,7 @@ data class EventDetailUiState(
     val isPublisher: Boolean = false,
     val isParticipated: Boolean? = false,
     val isDeleted: Boolean = false,
+    val eventError: String? = null, // <-- Added error state
 )
 
 @HiltViewModel(assistedFactory = EventDetailViewModel.Factory::class)
@@ -58,6 +58,9 @@ internal class EventDetailViewModel
         private val _isPublisher = MutableStateFlow(false)
         private val _isParticipated = MutableStateFlow<Boolean?>(false)
         private val _isDeleted = MutableStateFlow(false)
+        private val _eventError = MutableStateFlow<String?>(null) // <-- Added error state
+
+        private var eventObserverJob: Job? = null
 
         val uiState: StateFlow<EventDetailUiState> =
             combine(
@@ -69,7 +72,18 @@ internal class EventDetailViewModel
                 _isPublisher,
                 _isParticipated,
                 _isDeleted,
-            ) { event, publisher, participants, isLoadingEvent, showParticipationBottomSheet, isPublisher, isParticipated, isDeleted ->
+                _eventError,
+            ) {
+                event,
+                publisher,
+                participants,
+                isLoadingEvent,
+                showParticipationBottomSheet,
+                isPublisher,
+                isParticipated,
+                isDeleted,
+                eventError,
+                ->
                 EventDetailUiState(
                     event = event,
                     publisher = publisher,
@@ -79,6 +93,7 @@ internal class EventDetailViewModel
                     isPublisher = isPublisher,
                     isParticipated = isParticipated,
                     isDeleted = isDeleted,
+                    eventError = eventError,
                 )
             }.stateIn(
                 viewModelScope,
@@ -87,6 +102,7 @@ internal class EventDetailViewModel
             )
 
         init {
+            Log.d(TAG, "ViewModel init: eventId=$eventId")
             observeEvent()
         }
 
@@ -186,6 +202,7 @@ internal class EventDetailViewModel
             _isPublisher.value = false
             _isParticipated.value = false
             _isDeleted.value = false
+            _eventError.value = null // <-- Clear error on clearAll
         }
 
         // Optionally, add a new function to handle event unavailable state
