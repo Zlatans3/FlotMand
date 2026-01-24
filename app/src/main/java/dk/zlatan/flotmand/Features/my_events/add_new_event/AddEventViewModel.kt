@@ -52,14 +52,14 @@ class AddEventViewModel
         private val dateVotingService: DateVotingService,
         private val stringProvider: StringProvider,
         @Assisted("votingId") private val votingId: String?,
-        @Assisted("eventId") private val eventId: String? = null, // Use identifiers
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
-            fun create(@Assisted("votingId") votingId: String?): AddEventViewModel
+            fun create(
+                @Assisted("votingId") votingId: String?,
+            ): AddEventViewModel
         }
 
-        val isEditMode = eventId != null
 
         private val _event = MutableStateFlow(Event())
         private val _isLoading = MutableStateFlow(false)
@@ -93,20 +93,6 @@ class AddEventViewModel
                         }
                     } catch (_: Exception) {
                         // Silently fail if voting not found
-                    }
-                }
-            }
-            // Load event if eventId is provided (edit mode)
-            eventId?.let { id ->
-                viewModelScope.launch {
-                    try {
-                        val event = dinnerEventService.readDinnerEvent(id)
-                        if (event != null) {
-                            _event.value = event
-                            _locationTextFieldValue.value = TextFieldValue(event.location ?: "")
-                        }
-                    } catch (_: Exception) {
-                        _errorMessage.value = stringProvider.getString(R.string.error_could_not_load_event)
                     }
                 }
             }
@@ -271,7 +257,8 @@ class AddEventViewModel
                         _addressPredictions.value = emptyList() // Clear predictions
                     }
                 } catch (_: Exception) {
-                    _errorMessage.value = stringProvider.getString(R.string.error_could_not_fetch_address_details)
+                    _errorMessage.value =
+                        stringProvider.getString(R.string.error_could_not_fetch_address_details)
                 } finally {
                     _isLoadingPredictions.value = false
                 }
@@ -350,7 +337,10 @@ class AddEventViewModel
                     _errorMessage.value = null
                 } catch (e: Exception) {
                     _isLoading.value = false
-                    _errorMessage.value = stringProvider.getString(R.string.error_could_not_create_event, e.message ?: "")
+//                    _errorMessage.value = stringProvider.getString(
+//                        R.string.error_could_not_create_event,
+//                        String.valueOf(e.message)
+//                    )
                 }
             }
         }
@@ -367,7 +357,8 @@ class AddEventViewModel
                     dinnerEventService.updateDinnerEvent(event)
                     _isEventCreated.value = true
                 } catch (e: Exception) {
-                    _errorMessage.value = stringProvider.getString(R.string.error_could_not_update_event)
+                    _errorMessage.value =
+                        stringProvider.getString(R.string.error_could_not_update_event)
                 } finally {
                     _isLoading.value = false
                 }

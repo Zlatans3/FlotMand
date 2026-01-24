@@ -89,7 +89,7 @@
     <string name="create_voting_content_description">Kreiraj novo glasanje</string>
     <string name="error_could_not_create_voting">Nije moguće kreirati glasanje: %1$s</string>
     <string name="date_icon_content_description">Ikona datuma</string>
-    <string name="vote_percentage" formatted="false">%1$d% glasalo</string>
+    <string name="voted_label">glasalo</string>
     <string name="delete_vote_option_content_description">Obriši opciju glasanja</string>
     <string name="error_voting_not_found">Glasanje nije pronađeno</string>
     <string name="error_loading_voting">Nije moguće učitati glasanje: %1$s</string>

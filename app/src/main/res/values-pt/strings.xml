@@ -89,7 +89,7 @@
     <string name="create_voting_content_description">Criar nova votação</string>
     <string name="error_could_not_create_voting">Não foi possível criar a votação: %1$s</string>
     <string name="date_icon_content_description">Ícone de data</string>
-    <string name="vote_percentage" formatted="false">%1$d% votaram</string>
+    <string name="voted_label">votaram</string>
     <string name="delete_vote_option_content_description">Excluir opção de voto</string>
     <string name="error_voting_not_found">Votação não encontrada</string>
     <string name="error_loading_voting">Não foi possível carregar a votação: %1$s</string>

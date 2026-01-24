@@ -112,7 +112,7 @@
     <string name="create_voting_content_description">Opret ny afstemning</string>
     <string name="error_could_not_create_voting">Kunne ikke oprette afstemning: %1$s</string>
     <string name="date_icon_content_description">Dato ikon</string>
-    <string name="vote_percentage" formatted="false">%1$d% stemte</string>
+    <string name="voted_label">stemte</string>
     <string name="delete_vote_option_content_description">Slet stemmemulighed</string>
 
     <!-- Error and snackbar strings for DateVotingViewModel -->

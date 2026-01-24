@@ -89,7 +89,7 @@
     <string name="create_voting_content_description">Stovna nýggja atkvøðu</string>
     <string name="error_could_not_create_voting">Kundi ikki stovna atkvøðu: %1$s</string>
     <string name="date_icon_content_description">Dato ikon</string>
-    <string name="vote_percentage" formatted="false">%1$d% hava atkvøtt</string>
+    <string name="voted_label">hava atkvøtt</string>
     <string name="delete_vote_option_content_description">Strika atkvøðumøguleika</string>
     <string name="error_voting_not_found">Atkvøðan varð ikki funnin</string>
     <string name="error_loading_voting">Kundi ikki lata atkvøðuna upp: %1$s</string>
