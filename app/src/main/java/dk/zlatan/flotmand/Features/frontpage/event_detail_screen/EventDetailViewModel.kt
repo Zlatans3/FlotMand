@@ -16,8 +16,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /**
@@ -108,27 +110,45 @@ internal class EventDetailViewModel
 
         private fun observeEvent() {
             viewModelScope.launch {
-                _isLoadingEvent.value = true
-                dinnerEventService.observeDinnerEvent(eventId).collectLatest { event ->
-                    if (event == null) {
-                        Log.w(TAG, "Event not found or deleted: id=$eventId")
-                        onEventUnavailable()
-                        _isLoadingEvent.value = false
-                        return@collectLatest
+                Log.e(TAG, "Starting to observe event: id=$eventId")
+                _isLoadingEvent.update {
+                    true
+                }
+                try {
+                    dinnerEventService
+                        .observeDinnerEvent(eventId)
+                        .catch {
+                            Log.e(TAG, "catched zlatanb ${it.message}", it)
+                            _eventError.value = it.message
+                            _isLoadingEvent.value = false
+                        }.collectLatest { event ->
+                            if (event == null) {
+                                Log.w(TAG, "Event not found or deleted: id=$eventId")
+                                onEventUnavailable()
+                                _isLoadingEvent.value = false
+                                return@collectLatest
+                            }
+
+                            val currentUserId = accountService.currentUserId
+                            val isPublisher =
+                                event.publisherId != null && event.publisherId == currentUserId
+                            val isParticipated = event.participantIds?.contains(currentUserId) ?: false
+
+                            _event.value = event
+                            _isPublisher.value = isPublisher
+                            _isParticipated.value = isParticipated
+                            _isLoadingEvent.value = false
+
+                            // Refresh publisher and participants when relevant fields change
+                            _publisher.value = loadPublisherSync(event.publisherId)
+                            _participants.value = loadParticipantsSync(event.participantIds)
+                        }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error observing event: ${e.message}", e)
+                    _eventError.value = e.message
+                    _isLoadingEvent.update {
+                        false
                     }
-
-                    val currentUserId = accountService.currentUserId
-                    val isPublisher = event.publisherId != null && event.publisherId == currentUserId
-                    val isParticipated = event.participantIds?.contains(currentUserId) ?: false
-
-                    _event.value = event
-                    _isPublisher.value = isPublisher
-                    _isParticipated.value = isParticipated
-                    _isLoadingEvent.value = false
-
-                    // Refresh publisher and participants when relevant fields change
-                    _publisher.value = loadPublisherSync(event.publisherId)
-                    _participants.value = loadParticipantsSync(event.participantIds)
                 }
             }
         }
