@@ -4,14 +4,14 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.togetherWith
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -39,7 +39,7 @@ import dk.zlatan.flotmand.model.User
 fun OverlappingAvatars(
     participants: List<User>,
     avatarSize: Dp = 32.dp,
-    containerColor: Color = MaterialTheme.colorScheme.background
+    containerColor: Color = MaterialTheme.colorScheme.background,
 ) {
     val overlap = 8.dp
     val visible = participants.take(3)
@@ -49,17 +49,19 @@ fun OverlappingAvatars(
     val spacing = avatarSize - overlap
 
     // Calculate total width: first avatar + spacing * remaining avatars (+ overflow badge if needed)
-    val totalWidth = if (showOverflow) {
-        avatarSize + (spacing * visible.size) + spacing
-    } else {
-        avatarSize + (spacing * (visible.size - 1))
-    }
+    val totalWidth =
+        if (showOverflow) {
+            avatarSize + (spacing * visible.size) + spacing
+        } else {
+            avatarSize + (spacing * (visible.size - 1))
+        }
 
     Box(
-        modifier = Modifier
-            .width(totalWidth)
-            .height(avatarSize)
-            .animateContentSize(animationSpec = spring())
+        modifier =
+            Modifier
+                .width(totalWidth)
+                .height(avatarSize)
+                .animateContentSize(animationSpec = spring()),
     ) {
         visible.forEachIndexed { index, user ->
             AnimatedContent(
@@ -69,54 +71,58 @@ fun OverlappingAvatars(
                         slideInHorizontally(initialOffsetX = { it }) +
                             fadeIn(animationSpec = tween(150)) +
                             scaleIn(animationSpec = tween(150))
-                        ) togetherWith (
+                    ) togetherWith (
                         slideOutHorizontally(targetOffsetX = { it }) +
                             fadeOut(animationSpec = tween(150)) +
                             scaleOut(animationSpec = tween(150))
-                        )
+                    )
                 },
-                label = "avatar-$index"
+                label = "avatar-$index",
             ) { animatedUser ->
                 Box(
-                    modifier = Modifier
-                        .size(avatarSize)
-                        .offset(x = spacing * index)
-                        .border(
-                            width = 2.dp,
-                            color = containerColor,
-                            shape = CircleShape
-                        )
-                        .zIndex((visible.size + index).toFloat())
+                    modifier =
+                        Modifier
+                            .size(avatarSize)
+                            .offset(x = spacing * index)
+                            .border(
+                                width = 2.dp,
+                                color = containerColor,
+                                shape = CircleShape,
+                            ).zIndex((visible.size + index).toFloat()),
                 ) {
                     ProfileImage(
-                        modifier = Modifier
-                            .size(avatarSize),
+                        modifier =
+                            Modifier
+                                .size(avatarSize),
                         profilePic = animatedUser.photoUrl,
-                        userName = animatedUser.displayName
+                        userName = animatedUser.displayName,
                     )
                 }
             }
         }
-        AnimatedContent(targetState = showOverflow, label = "overflow-badge") { shouldShowOverflow ->
+        AnimatedContent(
+            targetState = showOverflow,
+            label = "overflow-badge",
+        ) { shouldShowOverflow ->
             if (shouldShowOverflow) {
                 Box(
-                    modifier = Modifier
-                        .offset(x = spacing * visible.size)
-                        .size(avatarSize)
-                        .clip(CircleShape)
-                        .border(
-                            width = 2.dp,
-                            color = containerColor,
-                            shape = CircleShape
-                        )
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .zIndex((visible.size * 2).toFloat()),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .offset(x = spacing * visible.size)
+                            .size(avatarSize)
+                            .clip(CircleShape)
+                            .border(
+                                width = 2.dp,
+                                color = containerColor,
+                                shape = CircleShape,
+                            ).background(MaterialTheme.colorScheme.primaryContainer)
+                            .zIndex((visible.size * 2).toFloat()),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "+${participants.size - visible.size}",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             }
@@ -131,7 +137,7 @@ private fun OverlappingAvatarsPreview() {
         Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
             OverlappingAvatars(
                 participants = User.mockUserWithCounter(5),
-                containerColor = MaterialTheme.colorScheme.background
+                containerColor = MaterialTheme.colorScheme.background,
             )
         }
     }

@@ -18,12 +18,16 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +37,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.OverlappingAvatars
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
@@ -40,6 +45,7 @@ import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun DateCard(
     date: String,
@@ -53,6 +59,8 @@ internal fun DateCard(
 ) {
     val accentColor = MaterialTheme.colorScheme.primary
     val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
+
+    var showUserParticipantsBottomSheet by remember { mutableStateOf(false) }
 
     // Animate the progress value
     val animatedProgress by animateFloatAsState(
@@ -135,7 +143,16 @@ internal fun DateCard(
             // Participants row
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
+                modifier =
+                    Modifier
+                        .padding(5.dp)
+                        .clip(RoundedCornerShape(25.dp))
+                        .clickable(
+                            enabled = voters.isNotEmpty(),
+                            onClick = {
+                                showUserParticipantsBottomSheet = true
+                            },
+                        )
             ) {
                 // Overlapping avatars
                 OverlappingAvatars(
@@ -156,6 +173,7 @@ internal fun DateCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 8.dp),
                 )
+                HSpacer(5.dp)
             }
 
             VSpacer(8.dp)
@@ -169,6 +187,14 @@ internal fun DateCard(
                         .clip(RoundedCornerShape(4.dp)),
                 color = accentColor,
                 trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+            )
+        }
+        if (showUserParticipantsBottomSheet) {
+            ParticipantsBottomSheet(
+                participants = voters,
+                onDismiss = {
+                    showUserParticipantsBottomSheet = false
+                },
             )
         }
     }
