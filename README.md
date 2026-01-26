@@ -110,9 +110,11 @@ graph TD;
   D --> |CurrentUser event| G
   E --> |Log out| Login
   E --> j[Account Information]
+  E --> K[language]
   C --> H[Polls]
   H --> i{Poll details}
   D --> F[Create event]
+  G --> EDIT[Edit event]
 subgraph Bottom Navigation
             C
             D
