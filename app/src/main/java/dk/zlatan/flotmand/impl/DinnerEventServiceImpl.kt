@@ -210,30 +210,40 @@ class DinnerEventServiceImpl
 
         override fun observeDinnerEvent(dinnerEventId: String): Flow<Event?> =
             callbackFlow {
-                val docRef =
-                    Firebase.firestore
-                        .collection(DINNER_EVENTS_COLLECTION)
-                        .document(dinnerEventId)
+                try {
+                    val docRef =
+                        Firebase.firestore
+                            .collection(DINNER_EVENTS_COLLECTION)
+                            .document(dinnerEventId)
 
-                val registration =
-                    docRef.addSnapshotListener { snapshot, error ->
-                        if (error != null) {
-                            Log.e(TAG, "Error observing event $dinnerEventId: ${error.message}", error)
-                            trySend(null)
-                            return@addSnapshotListener
+                    val registration =
+                        docRef.addSnapshotListener { snapshot, error ->
+                            if (error != null) {
+                                Log.e(
+                                    TAG,
+                                    "Error observing event $dinnerEventId: ${error.message}",
+                                    error
+                                )
+                                trySend(null)
+                                return@addSnapshotListener
+                            }
+
+                            if (snapshot == null || !snapshot.exists()) {
+                                Log.w(TAG, "Event $dinnerEventId no longer exists")
+                                trySend(null)
+                                return@addSnapshotListener
+                            }
+
+                            val event = safeParseEvent(snapshot)
+                            trySend(event)
                         }
 
-                        if (snapshot == null || !snapshot.exists()) {
-                            Log.w(TAG, "Event $dinnerEventId no longer exists")
-                            trySend(null)
-                            return@addSnapshotListener
-                        }
-
-                        val event = safeParseEvent(snapshot)
-                        trySend(event)
-                    }
-
-                awaitClose { registration.remove() }
+                    awaitClose { registration.remove() }
+                }
+                catch (e: Exception) {
+                    Log.e(TAG, "observeDinnerEvent failed: ${e.message}", e)
+                    trySend(null)
+                }
             }
 
         companion object {

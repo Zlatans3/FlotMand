@@ -262,7 +262,7 @@ internal fun EditEventScreen(
     LaunchedEffect(uiState.isEventUpdated) {
         if (uiState.isEventUpdated) {
             onDismiss()
-            viewModel.resetState()
+//            viewModel.resetState()
         }
     }
     LaunchedEffect(uiState.errorMessage) {
