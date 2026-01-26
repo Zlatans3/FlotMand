@@ -1,6 +1,6 @@
-package dk.zlatan.flotmand.util
+package dk.zlatan.flotmand.util.easter_eggs
 
-import dk.zlatan.flotmand.util.NetworkErrorMessageList.messages
+import dk.zlatan.flotmand.util.easter_eggs.NetworkErrorMessageList.messages
 
 object NetworkErrorMessageList {
     val messages = listOf(

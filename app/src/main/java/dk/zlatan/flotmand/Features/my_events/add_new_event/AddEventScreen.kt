@@ -66,6 +66,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -75,8 +76,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.AddressAutocompleteDropdown
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.EventTextField
+import dk.zlatan.flotmand.Features.my_events.edit_event.EditEventViewModel
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
-import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.Event
 import kotlinx.coroutines.launch
@@ -88,12 +90,12 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun AddEventScreenRoute(
+internal fun AddEventScreen(
     modifier: Modifier = Modifier,
     votingId: String? = null,
     viewModel: AddEventViewModel =
         hiltViewModel<AddEventViewModel, AddEventViewModel.Factory>(
-            key = votingId ?: "new_event",
+            key = votingId,
             creationCallback = { factory ->
                 factory.create(votingId)
             },
@@ -107,11 +109,10 @@ internal fun AddEventScreenRoute(
     val isKeyboardOpen = imeHeight > 0
     val focusManager = LocalFocusManager.current
 
-    // Navigate back when event is created successfully, then reset state
+    // Navigate back when event is created/updated successfully, then reset state
     LaunchedEffect(uiState.isEventCreated) {
         if (uiState.isEventCreated) {
             onDismiss()
-            // Reset state after dismissing so it's clean for next time
             viewModel.resetState()
         }
     }
@@ -131,7 +132,7 @@ internal fun AddEventScreenRoute(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Opret nyt event",
+                        text = stringResource(R.string.create_new_event_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                     )
@@ -140,7 +141,7 @@ internal fun AddEventScreenRoute(
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Luk",
+                            contentDescription = stringResource(R.string.close),
                         )
                     }
                 },
@@ -192,7 +193,7 @@ internal fun AddEventScreenRoute(
                                 )
                             } else {
                                 Text(
-                                    text = "Opret",
+                                    text = stringResource(R.string.create),
                                     style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(vertical = 4.dp),
                                 )
@@ -207,7 +208,7 @@ internal fun AddEventScreenRoute(
             )
         },
     ) { paddingValues ->
-        AddEventScreenContent(
+        EventScreenContent(
             modifier =
                 Modifier
                     .fillMaxSize()
@@ -217,7 +218,11 @@ internal fun AddEventScreenRoute(
                         end = paddingValues.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Rtl),
                         bottom = 0.dp,
                     ),
-            uiState = uiState,
+            event = uiState.event,
+            isLoading = uiState.isLoading,
+            addressPredictions = uiState.addressPredictions,
+            isLoadingPredictions = uiState.isLoadingPredictions,
+            locationTextFieldValue = uiState.locationTextFieldValue,
             onEventNameChange = viewModel::onEventNameChange,
             onLocationChange = viewModel::onLocationChange,
             onEventDateChange = viewModel::onEventDateChange,
@@ -228,15 +233,166 @@ internal fun AddEventScreenRoute(
             onCreateEvent = viewModel::createEvent,
             isKeyboardOpen = isKeyboardOpen,
             focusManager = focusManager,
+            isEditMode = false,
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddEventScreenContent(
+internal fun EditEventScreen(
     modifier: Modifier = Modifier,
-    uiState: AddEventUiState,
+    eventId: String,
+    viewModel: EditEventViewModel =
+        hiltViewModel<EditEventViewModel, EditEventViewModel.Factory>(
+            key = eventId,
+            creationCallback = { factory ->
+                factory.create(eventId)
+            },
+        ),
+    onDismiss: () -> Unit = {},
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val density = LocalDensity.current
+    val imeHeight = WindowInsets.ime.getBottom(density)
+    val isKeyboardOpen = imeHeight > 0
+    val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(uiState.isEventUpdated) {
+        if (uiState.isEventUpdated) {
+            onDismiss()
+//            viewModel.resetState()
+        }
+    }
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearError()
+        }
+    }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.edit_event_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.close),
+                        )
+                    }
+                },
+                actions = {
+                    // Show "Gem" button in header when keyboard is open
+                    AnimatedVisibility(
+                        visible = isKeyboardOpen,
+                        enter =
+                            slideInHorizontally(
+                                initialOffsetX = { fullWidth -> fullWidth },
+                                animationSpec =
+                                    spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessLow,
+                                    ),
+                            ) +
+                                fadeIn(
+                                    animationSpec = spring(stiffness = Spring.StiffnessLow),
+                                ),
+                        exit =
+                            slideOutHorizontally(
+                                targetOffsetX = { fullWidth -> fullWidth },
+                                animationSpec =
+                                    spring(
+                                        dampingRatio = Spring.DampingRatioNoBouncy,
+                                        stiffness = Spring.StiffnessMedium,
+                                    ),
+                            ) + fadeOut(),
+                    ) {
+                        Button(
+                            onClick = {
+                                focusManager.clearFocus()
+                                viewModel.updateEvent()
+                            },
+                            enabled = !uiState.isLoading,
+                            modifier = Modifier.padding(end = 8.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                                ),
+                        ) {
+                            if (uiState.isLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    strokeWidth = 2.dp,
+                                )
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.update),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                )
+                            }
+                        }
+                    }
+                },
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ),
+            )
+        },
+    ) { paddingValues ->
+        EventScreenContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = paddingValues.calculateLeftPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                    top = paddingValues.calculateTopPadding(),
+                    end = paddingValues.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Rtl),
+                    bottom = 0.dp,
+                ),
+            event = uiState.event,
+            isLoading = uiState.isLoading,
+            addressPredictions = uiState.addressPredictions,
+            isLoadingPredictions = uiState.isLoadingPredictions,
+            locationTextFieldValue = uiState.locationTextFieldValue,
+            onEventNameChange = viewModel::onEventNameChange,
+            onLocationChange = viewModel::onLocationChange,
+            onEventDateChange = viewModel::onEventDateChange,
+            onDescriptionChange = viewModel::onDescriptionChange,
+            onEventTimeChange = viewModel::onEventTimeChange,
+            onAddressSelected = viewModel::onAddressSelected,
+            onClearPredictions = viewModel::clearAddressPredictions,
+            onCreateEvent = viewModel::updateEvent,
+            isKeyboardOpen = isKeyboardOpen,
+            focusManager = focusManager,
+            isEditMode = true,
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EventScreenContent(
+    modifier: Modifier = Modifier,
+    event: Event,
+    isLoading: Boolean,
+    addressPredictions: List<AddressPrediction>,
+    isLoadingPredictions: Boolean,
+    locationTextFieldValue: TextFieldValue,
     onEventNameChange: (String) -> Unit,
     onLocationChange: (TextFieldValue) -> Unit,
     onEventDateChange: (LocalDate) -> Unit,
@@ -246,24 +402,17 @@ private fun AddEventScreenContent(
     onClearPredictions: () -> Unit,
     focusManager: FocusManager,
     onCreateEvent: () -> Unit,
+    isEditMode: Boolean,
     isKeyboardOpen: Boolean,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
-
-    LaunchedEffect(isKeyboardOpen) {
-        if (!isKeyboardOpen) {
-            // IME was open and now closed — remove focus from any TextField
-            focusManager.clearFocus()
-        }
-    }
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val locationFieldRequester = remember { BringIntoViewRequester() }
 
-    // Keep location field in view when predictions appear or field is focused
-    LaunchedEffect(uiState.addressPredictions.isNotEmpty(), uiState.locationTextFieldValue.text) {
-        if (uiState.addressPredictions.isNotEmpty() || uiState.locationTextFieldValue.text.isNotEmpty()) {
+    LaunchedEffect(addressPredictions.isNotEmpty(), locationTextFieldValue.text) {
+        if (addressPredictions.isNotEmpty() || locationTextFieldValue.text.isNotEmpty()) {
             coroutineScope.launch {
                 locationFieldRequester.bringIntoView()
             }
@@ -288,10 +437,10 @@ private fun AddEventScreenContent(
 
         // Event Name
         EventTextField(
-            label = "Event navn",
-            value = uiState.event.eventName.orEmpty(),
+            label = stringResource(R.string.event_name_label),
+            value = event.eventName.orEmpty(),
             onValueChange = onEventNameChange,
-            placeholder = "Fx. Middag hos Gustav",
+            placeholder = stringResource(R.string.event_name_placeholder),
             singleLine = true,
             maxChar = 100,
             maxLines = 1,
@@ -301,10 +450,10 @@ private fun AddEventScreenContent(
 
         // Description (optional) directly under name, larger multi-line
         EventTextField(
-            label = "Beskrivelse (valgfrit)",
-            value = uiState.event.description.orEmpty(),
+            label = stringResource(R.string.description_label),
+            value = event.description.orEmpty(),
             onValueChange = { desc -> onDescriptionChange(desc) },
-            placeholder = "Tilføj detaljer om eventet",
+            placeholder = stringResource(R.string.description_placeholder),
             singleLine = false,
             maxChar = 2000,
             minLines = 3,
@@ -329,21 +478,21 @@ private fun AddEventScreenContent(
         ) {
             Column {
                 EventTextField(
-                    label = "Lokation",
-                    value = uiState.locationTextFieldValue,
+                    label = stringResource(R.string.location_label),
+                    value = locationTextFieldValue,
                     onValueChange = onLocationChange,
-                    placeholder = "Fx. Flotmand alle 4, København",
+                    placeholder = stringResource(R.string.location_placeholder),
                     trailingIcon = {
                         IconButton(onClick = { /* optional: open map picker in future */ }) {
-                            Icon(imageVector = Icons.Filled.Place, contentDescription = "Lokation")
+                            Icon(imageVector = Icons.Filled.Place, contentDescription = stringResource(R.string.location_label))
                         }
                     },
                 )
 
                 // Autocomplete dropdown
                 AddressAutocompleteDropdown(
-                    predictions = uiState.addressPredictions,
-                    isLoading = uiState.isLoadingPredictions,
+                    predictions = addressPredictions,
+                    isLoading = isLoadingPredictions,
                     onPredictionSelected = { prediction ->
                         onAddressSelected(prediction)
                         onClearPredictions()
@@ -357,23 +506,23 @@ private fun AddEventScreenContent(
         // Date & Time on the same line
         Row(modifier = Modifier.fillMaxWidth()) {
             EventTextField(
-                label = "Dato",
-                value =
-                    uiState.event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
-                        ?: "",
+                label = stringResource(R.string.date_label),
+                value = event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
                 onValueChange = { }, // Read-only
-                placeholder = "Vælg dato",
+                placeholder = stringResource(R.string.date_placeholder),
                 modifier = Modifier.weight(1f),
                 onClick = {
                     focusManager.clearFocus()
                     showDatePicker = true
                 },
+                maxLines = 1,
+                singleLine = true,
                 trailingIcon = {
                     IconButton(onClick = {
                         focusManager.clearFocus()
                         showDatePicker = true
                     }) {
-                        Icon(imageVector = Icons.Filled.Today, contentDescription = "Vælg dato")
+                        Icon(imageVector = Icons.Filled.Today, contentDescription = stringResource(R.string.select_date))
                     }
                 },
             )
@@ -381,12 +530,10 @@ private fun AddEventScreenContent(
             Spacer(modifier = Modifier.size(12.dp))
 
             EventTextField(
-                label = "Tidspunkt",
-                value =
-                    uiState.event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm"))
-                        ?: "",
+                label = stringResource(R.string.time_label),
+                value = event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
                 onValueChange = { }, // Read-only
-                placeholder = "tidspunkt",
+                placeholder = stringResource(R.string.time_placeholder),
                 modifier = Modifier.weight(1f),
                 singleLine = true,
                 onClick = {
@@ -400,7 +547,7 @@ private fun AddEventScreenContent(
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Schedule,
-                            contentDescription = "Vælg tidspunkt",
+                            contentDescription = stringResource(R.string.select_time),
                         )
                     }
                 },
@@ -414,7 +561,7 @@ private fun AddEventScreenContent(
             val datePickerState =
                 rememberDatePickerState(
                     initialSelectedDateMillis =
-                        uiState.event.eventDate
+                        event.eventDate
                             ?.atStartOfDay(ZoneId.systemDefault())
                             ?.toInstant()
                             ?.toEpochMilli(),
@@ -434,12 +581,12 @@ private fun AddEventScreenContent(
                         }
                         showDatePicker = false
                     }) {
-                        Text("OK")
+                        Text(stringResource(R.string.ok))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Annuller")
+                        Text(stringResource(R.string.cancel))
                     }
                 },
             ) {
@@ -451,8 +598,8 @@ private fun AddEventScreenContent(
         if (showTimePicker) {
             val timePickerState =
                 rememberTimePickerState(
-                    initialHour = uiState.event.eventStartTime?.hour ?: 18,
-                    initialMinute = uiState.event.eventStartTime?.minute ?: 0,
+                    initialHour = event.eventStartTime?.hour ?: 18,
+                    initialMinute = event.eventStartTime?.minute ?: 0,
                     is24Hour = true,
                 )
 
@@ -464,14 +611,14 @@ private fun AddEventScreenContent(
                         onEventTimeChange(localTime)
                         showTimePicker = false
                     }) {
-                        Text("OK")
+                        Text(stringResource(R.string.ok))
                     }
                 },
                 dismissButton = {
                     TextButton(
                         onClick = { showTimePicker = false },
                     ) {
-                        Text("Annuller")
+                        Text(stringResource(R.string.cancel))
                     }
                 },
             ) {
@@ -508,7 +655,7 @@ private fun AddEventScreenContent(
                     focusManager.clearFocus()
                     onCreateEvent()
                 },
-                enabled = !uiState.isLoading,
+                enabled = !isLoading,
                 modifier =
                     Modifier
                         .fillMaxWidth(),
@@ -519,7 +666,7 @@ private fun AddEventScreenContent(
                         contentColor = MaterialTheme.colorScheme.onPrimary,
                     ),
             ) {
-                if (uiState.isLoading) {
+                if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -527,7 +674,7 @@ private fun AddEventScreenContent(
                     )
                 } else {
                     Text(
-                        text = "Opret event",
+                        text = if (isEditMode) stringResource(R.string.update) else stringResource(R.string.create_event),
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.padding(vertical = 8.dp),
                     )
@@ -556,29 +703,15 @@ private fun TimePickerDialog(
 @Preview
 @Composable
 private fun AddEventScreenPreview() {
-    FlotMandTheme {
-        AddEventScreenContent(
-            uiState =
-                AddEventUiState(
-                    event =
-                        Event.create(
-                            eventName = "Middag hos Mikkel",
-                            location = "Flotmand Alle 4",
-                            eventDate = LocalDate.now().plusDays(5),
-                            eventStartTime = LocalTime.of(19, 30),
-                        ),
-                    locationTextFieldValue = TextFieldValue("Flotmand Alle 4"),
-                ),
-            onEventNameChange = {},
-            onLocationChange = {},
-            onEventDateChange = {},
-            onDescriptionChange = {},
-            onEventTimeChange = {},
-            onAddressSelected = {},
-            onClearPredictions = {},
-            onCreateEvent = {},
-            isKeyboardOpen = false,
-            focusManager = LocalFocusManager.current,
-        )
+    MaterialTheme {
+        AddEventScreen()
+    }
+}
+
+@Preview(showBackground = true, name = "Edit Event Preview")
+@Composable
+private fun EditEventScreenPreview() {
+    MaterialTheme {
+        EditEventScreen(eventId = "previewEventId")
     }
 }

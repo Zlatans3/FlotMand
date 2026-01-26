@@ -9,7 +9,7 @@ import dk.zlatan.flotmand.model.GeoLocation
 interface PlacesService {
     suspend fun getAddressPredictions(
         query: String,
-        countryCode: String? = "DK"
+        countryCode: String? = "DK",
     ): List<AddressPrediction>
 
     suspend fun getPlaceDetails(placeId: String): Pair<String, GeoLocation>?

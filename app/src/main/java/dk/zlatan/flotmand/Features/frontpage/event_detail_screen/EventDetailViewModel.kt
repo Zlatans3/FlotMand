@@ -12,14 +12,15 @@ import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
 import dk.zlatan.flotmand.util.combine
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
 
 /**
  * UI state for Event Detail screen.
@@ -34,6 +35,7 @@ data class EventDetailUiState(
     val isPublisher: Boolean = false,
     val isParticipated: Boolean? = false,
     val isDeleted: Boolean = false,
+    val eventError: String? = null, // <-- Added error state
 )
 
 @HiltViewModel(assistedFactory = EventDetailViewModel.Factory::class)
@@ -58,6 +60,9 @@ internal class EventDetailViewModel
         private val _isPublisher = MutableStateFlow(false)
         private val _isParticipated = MutableStateFlow<Boolean?>(false)
         private val _isDeleted = MutableStateFlow(false)
+        private val _eventError = MutableStateFlow<String?>(null) // <-- Added error state
+
+        private var eventObserverJob: Job? = null
 
         val uiState: StateFlow<EventDetailUiState> =
             combine(
@@ -69,7 +74,18 @@ internal class EventDetailViewModel
                 _isPublisher,
                 _isParticipated,
                 _isDeleted,
-            ) { event, publisher, participants, isLoadingEvent, showParticipationBottomSheet, isPublisher, isParticipated, isDeleted ->
+                _eventError,
+            ) {
+                event,
+                publisher,
+                participants,
+                isLoadingEvent,
+                showParticipationBottomSheet,
+                isPublisher,
+                isParticipated,
+                isDeleted,
+                eventError,
+                ->
                 EventDetailUiState(
                     event = event,
                     publisher = publisher,
@@ -79,6 +95,7 @@ internal class EventDetailViewModel
                     isPublisher = isPublisher,
                     isParticipated = isParticipated,
                     isDeleted = isDeleted,
+                    eventError = eventError,
                 )
             }.stateIn(
                 viewModelScope,
@@ -87,32 +104,51 @@ internal class EventDetailViewModel
             )
 
         init {
+            Log.d(TAG, "ViewModel init: eventId=$eventId")
             observeEvent()
         }
 
         private fun observeEvent() {
             viewModelScope.launch {
-                _isLoadingEvent.value = true
-                dinnerEventService.observeDinnerEvent(eventId).collectLatest { event ->
-                    if (event == null) {
-                        Log.w(TAG, "Event not found or deleted: id=$eventId")
-                        clearAll()
-                        _isLoadingEvent.value = false
-                        return@collectLatest
+                Log.e(TAG, "Starting to observe event: id=$eventId")
+                _isLoadingEvent.update {
+                    true
+                }
+                try {
+                    dinnerEventService
+                        .observeDinnerEvent(eventId)
+                        .catch {
+                            Log.e(TAG, "catched zlatanb ${it.message}", it)
+                            _eventError.value = it.message
+                            _isLoadingEvent.value = false
+                        }.collectLatest { event ->
+                            if (event == null) {
+                                Log.w(TAG, "Event not found or deleted: id=$eventId")
+                                onEventUnavailable()
+                                _isLoadingEvent.value = false
+                                return@collectLatest
+                            }
+
+                            val currentUserId = accountService.currentUserId
+                            val isPublisher =
+                                event.publisherId != null && event.publisherId == currentUserId
+                            val isParticipated = event.participantIds?.contains(currentUserId) ?: false
+
+                            _event.value = event
+                            _isPublisher.value = isPublisher
+                            _isParticipated.value = isParticipated
+                            _isLoadingEvent.value = false
+
+                            // Refresh publisher and participants when relevant fields change
+                            _publisher.value = loadPublisherSync(event.publisherId)
+                            _participants.value = loadParticipantsSync(event.participantIds)
+                        }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error observing event: ${e.message}", e)
+                    _eventError.value = e.message
+                    _isLoadingEvent.update {
+                        false
                     }
-
-                    val currentUserId = accountService.currentUserId
-                    val isPublisher = event.publisherId != null && event.publisherId == currentUserId
-                    val isParticipated = event.participantIds?.contains(currentUserId) ?: false
-
-                    _event.value = event
-                    _isPublisher.value = isPublisher
-                    _isParticipated.value = isParticipated
-                    _isLoadingEvent.value = false
-
-                    // Refresh publisher and participants when relevant fields change
-                    _publisher.value = loadPublisherSync(event.publisherId)
-                    _participants.value = loadParticipantsSync(event.participantIds)
                 }
             }
         }
@@ -135,10 +171,6 @@ internal class EventDetailViewModel
                 Log.e(TAG, "Failed to load participants: ${e.message}", e)
                 emptyList()
             }
-        }
-
-        fun onEditEvent() {
-            // Navigation handled in the UI layer; this is a placeholder for any pre-navigation logic
         }
 
         fun onUserParticipate() {
@@ -190,6 +222,12 @@ internal class EventDetailViewModel
             _isPublisher.value = false
             _isParticipated.value = false
             _isDeleted.value = false
+            _eventError.value = null // <-- Clear error on clearAll
+        }
+
+        // Optionally, add a new function to handle event unavailable state
+        fun onEventUnavailable() {
+            clearAll()
         }
 
         fun onDismissParticipantsSheet() {

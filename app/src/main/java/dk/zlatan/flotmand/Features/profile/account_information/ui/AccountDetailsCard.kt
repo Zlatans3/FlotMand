@@ -28,9 +28,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.model.User
 import kotlinx.coroutines.launch
@@ -71,7 +73,7 @@ internal fun AccountDetailsCard(
                     .padding(16.dp),
         ) {
             Text(
-                text = "Konto Detaljer",
+                text = stringResource(R.string.account_details_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
@@ -82,7 +84,7 @@ internal fun AccountDetailsCard(
             if (user.id.isNotEmpty()) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Bruger ID",
+                        text = stringResource(R.string.account_details_user_id),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium,
@@ -94,7 +96,7 @@ internal fun AccountDetailsCard(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = if (isUserIdVisible) user.id else "••••••••",
+                            text = if (isUserIdVisible) user.id else stringResource(R.string.account_details_hidden_id),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier =
@@ -113,7 +115,7 @@ internal fun AccountDetailsCard(
                         ) {
                             Icon(
                                 imageVector = if (isUserIdVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = if (isUserIdVisible) "Skjul ID" else "Vis ID",
+                                contentDescription = if (isUserIdVisible) stringResource(R.string.account_details_hide_id) else stringResource(R.string.account_details_show_id),
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp),
                             )
@@ -128,7 +130,7 @@ internal fun AccountDetailsCard(
                     VSpacer(12.dp)
                 }
                 InfoRow(
-                    label = "Log ind med",
+                    label = stringResource(R.string.account_details_login_with),
                     value = user.provider,
                 )
             }

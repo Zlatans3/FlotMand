@@ -16,7 +16,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
 import dk.zlatan.flotmand.Features.my_events.MyEventScreenRoute
-import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreenRoute
+import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreen
+import dk.zlatan.flotmand.Features.my_events.add_new_event.EditEventScreen
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -44,15 +45,24 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
 
                 MyEventsDestination.AddEvent -> {
                     NavEntry(key) {
-                        AddEventScreenRoute(
+                        AddEventScreen(
                             onDismiss = { viewModel.pop() },
+                        )
+                    }
+                }
+
+                is MyEventsDestination.EditEvent -> {
+                    NavEntry(key) {
+                        EditEventScreen(
+                            onDismiss = { viewModel.pop() },
+                            eventId = key.eventId,
                         )
                     }
                 }
 
                 is MyEventsDestination.AddEventFromVoting -> {
                     NavEntry(key) {
-                        AddEventScreenRoute(
+                        AddEventScreen(
                             votingId = key.votingId,
                             onDismiss = { viewModel.pop() },
                         )
@@ -64,6 +74,9 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                         EventDetailScreenRoute(
                             eventId = key.eventId,
                             onDismiss = { viewModel.pop() },
+                            onEditEvent = { eventId ->
+                                viewModel.navigate(MyEventsDestination.EditEvent(eventId))
+                            }
                         )
                     }
                 }

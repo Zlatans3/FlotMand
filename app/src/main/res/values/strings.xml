@@ -7,9 +7,235 @@
     <string name="profile_title">Profil</string>
 
 
-<!--    PROFILE SCREEN-->
+    <!--    PROFILE SCREEN-->
     <string name="profile_name">Profil navn</string>
     <string name="cancel">Annuller</string>
     <string name="update">Opdater</string>
 
+    <!--    add event-->
+
+    <string name="add_event_title">Tilføj Event</string>
+    <string name="event_name_hint">Event Navn</string>
+    <string name="event_date_hint">Event Dato</string>
+    <string name="event_location_hint">Event Lokation</string>
+    <string name="create_event_button">Opret Event</string>
+    <string name="edit_event_title">Rediger event</string>
+    <string name="create_new_event_title">Opret nyt event</string>
+    <string name="close">Luk</string>
+    <string name="create">Opret</string>
+    <string name="create_event">Opret event</string>
+    <string name="event_name_label">Event navn</string>
+    <string name="event_name_placeholder">Fx. Middag hos Gustav</string>
+    <string name="description_label">Beskrivelse (valgfrit)</string>
+    <string name="description_placeholder">Tilføj detaljer om eventet</string>
+    <string name="location_label">Lokation</string>
+    <string name="location_placeholder">Fx. Flotmand alle 4, København</string>
+    <string name="date_label">Dato</string>
+    <string name="date_placeholder">Vælg dato</string>
+    <string name="time_label">Tidspunkt</string>
+    <string name="time_placeholder">tidspunkt</string>
+    <string name="select_date">Vælg dato</string>
+    <string name="select_time">Vælg tidspunkt</string>
+    <string name="ok">OK</string>
+    <!-- 'Annuller' already exists as 'cancel' -->
+    <string name="preview_event_name">Middag hos Mikkel</string>
+    <string name="preview_event_location">Flotmand Alle 4</string>
+
+    <!-- Error and validation strings -->
+    <string name="error_could_not_load_event">Kunne ikke indlæse event til redigering.</string>
+    <string name="error_could_not_fetch_address_details">Kunne ikke hente adressedetaljer</string>
+    <string name="error_event_name_required">Event navn er påkrævet</string>
+    <string name="error_location_required">Lokation er påkrævet</string>
+    <string name="error_date_required">Dato er påkrævet</string>
+    <string name="error_time_required">Tidspunkt er påkrævet</string>
+    <string name="error_could_not_create_event">Kunne ikke oprette event: %1$s</string>
+    <string name="error_invalid_event_id">Ugyldigt event-id.</string>
+    <string name="error_could_not_update_event">Kunne ikke opdatere event.</string>
+    <string name="untitled_event">Uden titel</string>
+    <string name="unknown_location">Ukendt lokation</string>
+    <string name="participants_count">%1$d deltagere</string>
+    <string name="participating">Deltager</string>
+    <string name="participate">Deltag</string>
+    <string name="location_content_description">Lokation</string>
+    <string name="check_icon_content_description">Tjek ikon</string>
+    <string name="date_content_description">Dato</string>
+    <string name="location_icon_content_description">Lokation ikon</string>
+    <string name="event_location_marker_title">Event lokation</string>
+
+    <!-- New strings for DateTimeInfoBox.kt -->
+    <string name="date_label_upper">DATO</string>
+    <string name="time_label_upper">TIDSPUNKT</string>
+    <string name="participants_label">FLOTTE MÆND</string>
+    <string name="participants_answered">%1$d har svaret</string>
+    <string name="participants_content_description">Deltagere</string>
+    <string name="time_content_description">Tidspunkt</string>
+    <string name="view_all_participants_content_description">Se alle deltagere</string>
+    <string name="back_content_description">Tilbage</string>
+    <string name="flotmand_logo_content_description">Flotmand logo</string>
+    <string name="frontpage_title">Forside</string>
+
+    <!-- Status and countdown strings -->
+    <string name="status_upcoming">Kommende</string>
+    <string name="status_ongoing">I gang</string>
+    <string name="status_completed">Færdig</string>
+    <string name="status_days_until_event">%1$d dage indtil event</string>
+    <string name="status_tomorrow">I morgen</string>
+    <string name="status_today">Event i dag</string>
+    <string name="status_event_finished">Event er afsluttet</string>
+
+    <!-- Dialog-related strings for AlertDialog.kt -->
+    <string name="logout_confirm_title">Er du sikker på du vil logge ud?</string>
+    <string name="logout_confirm_message">Hvis du logger ud, kan du ikke se de flotte mænds beskeder</string>
+    <string name="logout">Log ud</string>
+    <string name="delete_event_title">Slet event?</string>
+    <string name="delete_event_message">Denne handling kan ikke fortrydes.</string>
+    <string name="delete">Slet</string>
+    <string name="delete_date_title">Slet dato</string>
+    <string name="delete_date_message">Er du sikker på du vil slette denne dato? Denne handling kan ikke fortrydes.</string>
+
+    <!-- Login screen strings -->
+    <string name="login_title">Log ind</string>
+    <string name="login_with_google">Login med din Google-konto</string>
+    <string name="google_logo_content_description">Google logo</string>
+
+    <!-- Error strings for LoginViewModel -->
+    <string name="error_unexpected_credential_type">Uventet credential-type: %1$s</string>
+    <string name="error_sign_in_generic">Noget gik galt under login.</string>
+
+    <!-- Create Voting Dialog strings -->
+    <string name="create_voting_title">Opret ny afstemning</string>
+    <string name="create_voting_subtitle">Giv afstemningen et navn</string>
+    <string name="create_voting_label">Navn på afstemning</string>
+    <string name="create_voting_placeholder">F.eks. hos David</string>
+    <string name="voting_list_title">Afstemninger</string>
+    <string name="voting_list_loading">Henter afstemninger...</string>
+    <string name="create_voting_content_description">Opret ny afstemning</string>
+    <string name="error_could_not_create_voting">Kunne ikke oprette afstemning: %1$s</string>
+    <string name="date_icon_content_description">Dato ikon</string>
+    <string name="voted_label">stemte</string>
+    <string name="delete_vote_option_content_description">Slet stemmemulighed</string>
+
+    <!-- Error and snackbar strings for DateVotingViewModel -->
+    <string name="error_voting_not_found">Afstemning ikke fundet</string>
+    <string name="error_loading_voting">Kunne ikke indlæse afstemning: %1$s</string>
+    <string name="error_vote">Kunne ikke stemme: %1$s</string>
+    <string name="error_delete_voting">Kunne ikke slette afstemning: %1$s</string>
+    <string name="error_delete_date">Kunne ikke slette dato: %1$s</string>
+    <string name="error_remove_vote">Kunne ikke fjerne stemme: %1$s</string>
+    <string name="error_no_voting_found">Ingen afstemning fundet</string>
+    <string name="error_add_date">Kunne ikke tilføje dato: %1$s</string>
+
+    <!-- New strings for DateVotingScreen.kt -->
+    <string name="my_voting">Min Afstemning</string>
+    <string name="voting">Afstemning</string>
+    <string name="vote_on_dates">Stem på alle datoer hvor du er tilgængelig</string>
+    <string name="created_by">Oprettet af </string>
+    <string name="dates">Datoer</string>
+    <string name="users_voted">Brugere Stemt</string>
+    <string name="status">Status</string>
+    <string name="open">Åben</string>
+    <string name="closed">Lukket</string>
+    <string name="available_dates">Tilgængelige datoer</string>
+    <string name="unknown_date">Ukendt Dato</string>
+    <string name="no_votes_yet">Ingen stemmer endnu</string>
+    <string name="one_person_voted">1 person stemte</string>
+    <string name="n_persons_voted">%1$d personer stemte</string>
+    <string name="add_date_content_description">Tilføj dato</string>
+    <string name="add_date">Tilføj dato</string>
+    <string name="actions">Handlinger</string>
+    <string name="create_event_content_description">Opret event</string>
+    <string name="date_voting_create_event">Opret Event</string>
+    <string name="convert_to_event">Konverter denne afstemning til et event</string>
+    <string name="delete_voting_content_description">Slet afstemning</string>
+    <string name="delete_voting">Slet Afstemning</string>
+    <string name="remove_voting_permanently">Fjern denne afstemning permanent</string>
+
+    <!-- New strings for EventDetailScreen -->
+    <string name="loading_event">Henter et flot event...</string>
+    <string name="event_not_found">Event ikke fundet</string>
+    <string name="event_not_loaded">Eventet kunne ikke indlæses eller eksisterer ikke</string>
+    <string name="open_navigation_with">Åbn navigation med</string>
+
+
+<!--     strings for -->
+    <string name="date_options_and_users_voted">%1$d dates • %2$d users voted</string>
+    <string name="today">I dag</string>
+    <string name="yesterday">I går</string>
+    <string name="days_ago">%1$d dage siden</string>
+
+    <string name="read_more">Læs mere</string>
+    <string name="read_less">Læs mindre</string>
+    <string name="edit_event_content_description">Rediger event</string>
+    <string name="delete_event_content_description">Slet event</string>
+    <string name="participant_host">%1$s (Vært)</string>
+    <string name="organizer_label">Arrangør</string>
+    <string name="you_label">Dig</string>
+    <string name="greeting_with_name">Hej, %1$s! 👋</string>
+    <string name="welcome_back">Velkommen tilbage Flotte Mand!</string>
+    <string name="next_event_section_title">Næste event</string>
+
+    <!-- FrontPageScreen.kt strings -->
+    <string name="not_ready_yet">Der er vi ikke helt endnu 😉</string>
+    <string name="loading_events">Henter events…</string>
+    <string name="no_events_emoji">🎉</string>
+    <string name="no_events">Ingen events endnu</string>
+    <string name="be_first_to_create_event">Vær den første til at oprette et event!</string>
+    <string name="upcoming_events">Kommende Events</string>
+    <string name="see_less">Se mindre</string>
+    <string name="see_all">Se alle</string>
+    <string name="next_flotte_mand">Næste Flotte Mand</string>
+    <string name="previous_events">Tidligere Events</string>
+    <string name="unknown_user">Ukendt bruger</string>
+    <string name="vote_on_date">Stem på dato</string>
+    <string name="choose_best_date">Vælg den bedste dato for næste event</string>
+    <string name="calendar_content_description">Kalender</string>
+    <string name="go_to_voting">Gå til afstemning</string>
+    <string name="error_emoji">😕</string>
+    <string name="could_not_fetch_events">Kunne ikke hente events. Prøv igen senere.</string>
+
+    <!-- Account Details strings -->
+    <string name="account_details_title">Konto Detaljer</string>
+    <string name="account_details_user_id">Bruger ID</string>
+    <string name="account_details_hidden_id">••••••••</string>
+    <string name="account_details_show_id">Vis ID</string>
+    <string name="account_details_hide_id">Skjul ID</string>
+    <string name="account_details_login_with">Log ind med</string>
+
+    <!-- New strings for EditableInfoCard -->
+    <string name="save">Gem</string>
+    <string name="not_specified">Ikke angivet</string>
+    <string name="edit_content_description">Rediger %1$s</string>
+
+    <!-- New strings for personal info card -->
+    <string name="personal_info_title">Personlige Oplysninger</string>
+    <string name="personal_info_name">Navn</string>
+    <string name="personal_info_email">Email</string>
+    <string name="personal_info_phone">Telefon</string>
+    <string name="personal_info_add_phone">Tilføj telefonnummer</string>
+
+    <!-- New string for AccountInformationScreen -->
+    <string name="account_information_title">Konto Information</string>
+
+    <!-- Error strings for AccountInformationViewModel -->
+    <string name="error_display_name_blank">Navn må ikke være tomt</string>
+    <string name="error_update_display_name">Kunne ikke opdatere navn</string>
+    <string name="error_invalid_phone_number">Indtast et gyldigt telefonnummer (f.eks. +45 12 34 56 78)</string>
+    <string name="error_update_phone_number">Kunne ikke opdatere telefonnummer</string>
+
+    <!-- Language screen strings -->
+    <string name="language_screen_title">Sprog</string>
+    <string name="danish">Dansk</string>
+    <string name="danish_english">Danish</string>
+    <string name="bosnian">Bosnisk</string>
+    <string name="bosnian_english">Bosnian</string>
+    <string name="portuguese">Portugisisk</string>
+    <string name="portuguese_english">Portuguese</string>
+    <string name="faroese">Færøsk</string>
+    <string name="faroese_english">Faroese</string>
+
+    <!-- New profile section strings -->
+    <string name="profile_section_settings">Indstillinger</string>
+    <string name="profile_section_user">Bruger</string>
+
+    <string name="error_loading_event">Noget gik galt</string>
 </resources>

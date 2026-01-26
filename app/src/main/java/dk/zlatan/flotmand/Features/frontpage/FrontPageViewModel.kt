@@ -102,7 +102,7 @@ class FrontPageViewModel @Inject constructor(
                     nextEventPublisher = null,
                     nextEventParticipants = emptyList(),
                     isLoading = false,
-                    errorMessage = "Kunne ikke hente events. Prøv igen senere."
+                    errorMessage = null
                 )
             )
         }

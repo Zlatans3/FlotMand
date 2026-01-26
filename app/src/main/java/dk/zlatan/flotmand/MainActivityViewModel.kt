@@ -20,41 +20,46 @@ data class MainUiState(
     val user: User? = null,
     val dinnerEvents: List<Event> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
 )
 
 @HiltViewModel
-class MainActivityViewModel @Inject constructor(
-    private val accountService: AccountService,
-    private val dinnerEventService: DinnerEventService
-) : ViewModel() {
+class MainActivityViewModel
+    @Inject
+    constructor(
+        private val accountService: AccountService,
+        private val dinnerEventService: DinnerEventService,
+    ) : ViewModel() {
+        // Combine all relevant state into a single StateFlow
+        val uiState: StateFlow<MainUiState> =
+            combine(
+                accountService.currentUser,
+                dinnerEventService.dinnerEventsByUserId,
+            ) { user, events ->
+                MainUiState(
+                    isLoggedIn = user != null && user.id.isNotEmpty() && !user.isAnonymous,
+                    user = user,
+                    dinnerEvents = events,
+                )
+            }.stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000),
+                MainUiState(),
+            )
 
-    // Combine all relevant state into a single StateFlow
-    val uiState: StateFlow<MainUiState> = combine(
-        accountService.currentUser,
-        dinnerEventService.dinnerEventsByUserId
-    ) { user, events ->
-        MainUiState(
-            isLoggedIn = user != null && user.id.isNotEmpty() && !user.isAnonymous,
-            user = user,
-            dinnerEvents = events
-        )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        MainUiState()
-    )
+        // Login and logout actions
+        fun login(
+            email: String,
+            password: String,
+        ) {
+            viewModelScope.launch {
+                accountService.signIn(email, password)
+            }
+        }
 
-    // Login and logout actions
-    fun login(email: String, password: String) {
-        viewModelScope.launch {
-            accountService.signIn(email, password)
+        fun logout() {
+            viewModelScope.launch {
+                accountService.signOut()
+            }
         }
     }
-
-    fun logout() {
-        viewModelScope.launch {
-            accountService.signOut()
-        }
-    }
-}

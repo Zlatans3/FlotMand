@@ -10,7 +10,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.FmBackButton
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 
@@ -39,14 +41,14 @@ internal fun EventDetailTopAppBar(
                     IconButton(onClick = onEditClick) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Rediger event",
+                            contentDescription = stringResource(R.string.edit_event_content_description),
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                     IconButton(onClick = onDeleteClick) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Slet event",
+                            contentDescription = stringResource(R.string.delete_event_content_description),
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }

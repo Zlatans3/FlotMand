@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -25,7 +26,8 @@ import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
 import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.DateVotingDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
-import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreenRoute
+import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreen
+import dk.zlatan.flotmand.Features.my_events.add_new_event.EditEventScreen
 import kotlinx.coroutines.launch
 
 @Suppress("CyclomaticComplexMethod")
@@ -72,6 +74,9 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                         EventDetailScreenRoute(
                             eventId = key.eventId,
                             onDismiss = { viewModel.pop() },
+                            onEditEvent = { eventId ->
+                                viewModel.navigate(FrontPageDestination.EditEvent(eventId))
+                            }
                         )
                     }
                 }
@@ -103,8 +108,17 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
 
                 is FrontPageDestination.AddEventFromVoting -> {
                     NavEntry(key) {
-                        AddEventScreenRoute(
+                        AddEventScreen(
                             votingId = key.votingId,
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
+                }
+
+                is FrontPageDestination.EditEvent -> {
+                    NavEntry(key) {
+                        EditEventScreen(
+                            eventId = key.eventId,
                             onDismiss = { viewModel.pop() },
                         )
                     }
@@ -112,6 +126,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
 
                 FrontPageDestination.HostRotation -> {
                     NavEntry(key) {
+                        // TODO: Zlatan 23/01/2026 Later
                     }
                 }
             }
@@ -157,7 +172,8 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
         },
         entryDecorators =
             listOf(
-                rememberSaveableStateHolderNavEntryDecorator<FrontPageDestination>(),
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator()
             ),
     )
 }

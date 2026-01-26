@@ -1,13 +1,12 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,10 +20,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
-import androidx.compose.animation.SizeTransform
 
+
+// TODO: Zlatan 22/01/2026 MAYBE NOT NEEDED?
 @Composable
 internal fun SectionsParticipationItem(
     modifier: Modifier = Modifier,
@@ -159,4 +165,26 @@ internal fun SectionItem(
             )
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SectionItemPreview() {
+    SectionItem(
+        leadingIcon = Icons.Filled.Info,
+        trailingIcon = Icons.Filled.ArrowForward,
+        title = "sdjf",
+        onClick = {},
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SectionsParticipationItemPreview() {
+    SectionsParticipationItem(
+        leadingIcon = Icons.Filled.Info,
+        trailingIcon = Icons.Filled.ArrowForward,
+        title = "asofsoidfh",
+        onClick = {},
+    )
 }

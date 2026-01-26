@@ -42,6 +42,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -51,6 +52,7 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.EventDetailTopAppBar
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.PublisherSection
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.DateTimeInfoBox
 import dk.zlatan.flotmand.design_system.componenets.ParticipantsInfoBox
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
@@ -72,6 +74,7 @@ internal fun EventDetailScreenRoute(
     eventId: String,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
+    onEditEvent: (String) -> Unit,
     viewModel: EventDetailViewModel =
         hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
             key = eventId,
@@ -101,7 +104,7 @@ internal fun EventDetailScreenRoute(
                     showDeleteDialog = true
                 },
                 onEditClick = {
-//                    viewModel.onEditEvent(context, uiState.event, uiState.publisher)
+                    uiState.event?.eventId?.let { onEditEvent(it) }
                 },
             )
         },
@@ -157,8 +160,28 @@ internal fun EventDetailScreenRoute(
                     if (show) {
                         CircularProgressIndicator()
                         Spacer(modifier = Modifier.padding(8.dp))
-                        Text(text = "Henter et flot event...")
+                        Text(text = stringResource(R.string.loading_event))
                     }
+                }
+            }
+
+            uiState.eventError != null -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = stringResource(R.string.error_loading_event),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Text(
+                        text = uiState.eventError!!,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
 
@@ -170,13 +193,13 @@ internal fun EventDetailScreenRoute(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        text = "Event ikke fundet",
+                        text = stringResource(R.string.event_not_found),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.error,
                     )
                     Spacer(modifier = Modifier.padding(8.dp))
                     Text(
-                        text = "Eventet kunne ikke indlæses eller eksisterer ikke",
+                        text = stringResource(R.string.event_not_loaded),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -197,9 +220,9 @@ internal fun EventDetailScreenRoute(
 
     if (showDeleteDialog) {
         FmConfirmDialog(
-            title = "Slet event?",
-            message = "Denne handling kan ikke fortrydes.",
-            confirmText = "Slet",
+            title = stringResource(R.string.delete_event_title),
+            message = stringResource(R.string.delete_event_message),
+            confirmText = stringResource(R.string.delete),
             onDismiss = { showDeleteDialog = false },
             onConfirmClick = {
                 showDeleteDialog = false
@@ -318,7 +341,14 @@ private fun EventDetailScreenContent(
         }
 
         if (!isPublisher && event.status == EventStatus.UPCOMING) {
-            val participationText = if (isParticipating == true) "deltager" else "Deltag"
+            val participationText =
+                if (isParticipating == true) {
+                    stringResource(R.string.participating)
+                } else {
+                    stringResource(
+                        R.string.participate,
+                    )
+                }
             AnimatedVisibility(
                 visible = showFab,
                 modifier = Modifier.align(Alignment.BottomEnd),
@@ -468,6 +498,6 @@ private fun EventDetailScreenLoadingPreview() {
     ) {
         CircularProgressIndicator()
         Spacer(modifier = Modifier.padding(8.dp))
-        Text(text = "Henter et flot event...")
+        Text(text = stringResource(R.string.loading_event))
     }
 }

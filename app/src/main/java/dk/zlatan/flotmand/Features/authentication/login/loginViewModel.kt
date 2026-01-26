@@ -8,7 +8,9 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Co
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.Features.FmAppViewModel
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.service.AccountService
+import dk.zlatan.flotmand.util.StringProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
@@ -22,7 +24,8 @@ data class LoginUiState(
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val accountService: AccountService
+    private val accountService: AccountService,
+    private val stringProvider: StringProvider
 ) : FmAppViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     // State for login result
@@ -75,11 +78,11 @@ class LoginViewModel @Inject constructor(
                     errorMessage.value = null
                 } else {
                     // Log the credential type and details for debugging
-                    errorMessage.value = "Unexpected credential type: ${credential::class.java.simpleName}"
+                    errorMessage.value = stringProvider.getString(R.string.error_unexpected_credential_type, credential::class.java.simpleName)
                     Log.e("ERROR_TAG", "UNEXPECTED_CREDENTIAL: $credential")
                 }
             } catch (e: Exception) {
-                errorMessage.value = e.localizedMessage ?: "Something went wrong during sign in."
+                errorMessage.value = e.localizedMessage ?: stringProvider.getString(R.string.error_sign_in_generic)
                 Log.e("ERROR_TAG", errorMessage.value!!, e)
             } finally {
                 isLoading.value = false

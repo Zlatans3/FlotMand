@@ -5,18 +5,9 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,16 +15,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.dp
-import dk.zlatan.flotmand.design_system.componenets.StatusBadge
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.StatusCountBadge
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
-import dk.zlatan.flotmand.model.EventStatus
 import java.time.LocalDate
 
 @Composable
@@ -106,7 +96,7 @@ internal fun DetailHeader(
                 if (description.length > 100) {
                     // Show only if description is long enough
                     Text(
-                        text = if (isExpanded) "Read less" else "Read more",
+                        text = if (isExpanded) stringResource(R.string.read_less) else stringResource(R.string.read_more),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(top = 4.dp),
@@ -122,7 +112,7 @@ internal fun DetailHeader(
 private fun DetailHeaderPreview() {
     DetailHeader(
         eventDate = LocalDate.now().plusDays(3),
-        eventTitle = "The Italian Feast",
-        eventDescription = "An authentic evening of homemade pasta, vintage wines, and great company in the heart of Copenhagen. Join us for a curated tasting experience.",
+        eventTitle = "Lasses Italienske Festmiddag",
+        eventDescription = LoremIpsum(50).values.first(),
     )
 }

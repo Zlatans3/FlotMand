@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
@@ -42,50 +42,55 @@ internal fun AddressAutocompleteDropdown(
     predictions: List<AddressPrediction>,
     isLoading: Boolean,
     onPredictionSelected: (AddressPrediction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(
         visible = predictions.isNotEmpty() || isLoading,
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically(),
-        modifier = modifier
+        modifier = modifier,
     ) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 4.dp
-            )
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
+            elevation =
+                CardDefaults.cardElevation(
+                    defaultElevation = 4.dp,
+                ),
         ) {
             if (isLoading) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
                     )
                 }
             } else {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 300.dp)
-                        .verticalScroll(rememberScrollState())
-                        .padding(vertical = 8.dp)
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 300.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(vertical = 8.dp),
                 ) {
                     predictions.forEach { prediction ->
                         AddressPredictionItem(
                             prediction = prediction,
-                            onClick = { onPredictionSelected(prediction) }
+                            onClick = { onPredictionSelected(prediction) },
                         )
                     }
                 }
@@ -98,20 +103,21 @@ internal fun AddressAutocompleteDropdown(
 private fun AddressPredictionItem(
     prediction: AddressPrediction,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = Icons.Default.LocationOn,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(20.dp),
         )
 
         HSpacer(12.dp)
@@ -120,7 +126,7 @@ private fun AddressPredictionItem(
             Text(
                 text = prediction.primaryText,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             if (prediction.secondaryText != null) {
@@ -128,7 +134,7 @@ private fun AddressPredictionItem(
                 Text(
                     text = prediction.secondaryText,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -143,7 +149,7 @@ private fun AddressAutocompleteDropdownPreview() {
             AddressAutocompleteDropdown(
                 predictions = AddressPrediction.mockAddressPredictionList(5),
                 isLoading = false,
-                onPredictionSelected = { }
+                onPredictionSelected = { },
             )
         }
     }
@@ -157,7 +163,7 @@ private fun AddressAutocompleteLoadingPreview() {
             AddressAutocompleteDropdown(
                 predictions = emptyList(),
                 isLoading = true,
-                onPredictionSelected = { }
+                onPredictionSelected = { },
             )
         }
     }
@@ -171,7 +177,7 @@ private fun AddressAutocompleteManyItemsPreview() {
             AddressAutocompleteDropdown(
                 predictions = AddressPrediction.mockAddressPredictionList(8),
                 isLoading = false,
-                onPredictionSelected = { }
+                onPredictionSelected = { },
             )
         }
     }
@@ -183,7 +189,7 @@ private fun AddressPredictionItemPreview() {
     FlotMandTheme {
         AddressPredictionItem(
             prediction = AddressPrediction.mockAddressPredictionList(1).first(),
-            onClick = { }
+            onClick = { },
         )
     }
 }

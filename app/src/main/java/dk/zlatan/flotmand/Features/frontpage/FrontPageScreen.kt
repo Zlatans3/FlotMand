@@ -39,12 +39,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationImagesAndNames
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageNewHeader
 import dk.zlatan.flotmand.Features.frontpage.ui.NextEventSection
@@ -83,13 +85,15 @@ internal fun FrontPageRoute(
             (scrollOffset / headerHeightPx).coerceIn(0f, 1f)
         }
     }
+
+    val snackBarText = stringResource(R.string.not_ready_yet)
     Scaffold(
         topBar = {
             newFmTopAppBar(
                 user = uiState.currentUser,
                 onUserClicked = {
                     scope.launch {
-                        snackbarHostState.showSnackbar("Der er vi ikke helt endnu 😉")
+                        snackbarHostState.showSnackbar(snackBarText)
                     }
                 },
             )
@@ -112,7 +116,7 @@ internal fun FrontPageRoute(
                     ) {
                         CircularProgressIndicator()
                         Text(
-                            text = "Henter events...",
+                            text = stringResource(R.string.loading_events),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
@@ -131,7 +135,7 @@ internal fun FrontPageRoute(
                         modifier = Modifier.padding(16.dp),
                     ) {
                         Text(
-                            text = "😕",
+                            text = stringResource(R.string.error_emoji),
                             style = MaterialTheme.typography.displayLarge,
                         )
                         Text(
@@ -154,16 +158,16 @@ internal fun FrontPageRoute(
                         modifier = Modifier.padding(16.dp),
                     ) {
                         Text(
-                            text = "🎉",
+                            text = stringResource(R.string.no_events_emoji),
                             style = MaterialTheme.typography.displayLarge,
                         )
                         Text(
-                            text = "Ingen events endnu",
+                            text = stringResource(R.string.no_events),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
-                            text = "Vær den første til at oprette et event!",
+                            text = stringResource(R.string.be_first_to_create_event),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -297,7 +301,7 @@ internal fun FrontpageContent(
                         }
                     VSpacer(20.dp)
                     SectionHeader(
-                        title = "Kommende Events",
+                        title = stringResource(R.string.upcoming_events),
                         actionText = seeMoreOrLess,
                         onActionClick = {
                             showAllEvents = !showAllEvents
@@ -326,7 +330,7 @@ internal fun FrontpageContent(
             item {
                 VSpacer(20.dp)
                 SectionHeader(
-                    title = "Næste Flotte Mand",
+                    title = stringResource(R.string.next_flotte_mand),
 //                    actionText = "Se mere",
                     onActionClick = {
                     },
@@ -346,7 +350,7 @@ internal fun FrontpageContent(
                 item {
                     VSpacer(20.dp)
                     SectionHeader(
-                        title = "Tidligere Events",
+                        title = stringResource(R.string.previous_events),
                         actionText = seeMoreOrLess,
                         onActionClick = {
                             showAllPreviousEvents = !showAllPreviousEvents
@@ -444,18 +448,18 @@ private fun DateVotingCard(
             ) {
                 Icon(
                     imageVector = Icons.Filled.CalendarToday,
-                    contentDescription = "Calendar",
+                    contentDescription = stringResource(R.string.calendar_content_description),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(8.dp),
                 )
                 Column {
                     Text(
-                        text = "Stem på dato",
+                        text = stringResource(R.string.vote_on_date),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                     Text(
-                        text = "Vælg den bedste dato for næste event",
+                        text = stringResource(R.string.choose_best_date),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                     )
@@ -463,7 +467,7 @@ private fun DateVotingCard(
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Go to voting",
+                contentDescription = stringResource(R.string.go_to_voting),
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
@@ -530,16 +534,16 @@ private fun FrontpageEmptyStatePreview() {
                 modifier = Modifier.padding(16.dp),
             ) {
                 Text(
-                    text = "🎉",
+                    text = stringResource(R.string.no_events_emoji),
                     style = MaterialTheme.typography.displayLarge,
                 )
                 Text(
-                    text = "Ingen events endnu",
+                    text = stringResource(R.string.no_events),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "Vær den første til at oprette et event!",
+                    text = stringResource(R.string.be_first_to_create_event),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -565,11 +569,11 @@ private fun FrontpageErrorStatePreview() {
                 modifier = Modifier.padding(16.dp),
             ) {
                 Text(
-                    text = "😕",
+                    text = stringResource(R.string.error_emoji),
                     style = MaterialTheme.typography.displayLarge,
                 )
                 Text(
-                    text = "Kunne ikke hente events. Prøv igen senere.",
+                    text = stringResource(R.string.could_not_fetch_events),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.error,
                 )

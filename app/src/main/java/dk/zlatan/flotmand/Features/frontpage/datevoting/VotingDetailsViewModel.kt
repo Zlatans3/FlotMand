@@ -3,10 +3,12 @@ package dk.zlatan.flotmand.Features.frontpage.datevoting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.VotingStatus
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DateVotingService
+import dk.zlatan.flotmand.util.StringProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +35,7 @@ class DateVotingListViewModel
     constructor(
         private val dateVotingService: DateVotingService,
         private val accountService: AccountService,
+        private val stringProvider: StringProvider,
     ) : ViewModel() {
         private val _transientState =
             MutableStateFlow(
@@ -106,7 +109,7 @@ class DateVotingListViewModel
                     }
                 } catch (e: Exception) {
                     _transientState.update {
-                        it.copy(snackbarMessage = "Kunne ikke oprette afstemning: ${e.message}")
+                        it.copy(snackbarMessage = stringProvider.getString(R.string.error_could_not_create_voting, e.message ?: ""))
                     }
                 }
             }

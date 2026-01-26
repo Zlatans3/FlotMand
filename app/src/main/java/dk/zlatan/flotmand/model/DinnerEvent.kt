@@ -1,6 +1,5 @@
 package dk.zlatan.flotmand.model
 
-
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.Exclude
 import java.time.LocalDate
@@ -10,7 +9,7 @@ import java.time.LocalTime
 enum class EventStatus {
     UPCOMING,
     ONGOING,
-    COMPLETED
+    COMPLETED,
 }
 
 data class Event(
@@ -24,7 +23,7 @@ data class Event(
     val description: String? = null,
     // Firestore-compatible fields (stored as Strings)
     var eventDateString: String? = null,
-    var eventStartTimeString: String? = null
+    var eventStartTimeString: String? = null,
 ) {
     // Computed properties for LocalDate and LocalTime (excluded from Firestore)
     @get:Exclude
@@ -51,9 +50,9 @@ data class Event(
         geoLocation: GeoLocation? = this.geoLocation,
         description: String? = this.description,
         eventDate: LocalDate? = this.eventDate,
-        eventStartTime: LocalTime? = this.eventStartTime
-    ): Event {
-        return Event(
+        eventStartTime: LocalTime? = this.eventStartTime,
+    ): Event =
+        Event(
             eventId = eventId,
             publisherId = publisherId,
             participantIds = participantIds,
@@ -62,9 +61,8 @@ data class Event(
             geoLocation = geoLocation,
             description = description,
             eventDateString = eventDate?.toString() ?: this.eventDateString,
-            eventStartTimeString = eventStartTime?.toString() ?: this.eventStartTimeString
+            eventStartTimeString = eventStartTime?.toString() ?: this.eventStartTimeString,
         )
-    }
 
     // Computed property based on eventDate and eventStartTime
     @get:Exclude
@@ -113,9 +111,9 @@ data class Event(
             geoLocation: GeoLocation? = null,
             description: String? = null,
             eventDate: LocalDate? = null,
-            eventStartTime: LocalTime? = null
-        ): Event {
-            return Event(
+            eventStartTime: LocalTime? = null,
+        ): Event =
+            Event(
                 eventId = eventId,
                 publisherId = publisherId,
                 participantIds = participantIds,
@@ -124,15 +122,21 @@ data class Event(
                 geoLocation = geoLocation,
                 description = description,
                 eventDateString = eventDate?.toString(),
-                eventStartTimeString = eventStartTime?.toString()
+                eventStartTimeString = eventStartTime?.toString(),
             )
-        }
 
-        private val names = listOf("Zlatan Stadler", "Gustav Rasslan", "Mikkel Rahbek", "David Sandell", "Oliver Payne")
+        private val names =
+            listOf(
+                "Zlatan Stadler",
+                "Gustav Rasslan",
+                "Mikkel Rahbek",
+                "David Sandell",
+                "Oliver Payne",
+            )
         private val ids: List<String> = List(names.size) { index -> "user${index + 1}" }
 
-        fun previewEvents(count: Int): List<Event> {
-            return List(count) { index ->
+        fun previewEvents(count: Int): List<Event> =
+            List(count) { index ->
                 val name = names.random()
                 create(
                     eventId = "event$name${index + 1}",
@@ -140,62 +144,65 @@ data class Event(
                     eventName = "Middag hos $name",
                     description = "Hyggelig aften med venner",
                     eventDate = LocalDate.parse("2024-06-15"),
-                    eventStartTime = LocalTime.parse("18:00")
+                    eventStartTime = LocalTime.parse("18:00"),
                 )
             }
-        }
 
         // Static test data for details page
-        val staticTestEvents: List<Event> = listOf(
-            create(
-                eventId = "event1",
-                eventName = "Middag hos Lasse",
-                publisherId = ids.first(),
-                location = "Fortuna alle 1, 2000 Frederiksberg",
-                description = "Medbring godt humør",
-                eventDate = LocalDate.parse("2027-12-01"),
-                eventStartTime = LocalTime.parse("19:00"),
-                participantIds = ids,
-            ),
-            create(
-                eventId = "event2",
-                eventName = "Frokost med Gustav",
-                location = "Nørrebrogade 2, 2200 København N",
-                description = "Let frokost",
-                eventDate = LocalDate.parse("2024-12-05"),
-                eventStartTime = LocalTime.parse("12:30"),
-                participantIds = ids,
-            ),
-            create(
-                eventId = "event3",
-                publisherId = "3",
-                eventName = "Brunch hos Mikkel",
-                location = "Østerbrogade 3, 2100 København Ø",
-                eventDate = LocalDate.parse("2024-12-10"),
-                eventStartTime = LocalTime.parse("10:00")
-            ),
-            create(
-                eventId = "event4",
-                publisherId = "3",
-                eventName = "Brunch hos Mikkel",
-                location = "Amagerbrogade 4, 2300 København S",
-                eventDate = LocalDate.parse("2024-12-10"),
-                eventStartTime = LocalTime.parse("10:00")
-            ),
-            create(
-                eventId = "event5",
-                publisherId = "3",
-                eventName = "Brunch hos Mikkel",
-                location = "Vesterbrogade 5, 1620 København V",
-                eventDate = LocalDate.parse("2024-12-10"),
-                eventStartTime = LocalTime.parse("10:00")
+        val staticTestEvents: List<Event> =
+            listOf(
+                create(
+                    eventId = "event1",
+                    eventName = "Middag hos Lasse",
+                    publisherId = ids.first(),
+                    location = "Fortuna alle 1, 2000 Frederiksberg",
+                    description = "Medbring godt humør",
+                    eventDate = LocalDate.parse("2027-12-01"),
+                    eventStartTime = LocalTime.parse("19:00"),
+                    participantIds = ids,
+                ),
+                create(
+                    eventId = "event2",
+                    eventName = "Frokost med Gustav",
+                    location = "Nørrebrogade 2, 2200 København N",
+                    description = "Let frokost",
+                    eventDate = LocalDate.parse("2024-12-05"),
+                    eventStartTime = LocalTime.parse("12:30"),
+                    participantIds = ids,
+                ),
+                create(
+                    eventId = "event3",
+                    publisherId = "3",
+                    eventName = "Brunch hos Mikkel",
+                    location = "Østerbrogade 3, 2100 København Ø",
+                    eventDate = LocalDate.parse("2024-12-10"),
+                    eventStartTime = LocalTime.parse("10:00"),
+                ),
+                create(
+                    eventId = "event4",
+                    publisherId = "3",
+                    eventName = "Brunch hos Mikkel",
+                    location = "Amagerbrogade 4, 2300 København S",
+                    eventDate = LocalDate.parse("2024-12-10"),
+                    eventStartTime = LocalTime.parse("10:00"),
+                ),
+                create(
+                    eventId = "event5",
+                    publisherId = "3",
+                    eventName = "Brunch hos Mikkel",
+                    location = "Vesterbrogade 5, 1620 København V",
+                    eventDate = LocalDate.parse("2024-12-10"),
+                    eventStartTime = LocalTime.parse("10:00"),
+                ),
             )
-        )
 
         // Helper functions for Firebase conversion
         fun dateToString(date: LocalDate?): String? = date?.toString() // yyyy-MM-dd
+
         fun stringToDate(dateString: String?): LocalDate? = dateString?.let { LocalDate.parse(it) }
+
         fun timeToString(time: LocalTime?): String? = time?.toString() // HH:mm
+
         fun stringToTime(timeString: String?): LocalTime? = timeString?.let { LocalTime.parse(it) }
     }
 }

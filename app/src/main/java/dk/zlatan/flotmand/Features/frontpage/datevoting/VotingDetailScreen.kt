@@ -29,15 +29,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dk.zlatan.flotmand.Features.frontpage.datevoting.ui.VotingListItem
+import dk.zlatan.flotmand.Features.frontpage.datevoting.ui.votingListItem
 import dk.zlatan.flotmand.design_system.componenets.FmBackButton
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.DateVotingItem
+import dk.zlatan.flotmand.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +95,7 @@ internal fun DateVotingRoute(
                 },
                 textContent = {
                     Text(
-                        text = "Afstemninger",
+                        text = stringResource(R.string.voting_list_title),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onBackground,
                     )
@@ -131,7 +133,7 @@ internal fun DateVotingScreen(
                     ) {
                         CircularProgressIndicator()
                         Text(
-                            text = "Henter afstemninger...",
+                            text = stringResource(R.string.voting_list_loading),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
@@ -155,7 +157,7 @@ internal fun DateVotingScreen(
                     }
 
                     items(uiState.votings) { voting ->
-                        VotingListItem(
+                        votingListItem(
                             voting = voting,
                             isCreator = voting.creatorId == uiState.currentUserId,
                             onClick = {
@@ -182,12 +184,12 @@ private fun VotingListHeader(onCreateVoting: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Filled.Add,
-            contentDescription = "Create voting",
+            contentDescription = stringResource(R.string.create_voting_content_description),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(8.dp),
         )
         Text(
-            text = "Opret ny afstemning",
+            text = stringResource(R.string.create_voting_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
         )

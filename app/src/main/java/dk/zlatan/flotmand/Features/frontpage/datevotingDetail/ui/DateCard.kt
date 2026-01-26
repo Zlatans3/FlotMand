@@ -28,9 +28,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.OverlappingAvatars
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
@@ -95,7 +98,7 @@ internal fun DateCard(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.CalendarToday,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.date_icon_content_description),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp),
                         )
@@ -143,7 +146,12 @@ internal fun DateCard(
 
                 // Vote percentage (right side)
                 Text(
-                    text = "$votePercentage% stemte",
+                    text =
+                        buildAnnotatedString {
+                            append(votePercentage.toString())
+                            append("% ")
+                            append(stringResource(R.string.voted_label))
+                        },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 8.dp),
@@ -175,28 +183,30 @@ private fun VoteOptionAction(
 ) {
     if (votePercentage == 0) {
         Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(Color.Transparent)
-                .clickable(onClick = onDeleteVoteOption),
+            modifier =
+                Modifier
+                    .size(28.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.Transparent)
+                    .clickable(onClick = onDeleteVoteOption),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = Icons.Filled.Delete,
-                contentDescription = "Delete vote option",
+                contentDescription = stringResource(R.string.delete_vote_option_content_description),
                 tint = MaterialTheme.colorScheme.error,
                 modifier = Modifier.size(18.dp),
             )
         }
     } else {
         Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(
-                    if (isSelected) accentColor else Color.Transparent,
-                ),
+            modifier =
+                Modifier
+                    .size(28.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(
+                        if (isSelected) accentColor else Color.Transparent,
+                    ),
             contentAlignment = Alignment.Center,
         ) {
             if (isSelected) {
@@ -211,7 +221,6 @@ private fun VoteOptionAction(
     }
 }
 
-
 @Preview
 @Composable
 private fun DateCardPreview() {
@@ -223,11 +232,12 @@ private fun DateCardPreview() {
                 DateCard(
                     date = "Friday, Oct 20th",
                     subtitle = "LEADING CHOICE",
-                    voters = listOf(
-                        User(id = "1", displayName = "lasse"),
-                        User(id = "2", displayName = "Zlatan"),
-                        User(id = "3", displayName = "David"),
-                    ),
+                    voters =
+                        listOf(
+                            User(id = "1", displayName = "lasse"),
+                            User(id = "2", displayName = "Zlatan"),
+                            User(id = "3", displayName = "David"),
+                        ),
                     votePercentage = 85,
                     isSelected = true,
                     onDeleteVoteOption = {},
@@ -235,10 +245,11 @@ private fun DateCardPreview() {
                 DateCard(
                     date = "Saturday, Oct 21st",
                     subtitle = "2 friends voted",
-                    voters = listOf(
-                        User(id = "1", displayName = "Mikkel"),
-                        User(id = "2", displayName = "Gustav"),
-                    ),
+                    voters =
+                        listOf(
+                            User(id = "1", displayName = "Mikkel"),
+                            User(id = "2", displayName = "Gustav"),
+                        ),
                     votePercentage = 40,
                     isSelected = false,
                     onDeleteVoteOption = {},
@@ -246,9 +257,10 @@ private fun DateCardPreview() {
                 DateCard(
                     date = "Thursday, Oct 19th",
                     subtitle = "1 friend voted",
-                    voters = listOf(
-                        User(id = "1", displayName = "David"),
-                    ),
+                    voters =
+                        listOf(
+                            User(id = "1", displayName = "David"),
+                        ),
                     votePercentage = 15,
                     isSelected = false,
                     onDeleteVoteOption = {},

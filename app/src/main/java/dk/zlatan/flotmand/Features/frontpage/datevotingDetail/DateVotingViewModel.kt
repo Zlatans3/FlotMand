@@ -6,11 +6,13 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.DateOption
 import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DateVotingService
+import dk.zlatan.flotmand.util.StringProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -32,6 +34,7 @@ internal class DateVotingViewModel @AssistedInject constructor(
     private val dateVotingService: DateVotingService,
     @Assisted private val votingId: String,
     private val accountService: AccountService,
+    private val stringProvider: StringProvider,
 ) : ViewModel() {
 
 
@@ -64,10 +67,10 @@ internal class DateVotingViewModel @AssistedInject constructor(
                         }
                     }
                 } else {
-                    _uiState.update { it.copy(errorMessage = "Voting not found", isLoading = false) }
+                    _uiState.update { it.copy(errorMessage = stringProvider.getString(R.string.error_voting_not_found), isLoading = false) }
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(errorMessage = "Error loading voting: ${e.message}", isLoading = false) }
+                _uiState.update { it.copy(errorMessage = stringProvider.getString(R.string.error_loading_voting, e.message ?: ""), isLoading = false) }
             }
         }
     }
@@ -123,7 +126,7 @@ internal class DateVotingViewModel @AssistedInject constructor(
                 val userId = accountService.currentUserId
                 dateVotingService.addVote(votingId, date, userId)
             } catch (e: Exception) {
-                _uiState.update { it.copy(snackbarMessage = "Kunne ikke stemme: ${e.message}") }
+                _uiState.update { it.copy(snackbarMessage = stringProvider.getString(R.string.error_vote, e.message ?: "")) }
             }
         }
     }
@@ -134,7 +137,7 @@ internal class DateVotingViewModel @AssistedInject constructor(
                 val votingId = uiState.value.dateVotingItem?.votingId ?: return@launch
                 dateVotingService.deleteDateVoting(votingId)
             } catch (e: Exception) {
-                _uiState.update { it.copy(snackbarMessage = "Kunne ikke slette afstemning: ${e.message}") }
+                _uiState.update { it.copy(snackbarMessage = stringProvider.getString(R.string.error_delete_voting, e.message ?: "")) }
             }
         }
     }
@@ -145,7 +148,7 @@ internal class DateVotingViewModel @AssistedInject constructor(
                 val votingId = uiState.value.dateVotingItem?.votingId ?: return@launch
                 dateVotingService.deleteVoteOption(dateOption, votingId)
             } catch (e: Exception) {
-                _uiState.update { it.copy(snackbarMessage = "Kunne ikke slette dato: ${e.message}") }
+                _uiState.update { it.copy(snackbarMessage = stringProvider.getString(R.string.error_delete_date, e.message ?: "")) }
             }
         }
     }
@@ -157,7 +160,7 @@ internal class DateVotingViewModel @AssistedInject constructor(
                 val userId = accountService.currentUserId
                 dateVotingService.removeVote(votingId, date, userId)
             } catch (e: Exception) {
-                _uiState.update { it.copy(snackbarMessage = "Kunne ikke fjerne stemme: ${e.message}") }
+                _uiState.update { it.copy(snackbarMessage = stringProvider.getString(R.string.error_remove_vote, e.message ?: "")) }
             }
         }
     }
@@ -167,14 +170,14 @@ internal class DateVotingViewModel @AssistedInject constructor(
             try {
                 val votingId = uiState.value.dateVotingItem?.votingId
                 if (votingId == null) {
-                    _uiState.update { it.copy(snackbarMessage = "Ingen afstemning fundet") }
+                    _uiState.update { it.copy(snackbarMessage = stringProvider.getString(R.string.error_no_voting_found)) }
                     return@launch
                 }
 
                 val userId = accountService.currentUserId
                 dateVotingService.addDateOption(votingId, date, userId)
             } catch (e: Exception) {
-                _uiState.update { it.copy(snackbarMessage = "Kunne ikke tilføje dato: ${e.message}") }
+                _uiState.update { it.copy(snackbarMessage = stringProvider.getString(R.string.error_add_date, e.message ?: "")) }
             }
         }
     }

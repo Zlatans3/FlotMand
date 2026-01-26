@@ -15,8 +15,10 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
@@ -53,7 +55,7 @@ internal fun ParticipantsContent(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             modifier = Modifier.padding(horizontal = 20.dp),
-            text = "Flotte mænd",
+            text = stringResource(R.string.participants_label),
             style = MaterialTheme.typography.headlineMedium,
         )
 
@@ -61,7 +63,7 @@ internal fun ParticipantsContent(
         participants.forEach { participant ->
             val isHost = publisherId != null && participant.id == publisherId
             val displayName =
-                if (isHost) "${participant.displayName} (Host)" else participant.displayName
+                if (isHost) stringResource(R.string.participant_host, participant.displayName) else participant.displayName
 
             ProfileParticipant(
                 modifier = Modifier,
