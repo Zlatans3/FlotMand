@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -47,6 +48,10 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                     NavEntry(key) {
                         AddEventScreen(
                             onDismiss = { viewModel.pop() },
+                            onEventCreated = { eventId ->
+                                viewModel.resetToRoot()
+                                viewModel.navigate(MyEventsDestination.EventDetail(eventId))
+                            },
                         )
                     }
                 }
@@ -65,6 +70,10 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                         AddEventScreen(
                             votingId = key.votingId,
                             onDismiss = { viewModel.pop() },
+                            onEventCreated = { eventId ->
+                                viewModel.resetToRoot()
+                                viewModel.navigate(MyEventsDestination.EventDetail(eventId))
+                            },
                         )
                     }
                 }
@@ -76,7 +85,7 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                             onDismiss = { viewModel.pop() },
                             onEditEvent = { eventId ->
                                 viewModel.navigate(MyEventsDestination.EditEvent(eventId))
-                            }
+                            },
                         )
                     }
                 }
@@ -111,6 +120,10 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                 ),
             )
         },
-        entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator()),
+        entryDecorators =
+            listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+            ),
     )
 }

@@ -101,6 +101,7 @@ internal fun AddEventScreen(
             },
         ),
     onDismiss: () -> Unit = {},
+    onEventCreated: (eventId: String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -109,11 +110,13 @@ internal fun AddEventScreen(
     val isKeyboardOpen = imeHeight > 0
     val focusManager = LocalFocusManager.current
 
-    // Navigate back when event is created/updated successfully, then reset state
+    // Navigate to event detail when event is created, then reset state
     LaunchedEffect(uiState.isEventCreated) {
-        if (uiState.isEventCreated) {
-            onDismiss()
-            viewModel.resetState()
+        if(uiState.isEventCreated != null){
+            uiState.isEventCreated?.let { eventId ->
+                onEventCreated(eventId)
+                viewModel.resetState() // Restore state reset after navigation trigger
+            }
         }
     }
 
@@ -704,7 +707,9 @@ private fun TimePickerDialog(
 @Composable
 private fun AddEventScreenPreview() {
     MaterialTheme {
-        AddEventScreen()
+        AddEventScreen(
+            onEventCreated = {},
+        )
     }
 }
 

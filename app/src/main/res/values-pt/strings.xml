@@ -35,8 +35,9 @@
     <string name="error_could_not_fetch_address_details">Não foi possível obter detalhes do endereço</string>
     <string name="error_event_name_required">Nome do evento é obrigatório</string>
     <string name="error_location_required">Localização é obrigatória</string>
-    <string name="error_date_required">Data é obrigatória</string>
-    <string name="error_time_required">Horário é obrigatório</string>
+    <string name="error_geolocation_required">Selecione um endereço válido das sugestões.</string>
+    <string name="error_event_date_required">A data do evento é obrigatória.</string>
+    <string name="error_event_time_required">O horário do evento é obrigatório.</string>
     <string name="error_could_not_create_event">Não foi possível criar o evento: %1$s</string>
     <string name="error_invalid_event_id">ID de evento inválido.</string>
     <string name="error_could_not_update_event">Não foi possível atualizar o evento.</string>

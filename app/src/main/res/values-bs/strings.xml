@@ -35,8 +35,9 @@
     <string name="error_could_not_fetch_address_details">Nije moguće dohvatiti detalje adrese</string>
     <string name="error_event_name_required">Naziv događaja je obavezan</string>
     <string name="error_location_required">Lokacija je obavezna</string>
-    <string name="error_date_required">Datum je obavezan</string>
-    <string name="error_time_required">Vrijeme je obavezno</string>
+    <string name="error_geolocation_required">Odaberite važeću adresu iz prijedloga.</string>
+    <string name="error_event_date_required">Datum događaja je obavezan.</string>
+    <string name="error_event_time_required">Vrijeme događaja je obavezno.</string>
     <string name="error_could_not_create_event">Nije moguće kreirati događaj: %1$s</string>
     <string name="error_invalid_event_id">Nevažeći ID događaja.</string>
     <string name="error_could_not_update_event">Nije moguće ažurirati događaj.</string>

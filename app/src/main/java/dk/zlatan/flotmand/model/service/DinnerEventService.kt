@@ -14,7 +14,7 @@ interface DinnerEventService {
     // Realtime listener for a specific event document
     fun observeDinnerEvent(dinnerEventId: String): Flow<Event?>
 
-    suspend fun createDinnerEvent(dinnerEvent: Event)
+    suspend fun createDinnerEvent(dinnerEvent: Event): String
     suspend fun readDinnerEvent(dinnerEventId: String): Event?
     suspend fun updateDinnerEvent(dinnerEvent: Event)
     suspend fun deleteDinnerEvent(dinnerEventId: String)

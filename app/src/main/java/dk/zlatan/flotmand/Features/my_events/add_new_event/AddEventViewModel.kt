@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.my_events.add_new_event
 
+import android.util.Log
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
@@ -33,7 +34,7 @@ data class AddEventUiState(
     val event: Event = Event(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val isEventCreated: Boolean = false,
+    val isEventCreated: String? = null,
     val hasHandledCreation: Boolean = false,
     val addressPredictions: List<AddressPrediction> = emptyList(),
     val isLoadingPredictions: Boolean = false,
@@ -64,7 +65,7 @@ class AddEventViewModel
         private val _event = MutableStateFlow(Event())
         private val _isLoading = MutableStateFlow(false)
         private val _errorMessage = MutableStateFlow<String?>(null)
-        private val _isEventCreated = MutableStateFlow(false)
+        private val _isEventCreated = MutableStateFlow<String?>(null)
         private val _hasHandledCreation = MutableStateFlow(false)
         private val _addressPredictions = MutableStateFlow<List<AddressPrediction>>(emptyList())
         private val _isLoadingPredictions = MutableStateFlow(false)
@@ -114,7 +115,7 @@ class AddEventViewModel
                 event: Event,
                 isLoading: Boolean,
                 errorMessage: String?,
-                isEventCreated: Boolean,
+                isEventCreated: String?,
                 hasHandledCreation: Boolean,
                 addressPredictions: List<AddressPrediction>,
                 isLoadingPredictions: Boolean,
@@ -134,11 +135,8 @@ class AddEventViewModel
                     locationTextFieldValue = locationTextFieldValue,
                     votingItem = votingItem,
                 )
-            }.stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = AddEventUiState(),
-            )
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AddEventUiState())
 
         fun onEventNameChange(name: String) {
             _event.value = _event.value.copy(eventName = name)
@@ -272,70 +270,54 @@ class AddEventViewModel
             _addressPredictions.value = emptyList()
         }
 
+        private fun validateEventFields(event: Event): String? {
+            if (event.eventName.isNullOrBlank()) {
+                return stringProvider.getString(R.string.error_event_name_required)
+            }
+            if (event.location.isNullOrBlank()) {
+                return stringProvider.getString(R.string.error_location_required)
+            }
+            if (event.geoLocation == null) {
+                return stringProvider.getString(R.string.error_geolocation_required)
+            }
+            if (event.eventDate == null) {
+                return stringProvider.getString(R.string.error_event_date_required)
+            }
+            if (event.eventStartTime == null) {
+                return stringProvider.getString(R.string.error_event_time_required)
+            }
+            return null // All required fields are valid
+        }
+
         fun createEvent() {
+            val validationError = validateEventFields(_event.value)
+            if (validationError != null) {
+                _errorMessage.value = validationError
+                return
+            }
             viewModelScope.launch {
-                val event = _event.value
-
-                // Validate fields
-                if (event.eventName.isNullOrBlank()) {
-                    _errorMessage.value = stringProvider.getString(R.string.error_event_name_required)
-                    return@launch
-                }
-
-                if (event.location.isNullOrBlank()) {
-                    _errorMessage.value = stringProvider.getString(R.string.error_location_required)
-                    return@launch
-                }
-
-                if (event.eventDate == null) {
-                    _errorMessage.value = stringProvider.getString(R.string.error_date_required)
-                    return@launch
-                }
-
-                if (event.eventStartTime == null) {
-                    _errorMessage.value = stringProvider.getString(R.string.error_time_required)
-                    return@launch
-                }
-
                 _isLoading.value = true
-                _errorMessage.value = null
-
                 try {
-                    // Ensure current user exists and is synced, but avoid unused variable
-                    accountService.reloadUser()
-
-                    // Trim trailing whitespace and blank lines from description
-                    val cleanedDescription =
-                        event.description
-                            ?.replace(Regex("""[ \t\x0B\f\r]+ $""", RegexOption.MULTILINE), "")
-                            ?.replace(Regex("""(\n{2,})$"""), "")
-                            ?.trimEnd()
-
-                    val newEvent =
-                        event
-                            .copyWithDates(
-                                publisherId = accountService.currentUserId,
-                                participantIds = listOf(accountService.currentUserId),
-                                geoLocation = event.geoLocation,
-                            ).copy(description = cleanedDescription)
-
-                    dinnerEventService.createDinnerEvent(newEvent)
-
-                    // Delete the voting if it was created from a voting
-                    votingId?.let { id ->
+                    // Create the event in Firestore and get the new document ID
+                    val eventId = dinnerEventService.createDinnerEvent(_event.value)
+                    // Optionally fetch the created event if you want to update local state
+                    val createdEvent = dinnerEventService.readDinnerEvent(eventId)
+                    if (createdEvent != null) {
+                        _event.value = createdEvent
+                    }
+                    // If this event was created from a voting, delete the voting
+                    if (votingId != null) {
                         try {
-                            dateVotingService.deleteDateVoting(id)
-                        } catch (_: Exception) {
-                            // Log but don't fail the event creation if voting deletion fails
-                            // The event was successfully created, which is the primary goal
+                            dateVotingService.deleteDateVoting(votingId)
+                        } catch (e: Exception) {
+                            // Optionally log or show a warning, but do not block event creation
                         }
                     }
-
-                    _isLoading.value = false
-                    _isEventCreated.value = true
-                    _hasHandledCreation.value = false // allow UI to handle this once
-                    _errorMessage.value = null
+                    // Pass the Firestore-generated ID to _isEventCreated
+                    _isEventCreated.value = eventId
                 } catch (e: Exception) {
+                    _errorMessage.value = stringProvider.getString(R.string.error_could_not_create_event)
+                } finally {
                     _isLoading.value = false
 //                    _errorMessage.value = stringProvider.getString(
 //                        R.string.error_could_not_create_event,
@@ -343,32 +325,6 @@ class AddEventViewModel
 //                    )
                 }
             }
-        }
-
-        fun updateEvent() {
-            val event = _event.value
-            if (event.eventId.isNullOrBlank()) {
-                _errorMessage.value = stringProvider.getString(R.string.error_invalid_event_id)
-                return
-            }
-            viewModelScope.launch {
-                _isLoading.value = true
-                try {
-                    dinnerEventService.updateDinnerEvent(event)
-                    _isEventCreated.value = true
-                } catch (e: Exception) {
-                    _errorMessage.value =
-                        stringProvider.getString(R.string.error_could_not_update_event)
-                } finally {
-                    _isLoading.value = false
-                }
-            }
-        }
-
-        fun preFillFromEditEvent(editEvent: Event) {
-            _event.value = editEvent
-            _locationTextFieldValue.value = TextFieldValue(editEvent.location ?: "")
-            _selectedGeoLocation.value = editEvent.geoLocation
         }
 
         fun clearError() {
@@ -382,7 +338,7 @@ class AddEventViewModel
             _event.value = Event()
             _isLoading.value = false
             _errorMessage.value = null
-            _isEventCreated.value = false
+            _isEventCreated.value = null
             _hasHandledCreation.value = false
             _addressPredictions.value = emptyList()
             _isLoadingPredictions.value = false
