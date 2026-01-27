@@ -57,7 +57,11 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.Event.Companion.previewEvents
 import dk.zlatan.flotmand.model.User
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 
 @Composable
 internal fun FrontPageRoute(
@@ -231,6 +235,9 @@ internal fun FrontpageContent(
         }
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Danish date formatter
+    val danishFormatter = DateTimeFormatter.ofPattern("E 'd.' d MMM", Locale("da", "DK"))
+
     LaunchedEffect(eventList.size) {
         Log.d("FrontpageContent", "Rendering with ${eventList.size} events")
         eventList.forEach { event ->
@@ -311,14 +318,15 @@ internal fun FrontpageContent(
 
                 items(eventsToShow) { eventDetails ->
                     val publisher = publishers[eventDetails.publisherId]
+                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() } ?: ""
                     EventCard(
                         modifier =
                             Modifier
                                 .padding(vertical = 8.dp, horizontal = 12.dp),
                         userName = publisher?.displayName ?: "Ukendt bruger",
                         eventName = eventDetails.eventName.orEmpty(),
-                        eventDate = eventDetails.eventDate.toString(),
-                        eventTime = eventDetails.eventStartTime.toString(),
+                        eventDate = formattedDate,
+                        eventTime = eventDetails.eventStartTime?.toString() ?: "",
                         userProfilePic = publisher?.photoUrl,
                         onClick = {
                             onClickEvent(eventDetails.eventId.orEmpty())
@@ -360,6 +368,7 @@ internal fun FrontpageContent(
 
                 items(previousEventsToShow) { eventDetails ->
                     val publisher = publishers[eventDetails.publisherId]
+                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() } ?: ""
                     EventCard(
                         modifier =
                             Modifier
@@ -367,8 +376,8 @@ internal fun FrontpageContent(
                                 .padding(vertical = 8.dp, horizontal = 12.dp),
                         userName = publisher?.displayName ?: "Ukendt bruger",
                         eventName = eventDetails.eventName.orEmpty(),
-                        eventDate = eventDetails.eventDate.toString(),
-                        eventTime = eventDetails.eventStartTime.toString(),
+                        eventDate = formattedDate,
+                        eventTime = eventDetails.eventStartTime?.toString() ?: "",
                         userProfilePic = publisher?.photoUrl,
                         onClick = {
                             onClickEvent(eventDetails.eventId.orEmpty())
@@ -391,6 +400,7 @@ private fun SectionHeader(
     actionText: String? = null,
     onActionClick: (() -> Unit)? = null,
 ) {
+    val haptic = LocalHapticFeedback.current
     Row(
         modifier =
             modifier
@@ -411,7 +421,10 @@ private fun SectionHeader(
                     MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.primary,
                     ),
-                onClick = { onActionClick?.invoke() },
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onActionClick?.invoke()
+                },
             )
         }
     }
