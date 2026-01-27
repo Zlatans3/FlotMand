@@ -188,4 +188,9 @@
     <string name="faroese_english">Faroese</string>
     <string name="profile_section_settings">Configurações</string>
     <string name="profile_section_user">Usuário</string>
+    <string name="delete_user_title">Excluir usuário?</string>
+    <string name="delete_user_button_title">Excluir usuário</string>
+    <string name="delete_user_message">Tem certeza de que deseja excluir seu usuário e dados? Esta ação não pode ser desfeita.</string>
+    <string name="delete_user_success">Usuário excluído.</string>
+    <string name="error_delete_user">Não foi possível excluir o usuário: %1$s</string>
 </resources>

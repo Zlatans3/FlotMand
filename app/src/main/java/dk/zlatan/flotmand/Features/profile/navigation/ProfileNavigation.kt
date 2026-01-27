@@ -46,6 +46,9 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                     NavEntry(key) {
                         AccountInformationScreenRoute(
                             onDismiss = { viewModel.pop() },
+                            onUserDeleted = {
+                                viewModel.resetToRoot()
+                            }
                         )
                     }
                 }

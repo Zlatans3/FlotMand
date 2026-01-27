@@ -254,6 +254,17 @@ class DinnerEventServiceImpl
                 }
             }
 
+        override suspend fun deleteDinnerEventsByUser(userId: String) {
+            val querySnapshot = Firebase.firestore
+                .collection(DINNER_EVENTS_COLLECTION)
+                .whereEqualTo(USER_ID_FIELD, userId)
+                .get()
+                .await()
+            for (document in querySnapshot.documents) {
+                document.reference.delete().await()
+            }
+        }
+
         companion object {
             private const val TAG = "DinnerEventService"
             private const val USER_ID_FIELD = "publisherId"

@@ -239,4 +239,11 @@
     <string name="profile_section_user">Bruger</string>
 
     <string name="error_loading_event">Noget gik galt</string>
+
+    <!-- New strings for user deletion dialog -->
+    <string name="delete_user_title">Slet bruger?</string>
+    <string name="delete_user_button_title">Slet bruger</string>
+    <string name="delete_user_message">Er du sikker på du vil slette din bruger og data? Denne handling kan ikke fortrydes.</string>
+    <string name="delete_user_success">Bruger slettet.</string>
+    <string name="error_delete_user">Kunne ikke slette bruger: %1$s</string>
 </resources>
