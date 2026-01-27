@@ -104,13 +104,21 @@ class DinnerEventServiceImpl
                 null
             }
 
-        override suspend fun createDinnerEvent(event: Event) {
-            val eventWithUserId = event.copy(publisherId = auth.currentUserId)
-            Firebase.firestore
+        override suspend fun createDinnerEvent(event: Event): String {
+            val currentUserId = auth.currentUserId
+            val participantIds = (event.participantIds?.toMutableList() ?: mutableListOf())
+            if (currentUserId != null && !participantIds.contains(currentUserId)) {
+                participantIds.add(currentUserId)
+            }
+            val eventWithUserId = event.copy(
+                publisherId = currentUserId,
+                participantIds = participantIds
+            )
+            val docRef = Firebase.firestore
                 .collection(DINNER_EVENTS_COLLECTION)
                 .add(eventWithUserId)
                 .await()
-            // Note: eventId is not stored in the document, it's auto-populated via @DocumentId annotation
+            return docRef.id
         }
 
         override suspend fun readDinnerEvent(noteId: String): Event? {

@@ -33,6 +33,8 @@ import dk.zlatan.flotmand.design_system.componenets.EventCard
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 internal fun MyEventScreenRoute(
@@ -184,6 +186,7 @@ fun MyEventContent(
     publishers: Map<String, User> = emptyMap(),
     onEventClick: (String) -> Unit = {},
 ) {
+    val danishFormatter = DateTimeFormatter.ofPattern("E 'd.' d MMM", Locale("da", "DK"))
     LazyColumn(
         modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer),
         contentPadding = PaddingValues(vertical = 24.dp, horizontal = 16.dp),
@@ -191,11 +194,12 @@ fun MyEventContent(
     ) {
         items(eventList) { event ->
             val publisher = publishers[event.publisherId]
+            val formattedDate = event.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() } ?: ""
             EventCard(
                 userProfilePic = publisher?.photoUrl,
                 userName = publisher?.displayName ?: "Ukendt bruger",
                 eventName = event.eventName ?: "Intet navn",
-                eventDate = event.eventDate?.toString() ?: "",
+                eventDate = formattedDate,
                 eventTime = event.eventStartTime?.toString() ?: "",
                 onClick = {
                     event.eventId?.let { onEventClick(it) }

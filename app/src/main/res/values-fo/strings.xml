@@ -35,8 +35,9 @@
     <string name="error_could_not_fetch_address_details">Kundi ikki heinta adressu upplýsingar</string>
     <string name="error_event_name_required">Tiltaksnavn er kravt</string>
     <string name="error_location_required">Stað er kravt</string>
-    <string name="error_date_required">Dato er kravt</string>
-    <string name="error_time_required">Klokkan er kravt</string>
+    <string name="error_geolocation_required">Vel eina gyldiga adressu úr uppskotunum.</string>
+    <string name="error_event_date_required">Tiltaksdato er kravd.</string>
+    <string name="error_event_time_required">Tiltakstíð er kravd.</string>
     <string name="error_could_not_create_event">Kundi ikki stovna tiltak: %1$s</string>
     <string name="error_invalid_event_id">Ógyldugt tiltaks ID.</string>
     <string name="error_could_not_update_event">Kundi ikki dagføra tiltak.</string>

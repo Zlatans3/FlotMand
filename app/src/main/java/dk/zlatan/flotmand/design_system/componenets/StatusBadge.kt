@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.WatchLater
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.R
+import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.model.EventStatus
 import java.time.LocalDate
 
@@ -114,6 +119,52 @@ fun StatusCountBadge(
             )
         }
     }
+}
+
+@Composable
+fun CapsualWithText(
+    modifier: Modifier = Modifier,
+    label: String,
+    icon: @Composable (() -> Unit)? = null,
+) {
+    // Status badge
+    Box(
+        modifier =
+            modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            icon?.invoke()
+            if (icon != null) {
+                HSpacer(4.dp)
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun CapsualWithTextPreview() {
+    CapsualWithText(
+        label = "Sample Text",
+        icon = {
+            Icon(
+                imageVector = Icons.Filled.WatchLater,
+                contentDescription = null,
+                modifier = Modifier.size(12.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    )
 }
 
 @Preview

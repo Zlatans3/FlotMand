@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -75,7 +76,9 @@ fun ClosestEventCard(
     val monthFormatter = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH)
     val month = event.eventDate?.format(monthFormatter)?.uppercase() ?: ""
     val day = event.eventDate?.dayOfMonth?.toString() ?: ""
-
+    // Format time
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    val eventTime = event.eventStartTime?.format(timeFormatter) ?: ""
     val participantsCount = event.participantIds?.size ?: 0
 
     Card(
@@ -176,7 +179,19 @@ fun ClosestEventCard(
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
+                    CapsualWithText(
+                        label = eventTime,
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.WatchLater,
+                                contentDescription = null,
+                                modifier = Modifier.size(12.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    )
                 }
+
             }
 
             VSpacer(24.dp)
@@ -328,7 +343,20 @@ fun EventCard(
                         )
                         HSpacer(8.dp)
                         Text(
-                            text = "$eventDate - $eventTime",
+                            text = eventDate,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        HSpacer(12.dp)
+                        Icon(
+                            imageVector = Icons.Filled.WatchLater,
+                            contentDescription = stringResource(R.string.date_content_description),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(14.dp),
+                        )
+                        HSpacer(8.dp)
+                        Text(
+                            text = eventTime,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

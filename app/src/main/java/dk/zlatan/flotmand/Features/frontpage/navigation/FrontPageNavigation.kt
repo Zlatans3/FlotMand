@@ -111,6 +111,10 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                         AddEventScreen(
                             votingId = key.votingId,
                             onDismiss = { viewModel.pop() },
+                            onEventCreated = { eventId ->
+                                viewModel.resetToRoot()
+                                viewModel.navigate(FrontPageDestination.EventDetail(eventId))
+                            },
                         )
                     }
                 }
