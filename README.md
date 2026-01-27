@@ -115,6 +115,7 @@ graph TD;
   H --> i{Poll details}
   D --> F[Create event]
   G --> EDIT[Edit event]
+  i --> F
 subgraph Bottom Navigation
             C
             D
