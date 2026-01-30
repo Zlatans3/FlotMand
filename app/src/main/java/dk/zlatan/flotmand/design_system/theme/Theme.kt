@@ -11,31 +11,81 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryBlue,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryBlueVariant,
-    secondary = LightBlue,
-    onSecondary = OnSecondary,
-    secondaryContainer = LightBlueVariant,
-    background = BackgroundBlue,
-    onBackground = OnBackground,
-    surface = SurfaceWhite,
-    onSurface = OnSurface,
-    error = ErrorRed
+    // Primary colors
+    primary = PrimaryBlueLight,
+    onPrimary = White,
+    primaryContainer = PrimaryBlueDark,
+    onPrimaryContainer = PrimaryBlueLight,
+
+    // Secondary colors
+    secondary = SecondaryBlue,
+    onSecondary = BackgroundDark,
+    secondaryContainer = SecondaryBlueDark,
+    onSecondaryContainer = SecondaryBlueLight,
+
+    // Tertiary (optional, using secondary variants)
+    tertiary = InfoBlue,
+    onTertiary = White,
+
+    // Background & Surface
+    background = BackgroundDark,
+    onBackground = TextLight,
+    surface = SurfaceDark,
+    onSurface = TextLight,
+    surfaceVariant = SurfaceDarkVariant,
+    onSurfaceVariant = TextLightSecondary,
+
+    // Error colors
+    error = ErrorRed,
+    onError = White,
+    errorContainer = ErrorRedLight,
+    onErrorContainer = ErrorRed,
+
+    // Outline (for borders, dividers)
+    outline = DividerDark,
+    outlineVariant = SurfaceDarkVariant,
+
+    // Scrim (for overlays)
+    scrim = BackgroundDark
 )
 
 private val LightColorScheme = lightColorScheme(
+    // Primary colors
     primary = PrimaryBlue,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryBlueVariant,
-    secondary = LightBlue,
-    onSecondary = OnSecondary,
-    secondaryContainer = LightBlueVariant,
-    background = BackgroundBlue,
-    onBackground = OnBackground,
-    surface = SurfaceWhite,
-    onSurface = OnSurface,
-    error = ErrorRed
+    onPrimary = White,
+    primaryContainer = PrimaryBlueLight,
+    onPrimaryContainer = White,
+
+    // Secondary colors
+    secondary = SecondaryBlue,
+    onSecondary = White,
+    secondaryContainer = SecondaryBlueLight,
+    onSecondaryContainer = SecondaryBlueDark,
+
+    // Tertiary (optional, using secondary variants)
+    tertiary = InfoBlue,
+    onTertiary = White,
+
+    // Background & Surface
+    background = BackgroundLightBlue,
+    onBackground = TextDark,
+    surface = SurfaceLight,
+    onSurface = TextDark,
+    surfaceVariant = SurfaceLightVariant,
+    onSurfaceVariant = TextDarkSecondary,
+
+    // Error colors
+    error = ErrorRed,
+    onError = White,
+    errorContainer = ErrorRedLight,
+    onErrorContainer = ErrorRed,
+
+    // Outline (for borders, dividers)
+    outline = Divider,
+    outlineVariant = SurfaceLightVariant,
+
+    // Scrim (for overlays)
+    scrim = BackgroundDark
 )
 
 @Composable
