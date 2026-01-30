@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     id("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.google.gms.google.services)
+    id("com.google.android.gms.oss-licenses-plugin")
 }
 
 val localProperties =
