@@ -297,6 +297,7 @@ private fun VotingDetailsHeader(
                             style = SpanStyle(fontWeight = FontWeight.Light),
                         ) {
                             append(stringResource(R.string.created_by))
+                            append(" ")
                         }
                         withStyle(style = SpanStyle(fontWeight = FontWeight.SemiBold)) {
                             append(user.getFirstName())

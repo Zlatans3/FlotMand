@@ -17,9 +17,16 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,12 +34,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.Features.my_events.ui.EventTabBar
 import dk.zlatan.flotmand.Features.my_events.ui.MyEventTopBar
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.EventCard
 import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -156,21 +165,69 @@ internal fun MyEventScreen(
     onAddEventClick: () -> Unit = {},
     onEventClick: (String) -> Unit = {},
 ) {
+    // Tab state
+    val tabTitles = listOf("Kommende", "Tidligere")
+    var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
+
+    // Filtering logic
+    val now = LocalDateTime.now()
+    val filteredEvents = eventList.filter { event ->
+        val eventDate = event.eventDate
+        val eventTime = event.eventStartTime
+        val eventDateTime = if (eventDate != null && eventTime != null) {
+            try {
+                LocalDateTime.of(eventDate, eventTime)
+            } catch (_: Exception) {
+                null
+            }
+        } else {
+            null
+        }
+        when (selectedTabIndex) {
+            1 -> eventDateTime != null && eventDateTime.isBefore(now) && eventDateTime.toLocalDate().isBefore(now.toLocalDate()) // Previous: strictly before today
+
+            0 -> eventDateTime == null || !eventDateTime.isBefore(now.toLocalDate().atStartOfDay()) // Upcoming: today or future, or unknown
+
+            else -> true
+        }
+    }
+
+    var filterMenuExpanded by rememberSaveable { mutableStateOf(false) }
+    var sortOption by rememberSaveable { mutableStateOf(0) } // 0: Date Asc, 1: Date Desc, 2: Name A-Z, 3: Name Z-A
+    val sortOptions = listOf(
+        stringResource(R.string.sort_date_asc),
+        stringResource(R.string.sort_date_desc),
+        stringResource(R.string.sort_name_az),
+        stringResource(R.string.sort_name_za)
+    )
+
+    val sortedEvents = when (sortOption) {
+        0 -> filteredEvents.sortedWith(compareBy({ it.eventDate }, { it.eventName }))
+        1 -> filteredEvents.sortedWith(compareByDescending<Event> { it.eventDate }.thenByDescending { it.eventName })
+        2 -> filteredEvents.sortedBy { it.eventName }
+        3 -> filteredEvents.sortedByDescending { it.eventName }
+        else -> filteredEvents
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
-        MyEventContent(
-            modifier = Modifier.matchParentSize(),
-            eventList = eventList,
-            publishers = publishers,
-            onEventClick = onEventClick,
-        )
+        Column(modifier = Modifier.matchParentSize()) {
+            EventTabBar(
+                tabTitles = tabTitles,
+                selectedTabIndex = selectedTabIndex,
+                onTabSelected = { selectedTabIndex = it }
+            )
+            MyEventContent(
+                modifier = Modifier.weight(1f),
+                eventList = sortedEvents,
+                publishers = publishers,
+                onEventClick = onEventClick,
+            )
+        }
         ExtendedFloatingActionButton(
             onClick = onAddEventClick,
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
-            modifier =
-                Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(24.dp),
+            modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
         ) {
             Icon(FmIcons.Add, contentDescription = "Add Event")
             Spacer(Modifier.width(8.dp))
@@ -196,6 +253,7 @@ fun MyEventContent(
             val publisher = publishers[event.publisherId]
             val formattedDate = event.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() } ?: ""
             EventCard(
+                modifier = Modifier.animateItem(),
                 userProfilePic = publisher?.photoUrl,
                 userName = publisher?.displayName ?: "Ukendt bruger",
                 eventName = event.eventName ?: "Intet navn",

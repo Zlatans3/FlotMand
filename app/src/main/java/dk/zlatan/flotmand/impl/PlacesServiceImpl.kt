@@ -13,11 +13,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.GeoLocation
 import dk.zlatan.flotmand.model.service.PlacesService
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.resume
 
 /**
