@@ -249,4 +249,11 @@
 
     <!-- New string resource for the Open Source Licenses section title -->
     <string name="open_source_licenses_title">Open Source Licenser</string>
+
+    <!-- New strings for filter and sorting options -->
+    <string name="filter">Sorter</string>
+    <string name="sort_date_asc">Dato (Førstkommende)</string>
+    <string name="sort_date_desc">Dato (Seneste først)</string>
+    <string name="sort_name_az">Navn (A-Å)</string>
+    <string name="sort_name_za">Navn (Å-A)</string>
 </resources>

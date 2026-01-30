@@ -115,4 +115,7 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:4.4.1")
 
     implementation("androidx.appcompat:appcompat:1.7.1")
+
+    // OSS Licenses dependency
+    implementation("com.google.android.gms:play-services-oss-licenses:17.1.0")
 }
