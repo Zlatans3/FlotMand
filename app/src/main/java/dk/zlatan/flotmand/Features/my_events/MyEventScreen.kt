@@ -19,6 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.Features.my_events.ui.EventTabBar
 import dk.zlatan.flotmand.Features.my_events.ui.MyEventTopBar
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.EventCard
@@ -208,15 +211,11 @@ internal fun MyEventScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.matchParentSize()) {
-            TabRow(selectedTabIndex = selectedTabIndex) {
-                tabTitles.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(title) }
-                    )
-                }
-            }
+            EventTabBar(
+                tabTitles = tabTitles,
+                selectedTabIndex = selectedTabIndex,
+                onTabSelected = { selectedTabIndex = it }
+            )
             MyEventContent(
                 modifier = Modifier.weight(1f),
                 eventList = sortedEvents,
@@ -254,6 +253,7 @@ fun MyEventContent(
             val publisher = publishers[event.publisherId]
             val formattedDate = event.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() } ?: ""
             EventCard(
+                modifier = Modifier.animateItem(),
                 userProfilePic = publisher?.photoUrl,
                 userName = publisher?.displayName ?: "Ukendt bruger",
                 eventName = event.eventName ?: "Intet navn",

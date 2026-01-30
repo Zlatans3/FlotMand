@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.my_events.ui
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -10,9 +11,17 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,8 +60,63 @@ internal fun MyEventTopBar(
     )
 }
 
+@Composable
+fun EventTabBar(
+    tabTitles: List<String>,
+    selectedTabIndex: Int,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TabRow(
+        selectedTabIndex = selectedTabIndex,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.error,
+        indicator = { tabPositions ->
+            TabRowDefaults.Indicator(
+                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+                color = MaterialTheme.colorScheme.primary
+            )
+        },
+        modifier = modifier
+    ) {
+        tabTitles.forEachIndexed { index, title ->
+            Tab(
+                selected = selectedTabIndex == index,
+                onClick = { onTabSelected(index) },
+                text = {
+                    Text(
+                        title,
+                        color = if (selectedTabIndex == index)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            )
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun MyEventTopBarPreview() {
     MyEventTopBar(modifier = Modifier)
+}
+
+
+
+@Preview(showBackground = true, name = "EventTabBar Preview")
+@Composable
+private fun EventTabBarPreview() {
+    var selectedTab by rememberSaveable { mutableStateOf(0) }
+    val tabTitles = listOf("Kommende", "Tidligere")
+    Column {
+        MyEventTopBar(modifier = Modifier)
+        EventTabBar(
+            tabTitles = tabTitles,
+            selectedTabIndex = selectedTab,
+            onTabSelected = { selectedTab = it },
+            modifier = Modifier,
+        )
+    }
 }
