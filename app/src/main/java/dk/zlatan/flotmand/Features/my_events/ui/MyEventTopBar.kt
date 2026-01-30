@@ -5,26 +5,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
@@ -67,31 +65,45 @@ fun EventTabBar(
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    TabRow(
+    val onPrimaryContainer = MaterialTheme.colorScheme.onPrimaryContainer
+    val unselectedColor = onPrimaryContainer.copy(alpha = 0.7f)
+    PrimaryTabRow(
         selectedTabIndex = selectedTabIndex,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.error,
-        indicator = { tabPositions ->
-            TabRowDefaults.Indicator(
-                Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = onPrimaryContainer,
+        modifier = modifier,
+        indicator = {
+            TabRowDefaults.PrimaryIndicator(
+                modifier = Modifier
+                    .tabIndicatorOffset(selectedTabIndex, matchContentSize = true),
+                width = Dp.Unspecified,
                 color = MaterialTheme.colorScheme.primary
             )
-        },
-        modifier = modifier
+        }
     ) {
         tabTitles.forEachIndexed { index, title ->
+            val isSelected = selectedTabIndex == index
             Tab(
-                selected = selectedTabIndex == index,
+                selected = isSelected,
                 onClick = { onTabSelected(index) },
                 text = {
                     Text(
                         title,
-                        color = if (selectedTabIndex == index)
-                            MaterialTheme.colorScheme.primary
+                        style = if (isSelected)
+                            MaterialTheme.typography.titleMedium.copy(
+                                color = onPrimaryContainer,
+                                fontWeight = FontWeight.Bold
+                            )
                         else
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                            MaterialTheme.typography.bodyMedium.copy(
+                                color = unselectedColor,
+                                fontWeight = FontWeight.Normal
+                            ),
+                        modifier = Modifier.padding(vertical = 6.dp, horizontal = 12.dp)
                     )
-                }
+                },
+                selectedContentColor = onPrimaryContainer,
+                unselectedContentColor = unselectedColor,
             )
         }
     }
