@@ -10,12 +10,13 @@ plugins {
     alias(libs.plugins.google.gms.google.services)
 }
 
-val localProperties = Properties().apply {
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { load(it) }
+val localProperties =
+    Properties().apply {
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { load(it) }
+        }
     }
-}
 val googleServerClientId = localProperties["GOOGLE_SERVER_CLIENT_ID"] as String? ?: ""
 val googleMapsApiKey = localProperties["GOOGLE_MAPS_API_KEY"] as String? ?: ""
 
@@ -44,7 +45,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -86,6 +87,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.navigation3.ui)
+    implementation(libs.play.services.oss.licenses)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation3.runtime)

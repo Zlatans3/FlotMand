@@ -8,13 +8,13 @@ import com.google.firebase.firestore.toObject
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
-import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
 class DinnerEventServiceImpl
     @Inject

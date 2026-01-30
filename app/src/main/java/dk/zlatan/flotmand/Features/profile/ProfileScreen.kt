@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.profile
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +48,7 @@ fun ProfileScreenRoute(
     val user by viewModel.user.collectAsState(initial = User(displayName = set_name))
     val isLoading by viewModel.signOutLoading.collectAsState()
     var sinOutDialogState by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -94,7 +97,7 @@ internal fun ProfileScreen(
     onUpdateDisplayNameClick: (String) -> Unit,
     onLogoutClicked: () -> Unit = {},
     onAccountInformationClick: () -> Unit = {},
-    onLanguageClick: () -> Unit
+    onLanguageClick: () -> Unit,
 ) {
     LazyColumn(
         modifier =
@@ -134,9 +137,10 @@ internal fun ProfileScreen(
             VSpacer(12.dp)
             SectionCard(
                 title = stringResource(R.string.language_screen_title),
-                iconRes = FmIcons.globe, // Use a valid icon, e.g., Settings or Globe if Language does not exist
-                onClick = onLanguageClick, // Add this callback to the function signature
+                iconRes = FmIcons.globe,
+                onClick = onLanguageClick,
             )
+
             VSpacer(50.dp)
             Text(
                 text = stringResource(R.string.profile_section_user),
@@ -169,7 +173,7 @@ private fun ProfileScreenPreview() {
             modifier = Modifier,
             userName = "Oliver Payne",
             onUpdateDisplayNameClick = {},
-            onLanguageClick = {}
+            onLanguageClick = {},
         )
     }
 }
