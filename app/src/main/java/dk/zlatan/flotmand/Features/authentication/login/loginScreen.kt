@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -81,7 +82,11 @@ private fun LoginScreen(
         onGoogleLoginClick = { credential ->
            viewModel.onSignInWithGoogle(credential)
         },
-        uiState = uiState
+        uiState = uiState,
+        onRetry = {
+            // Retry logic: clear error and show login again
+            viewModel.clearError() // You need to implement this in your ViewModel
+        }
     )
 }
 
@@ -89,7 +94,8 @@ private fun LoginScreen(
 private fun LoginContent(
     modifier: Modifier = Modifier,
     onGoogleLoginClick: (Credential) -> Unit = {},
-    uiState: LoginUiState = LoginUiState()
+    uiState: LoginUiState = LoginUiState(),
+    onRetry: (() -> Unit)? = null // Add retry callback
 ) {
     Box(modifier = modifier) {
         Column(
@@ -115,11 +121,20 @@ private fun LoginContent(
 
             // Optionally show error
             uiState.errorMessage?.let {
-                Text(
-                    text = it,
-                    color = Color.Red,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
+                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                    // Show retry button if callback provided
+                    if (onRetry != null) {
+                        Spacer(modifier = Modifier.size(8.dp))
+                        Button(onClick = onRetry) {
+                            Text(text = stringResource(R.string.retry))
+                        }
+                    }
+                }
             }
         }
         // Show loading indicator overlay if loading

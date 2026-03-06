@@ -98,6 +98,7 @@
     <string name="login_title">Log ind</string>
     <string name="login_with_google">Login med din Google-konto</string>
     <string name="google_logo_content_description">Google logo</string>
+    <string name="retry">Prøv igen</string>
 
     <!-- Error strings for LoginViewModel -->
     <string name="error_unexpected_credential_type">Uventet credential-type: %1$s</string>
