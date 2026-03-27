@@ -90,8 +90,11 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    // Add this function to allow clearing the error from the UI
     fun clearError() {
         errorMessage.value = null
+    }
+
+    fun setError(message: String) {
+        errorMessage.value = message
     }
 }

@@ -39,10 +39,12 @@ import androidx.compose.ui.unit.dp
 import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import dk.zlatan.flotmand.BuildConfig
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.FlotHeader
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
@@ -58,7 +60,7 @@ internal fun LoginRoute(
     LoginScreen(
         modifier = modifier,
         viewModel = viewModel,
-        onLoginSuccess = onLoginSuccess
+        onLoginSuccess = onLoginSuccess,
     )
 }
 
@@ -71,7 +73,7 @@ private fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState(initial = LoginUiState())
 
     // Trigger navigation when login is successful
-   LaunchedEffect(uiState.isLoggedIn) {
+    LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) {
             onLoginSuccess()
         }
@@ -80,13 +82,13 @@ private fun LoginScreen(
     LoginContent(
         modifier = modifier.fillMaxSize(),
         onGoogleLoginClick = { credential ->
-           viewModel.onSignInWithGoogle(credential)
+            viewModel.onSignInWithGoogle(credential)
+        },
+        onError = { message ->
+            viewModel.setError(message)
         },
         uiState = uiState,
-        onRetry = {
-            // Retry logic: clear error and show login again
-            viewModel.clearError() // You need to implement this in your ViewModel
-        }
+        onRetry = { viewModel.clearError() },
     )
 }
 
@@ -94,38 +96,43 @@ private fun LoginScreen(
 private fun LoginContent(
     modifier: Modifier = Modifier,
     onGoogleLoginClick: (Credential) -> Unit = {},
+    onError: (String) -> Unit = {},
     uiState: LoginUiState = LoginUiState(),
-    onRetry: (() -> Unit)? = null // Add retry callback
+    onRetry: (() -> Unit)? = null,
 ) {
     Box(modifier = modifier) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
         ) {
-
             FlotHeader(
                 modifier = Modifier.fillMaxWidth(),
                 headerTitle = stringResource(R.string.login_title),
-                headerTopPadding = 200.dp
+                headerTopPadding = 200.dp,
             )
 
             VSpacer(20.dp)
 
             LoginCard(
                 isLoading = uiState.isLoading,
-                onGoogleLoginClick = onGoogleLoginClick
+                onGoogleLoginClick = onGoogleLoginClick,
+                onError = onError,
             )
 
             VSpacer(20.dp)
 
             // Optionally show error
             uiState.errorMessage?.let {
-                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
                     Text(
                         text = it,
                         color = Color.Red,
-                        modifier = Modifier.padding(top = 16.dp)
+                        modifier = Modifier.padding(top = 16.dp),
                     )
                     // Show retry button if callback provided
                     if (onRetry != null) {
@@ -137,13 +144,25 @@ private fun LoginContent(
                 }
             }
         }
+        Text(
+            text = "v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp),
+        )
+
         // Show loading indicator overlay if loading
         if (uiState.isLoading) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0x88000000)), // semi-transparent overlay
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(Color(0x88000000)),
+                // semi-transparent overlay
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
@@ -155,47 +174,55 @@ private fun LoginContent(
 private fun LoginCard(
     isLoading: Boolean,
     onGoogleLoginClick: (Credential) -> Unit,
+    onError: (String) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     Card(
-        modifier = Modifier
-            .padding(horizontal = 20.dp)
-            .clickable(enabled = !isLoading, onClick = {  scope.launch {
-                launchCredManButtonUI(
-                    context,
-                    onGoogleLoginClick
-                )
-            }}),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier =
+            Modifier
+                .padding(horizontal = 20.dp)
+                .clickable(enabled = !isLoading, onClick = {
+                    scope.launch {
+                        launchCredManButtonUI(
+                            context = context,
+                            onRequestResult = onGoogleLoginClick,
+                            onError = onError,
+                        )
+                    }
+                }),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+            ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
         ) {
             Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.onPrimaryContainer)
-                    .padding(6.dp)
+                modifier =
+                    Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.onPrimaryContainer)
+                        .padding(6.dp),
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.google_g_logo),
                     contentDescription = stringResource(R.string.google_logo_content_description),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = stringResource(R.string.login_with_google),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
     }
@@ -204,28 +231,36 @@ private fun LoginCard(
 // Launches the Credential Manager UI for Google Sign-In
 private suspend fun launchCredManButtonUI(
     context: Context,
-    onRequestResult: (Credential) -> Unit
+    onRequestResult: (Credential) -> Unit,
+    onError: (String) -> Unit,
 ) {
     try {
-        val signInWithGoogleOption = GetSignInWithGoogleOption
-            .Builder(serverClientId = context.getString(R.string.default_web_client_id))
-            .build()
+        val signInWithGoogleOption =
+            GetSignInWithGoogleOption
+                .Builder(serverClientId = BuildConfig.GOOGLE_SERVER_CLIENT_ID)
+                .build()
 
-        val request = GetCredentialRequest.Builder()
-            .addCredentialOption(signInWithGoogleOption)
-            .build()
+        val request =
+            GetCredentialRequest
+                .Builder()
+                .addCredentialOption(signInWithGoogleOption)
+                .build()
 
-        val result = CredentialManager.create(context).getCredential(
-            request = request,
-            context = context
-        )
+        val result =
+            CredentialManager.create(context).getCredential(
+                request = request,
+                context = context,
+            )
 
         onRequestResult(result.credential)
+    } catch (_: GetCredentialCancellationException) {
+        // User dismissed the picker — no error shown
     } catch (e: NoCredentialException) {
-        Log.e("ERROR_TAG", e.message.orEmpty())
-//        SnackbarManager.showMessage(context.getString(R.string.no_accounts_error))
+        Log.e("LOGIN", e.message.orEmpty())
+        onError(context.getString(R.string.error_no_google_account))
     } catch (e: GetCredentialException) {
-        Log.d("ERROR_TAG", e.message.orEmpty())
+        Log.e("LOGIN", e.message.orEmpty())
+        onError(context.getString(R.string.error_sign_in_generic))
     }
 }
 
@@ -233,7 +268,7 @@ private suspend fun launchCredManButtonUI(
 @PreviewLightDark
 @Composable
 private fun LoginScreenPreview() {
-    FlotMandTheme() {
+    FlotMandTheme {
         LoginContent(modifier = Modifier)
     }
 }

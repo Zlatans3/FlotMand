@@ -103,6 +103,7 @@
     <!-- Error strings for LoginViewModel -->
     <string name="error_unexpected_credential_type">Uventet credential-type: %1$s</string>
     <string name="error_sign_in_generic">Noget gik galt under login.</string>
+    <string name="error_no_google_account">Ingen Google-konto fundet på denne enhed. Tilføj en konto under Indstillinger og prøv igen.</string>
 
     <!-- Create Voting Dialog strings -->
     <string name="create_voting_title">Opret ny afstemning</string>
