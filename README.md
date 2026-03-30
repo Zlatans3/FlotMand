@@ -8,7 +8,7 @@
 
 
 
-
+To view latest release - Check out [fm/release/1.0.0](https://github.com/Zlatans3/FlotMand/tree/fm/release/1.0.0)
 
 <h1 align="center">
   👋 Hello FlotMand
