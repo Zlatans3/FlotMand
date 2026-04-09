@@ -52,20 +52,7 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun LoginRoute(
-    modifier: Modifier = Modifier,
-    viewModel: LoginViewModel = hiltViewModel(),
-    onLoginSuccess: () -> Unit = {},
-) {
-    LoginScreen(
-        modifier = modifier,
-        viewModel = viewModel,
-        onLoginSuccess = onLoginSuccess,
-    )
-}
-
-@Composable
-private fun LoginScreen(
+internal fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
     onLoginSuccess: () -> Unit = {},
@@ -235,9 +222,15 @@ private suspend fun launchCredManButtonUI(
     onError: (String) -> Unit,
 ) {
     try {
+        val serverClientId = context.getString(R.string.default_web_client_id)
+        if (serverClientId.isBlank()) {
+            onError(context.getString(R.string.error_sign_in_generic))
+            return
+        }
+
         val signInWithGoogleOption =
             GetSignInWithGoogleOption
-                .Builder(serverClientId = BuildConfig.GOOGLE_SERVER_CLIENT_ID)
+                .Builder(serverClientId = serverClientId)
                 .build()
 
         val request =
@@ -253,13 +246,13 @@ private suspend fun launchCredManButtonUI(
             )
 
         onRequestResult(result.credential)
-    } catch (_: GetCredentialCancellationException) {
-        // User dismissed the picker — no error shown
+    } catch (e: GetCredentialCancellationException) {
+        Log.w("LOGIN", "Credential flow cancelled or failed silently: ${e.message}", e)
     } catch (e: NoCredentialException) {
         Log.e("LOGIN", e.message.orEmpty())
         onError(context.getString(R.string.error_no_google_account))
     } catch (e: GetCredentialException) {
-        Log.e("LOGIN", e.message.orEmpty())
+        Log.e("LOGIN", "GetCredentialException type=${e::class.java.simpleName} msg=${e.message}", e)
         onError(context.getString(R.string.error_sign_in_generic))
     }
 }
