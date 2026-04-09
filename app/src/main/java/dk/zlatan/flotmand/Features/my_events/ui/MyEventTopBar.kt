@@ -18,6 +18,7 @@ import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 internal fun MyEventTopBar(modifier: Modifier = Modifier) {
     FmTopAppBar(
         modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
         textContent = {
             Text(
                 stringResource(R.string.my_event_title),

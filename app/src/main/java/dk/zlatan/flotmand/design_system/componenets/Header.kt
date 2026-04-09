@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,6 +52,7 @@ fun FlotHeader(
 @Composable
 internal fun HeaderContainer(
     modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primaryContainer,
     content: @Composable () -> Unit = {}
     ) {
     Column(
@@ -66,7 +68,7 @@ internal fun HeaderContainer(
                 )
             )
             .background(
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = color,
                 shape = RoundedCornerShape(
                     topStart = 0.dp,
                     topEnd = 0.dp,

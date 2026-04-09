@@ -188,7 +188,7 @@ fun MyEventContent(
 ) {
     val danishFormatter = DateTimeFormatter.ofPattern("E 'd.' d MMM", Locale("da", "DK"))
     LazyColumn(
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer),
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(vertical = 24.dp, horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {

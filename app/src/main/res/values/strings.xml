@@ -183,6 +183,7 @@
     <string name="no_events_emoji">🎉</string>
     <string name="no_events">Ingen events endnu</string>
     <string name="be_first_to_create_event">Vær den første til at oprette et event!</string>
+    <string name="no_current_event">Ingen kommende event lige nu</string>
     <string name="upcoming_events">Kommende Events</string>
     <string name="see_less">Se mindre</string>
     <string name="see_all">Se alle</string>

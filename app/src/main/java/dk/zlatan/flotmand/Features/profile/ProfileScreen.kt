@@ -49,7 +49,7 @@ fun ProfileScreenRoute(
     Scaffold(
         modifier = modifier,
         topBar = {
-            FmTopAppBar()
+            FmTopAppBar(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         },
     ) { paddingValues ->
         val topPaddingValues = paddingValues.calculateTopPadding()
@@ -99,11 +99,12 @@ internal fun ProfileScreen(
     LazyColumn(
         modifier =
             modifier
-                .background(MaterialTheme.colorScheme.surfaceContainer),
+                .background(MaterialTheme.colorScheme.background),
     ) {
         item {
             HeaderContainer(
                 modifier = Modifier,
+                color = MaterialTheme.colorScheme.secondaryContainer,
             ) {
                 VSpacer(90.dp)
                 ProfileImage(
