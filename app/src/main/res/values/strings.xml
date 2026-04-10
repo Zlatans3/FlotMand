@@ -242,4 +242,9 @@
     <string name="profile_section_user">Bruger</string>
 
     <string name="error_loading_event">Noget gik galt</string>
+
+    <!-- My Events screen -->
+    <string name="my_events_loading">Henter dine events...</string>
+    <string name="my_events_empty_create_prompt">Opret dit første event!</string>
+    <string name="add_event_content_description">Tilføj event</string>
 </resources>

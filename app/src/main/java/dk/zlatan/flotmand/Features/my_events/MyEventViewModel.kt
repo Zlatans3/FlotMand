@@ -24,7 +24,7 @@ data class MyEventUiState(
 
 @HiltViewModel
 class MyEventViewModel @Inject constructor(
-    dinnerEventService: DinnerEventService,
+    private val dinnerEventService: DinnerEventService,
     private val accountService: AccountService
 ) : ViewModel() {
 

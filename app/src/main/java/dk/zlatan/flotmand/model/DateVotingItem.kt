@@ -11,7 +11,8 @@ import java.time.LocalDate
  * @param votersId List of user IDs who voted for this date
  */
 data class DateOption(
-    val date: String? = null, // Stored as ISO-8601 string for Firestore compatibility
+    // Stored as ISO-8601 string for Firestore compatibility
+    val date: String? = null,
     val votersId: List<String> = emptyList()
 ) {
     @get:Exclude
@@ -49,6 +50,7 @@ data class DateVotingItem(
     val dateOptions: List<DateOption> = emptyList(),
     val createdAtString: String? = null
 ) {
+    // use exclude to prevent Firestore from trying to serialize these locally computed properties
     @get:Exclude
     val winningDate: DateOption?
         get() = dateOptions.maxByOrNull { it.voteCount }

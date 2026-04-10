@@ -130,7 +130,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
 
                 FrontPageDestination.HostRotation -> {
                     NavEntry(key) {
-                        // TODO: Zlatan 23/01/2026 Later
+                        // TODO: Zlatan 23/01/2026 Feature not implemented yet
                     }
                 }
             }

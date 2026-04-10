@@ -83,7 +83,7 @@ fun AppNavigation(
         entryDecorators =
             listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator()
+                rememberViewModelStoreNavEntryDecorator(),
             ),
     )
 }

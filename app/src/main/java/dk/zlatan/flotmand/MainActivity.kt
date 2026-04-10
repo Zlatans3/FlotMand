@@ -1,4 +1,4 @@
-package dk.zlatan.flotmand
+ package dk.zlatan.flotmand
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
