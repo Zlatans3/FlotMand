@@ -37,5 +37,7 @@ interface AccountService {
 
     suspend fun deleteAccount()
 
+    // had troubles with the user not updating after display name change
+    // so added this method to force reload the user and trigger the auth state listener
     suspend fun reloadUser()
 }
