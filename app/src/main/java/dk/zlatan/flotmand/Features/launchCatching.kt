@@ -13,6 +13,6 @@ open class FmAppViewModel : ViewModel() {
             CoroutineExceptionHandler { _, throwable ->
                 Log.d("ERROR_TAG", throwable.message.orEmpty())
             },
-            block = block
+            block = block,
         )
 }

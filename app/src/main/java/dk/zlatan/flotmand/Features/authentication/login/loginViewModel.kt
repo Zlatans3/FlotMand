@@ -78,27 +78,19 @@ class LoginViewModel
             Log.d("LOGIN_DEBUG", "Credential class: ${credential::class.java.name}")
             isLoading.value = true
             launchCatching {
-                try {
-                    if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                        val googleIdTokenCredential =
-                            GoogleIdTokenCredential.createFrom(credential.data)
-                        accountService.signInWithGoogle(googleIdTokenCredential.idToken)
-                        errorMessage.value = null
-                    } else {
-                        // Log the credential type and details for debugging
-                        errorMessage.value =
-                            stringProvider.getString(
-                                R.string.error_unexpected_credential_type,
-                                credential::class.java.simpleName,
-                            )
-                        Log.e("ERROR_TAG", "UNEXPECTED_CREDENTIAL: $credential")
-                    }
-                } catch (e: Exception) {
+                if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    val googleIdTokenCredential =
+                        GoogleIdTokenCredential.createFrom(credential.data)
+                    accountService.signInWithGoogle(googleIdTokenCredential.idToken)
+                    errorMessage.value = null
+                } else {
+                    // Log the credential type and details for debugging
                     errorMessage.value =
-                        e.localizedMessage ?: stringProvider.getString(R.string.error_sign_in_generic)
-                    Log.e("ERROR_TAG", errorMessage.value!!, e)
-                } finally {
-                    isLoading.value = false
+                        stringProvider.getString(
+                            R.string.error_unexpected_credential_type,
+                            credential::class.java.simpleName,
+                        )
+                    Log.e("ERROR_TAG", "UNEXPECTED_CREDENTIAL: $credential")
                 }
             }
         }
