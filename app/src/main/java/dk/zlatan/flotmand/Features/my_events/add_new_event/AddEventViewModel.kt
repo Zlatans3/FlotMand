@@ -331,6 +331,26 @@ class AddEventViewModel
             _errorMessage.value = null
         }
 
+        /** Secret autofill triggered by 5 taps on the top bar title. Dev/test only. */
+        fun autofillTestData() {
+            val address = "Rådhuspladsen 1, 1550 København V"
+            val geo = GeoLocation(latitude = 55.6761, longitude = 12.5683)
+            _event.value = _event.value.copyWithDates(
+                eventName = "Middag hos Gustav",
+                description = "En hyggelig aften med god mad og drikke. Medbring godt humør! 🍷",
+                location = address,
+                geoLocation = geo,
+                eventDate = java.time.LocalDate.now().plusDays(7),
+                eventStartTime = java.time.LocalTime.of(18, 0),
+            )
+            _locationTextFieldValue.value = TextFieldValue(
+                text = address,
+                selection = TextRange(address.length),
+            )
+            _selectedGeoLocation.value = geo
+            _errorMessage.value = null
+        }
+
         /**
          * Reset the state of the ViewModel for new event creation.
          */
