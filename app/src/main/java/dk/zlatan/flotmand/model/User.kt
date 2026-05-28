@@ -11,6 +11,7 @@ data class User(
     val displayName: String = "",
     val photoUrl: String = "",
     val isAnonymous: Boolean = true,
+    val fcmToken: String = "",
 ) {
     fun getFirstName(): String = displayName.split(" ").firstOrNull() ?: displayName
 

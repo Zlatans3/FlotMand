@@ -4,4 +4,5 @@ sealed class ProfileDestination {
     object ProfileScreen : ProfileDestination()
     object AccountInformation : ProfileDestination()
     object SwitchLanguage : ProfileDestination()
+    object NotificationSettings : ProfileDestination()
 }

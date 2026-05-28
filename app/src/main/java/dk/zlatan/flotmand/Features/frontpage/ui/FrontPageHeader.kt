@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -33,6 +38,7 @@ import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.User
 import kotlin.math.pow
 
@@ -77,6 +83,8 @@ internal fun FrontPageNewHeader(
 fun newFmTopAppBar(
     modifier: Modifier = Modifier,
     user: User,
+    unreadNotificationCount: Int = 0,
+    onNotificationsClick: () -> Unit = {},
     onUserClicked: (() -> Unit)?,
 ) {
     val insert = TopAppBarDefaults.windowInsets
@@ -105,7 +113,33 @@ fun newFmTopAppBar(
             },
             actions = {
                 val haptic = LocalHapticFeedback.current
-                // Profile image with border and shadow
+
+                // Bell icon with unread badge
+                IconButton(onClick = onNotificationsClick) {
+                    BadgedBox(
+                        badge = {
+                            if (unreadNotificationCount > 0) {
+                                Badge {
+                                    Text(
+                                        text = if (unreadNotificationCount > 9) "9+" else "$unreadNotificationCount",
+                                        style = MaterialTheme.typography.labelSmall,
+                                    )
+                                }
+                            }
+                        },
+                    ) {
+                        Icon(
+                            imageVector = if (unreadNotificationCount > 0) FmIcons.Bell else FmIcons.BellOutline,
+                            contentDescription = stringResource(R.string.notifications_title),
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(top = 3.dp, end = 3.dp),
+                        )
+                    }
+                }
+
+                HSpacer(4.dp)
+
+                // Profile image with border
                 ProfileImage(
                     modifier =
                         Modifier
@@ -127,7 +161,7 @@ fun newFmTopAppBar(
                 TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 ),
-            scrollBehavior = null, // can be set if needed
+            scrollBehavior = null,
         )
     }
 }

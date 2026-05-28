@@ -9,13 +9,18 @@ import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
+import android.util.Log
+import com.google.firebase.messaging.FirebaseMessaging
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -23,6 +28,15 @@ class AccountServiceImpl
     @Inject
     constructor() : AccountService {
         private val _manualUserUpdates = MutableSharedFlow<User?>(replay = 0)
+
+        init {
+            // If the user is already signed in when the app starts (e.g. after an app restart),
+            // saveFcmToken() is never called via signIn/signInWithGoogle.
+            // This ensures the token is always fresh in Firestore on every launch.
+            if (hasUser()) {
+                CoroutineScope(Dispatchers.IO).launch { saveFcmToken() }
+            }
+        }
 
         override val currentUser: Flow<User?>
             get() =
@@ -64,9 +78,8 @@ class AccountServiceImpl
             if (userIds.isEmpty()) return emptyList()
 
             return try {
-                android.util.Log.d("AccountService", "Fetching users for IDs: $userIds")
-                // Firestore 'in' query supports up to 10 items
-                // If we have more, we need to batch the requests
+                Log.d(TAG, "Fetching users for IDs: $userIds")
+                // Firestore 'in' query supports up to 10 items; chunk to stay within the limit.
                 val users = mutableListOf<User>()
                 userIds.chunked(10).forEach { chunk ->
                     val querySnapshot =
@@ -79,28 +92,19 @@ class AccountServiceImpl
                             ).get()
                             .await()
 
-                    android.util.Log.d(
-                        "AccountService",
-                        "Query returned ${querySnapshot.documents.size} documents for chunk: $chunk",
-                    )
+                    Log.d(TAG, "Query returned ${querySnapshot.documents.size} documents for chunk: $chunk")
                     querySnapshot.documents.forEach { document ->
-                        android.util.Log.d(
-                            "AccountService",
-                            "Document: ${document.id}, exists: ${document.exists()}",
-                        )
+                        Log.d(TAG, "Document: ${document.id}, exists: ${document.exists()}")
                         document.toObject<User>()?.let {
                             users.add(it)
-                            android.util.Log.d("AccountService", "Parsed user: ${it.displayName}")
-                        } ?: android.util.Log.w(
-                            "AccountService",
-                            "Failed to parse user from document ${document.id}",
-                        )
+                            Log.d(TAG, "Parsed user: ${it.displayName}")
+                        } ?: Log.w(TAG, "Failed to parse user from document ${document.id}")
                     }
                 }
-                android.util.Log.d("AccountService", "Total users fetched: ${users.size}")
+                Log.d(TAG, "Total users fetched: ${users.size}")
                 users
             } catch (e: Exception) {
-                android.util.Log.e("AccountService", "Error fetching users: ${e.message}", e)
+                Log.e(TAG, "Error fetching users: ${e.message}", e)
                 emptyList()
             }
         }
@@ -112,33 +116,16 @@ class AccountServiceImpl
 
         private suspend fun saveUserToFirestore() {
             val currentUser = Firebase.auth.currentUser ?: return
-
-            android.util.Log.d("AccountService", "Saving user to Firestore: ${currentUser.uid}")
-
-            val user =
-                User(
-                    id = currentUser.uid,
-                    email = currentUser.email ?: "",
-                    provider = currentUser.providerId,
-                    phoneNumber = currentUser.phoneNumber ?: "",
-                    displayName = currentUser.displayName ?: "",
-                    photoUrl = currentUser.photoUrl?.toString() ?: "",
-                    isAnonymous = currentUser.isAnonymous,
-                )
-
+            Log.d(TAG, "Saving user to Firestore: ${currentUser.uid}")
             try {
                 Firebase.firestore
                     .collection(USERS_COLLECTION)
                     .document(currentUser.uid)
-                    .set(user)
+                    .set(currentUser.toNotesUser())
                     .await()
-                android.util.Log.d("AccountService", "User saved successfully to Firestore")
+                Log.d(TAG, "User saved successfully to Firestore")
             } catch (e: Exception) {
-                android.util.Log.e(
-                    "AccountService",
-                    "Failed to save user to Firestore: ${e.message}",
-                    e,
-                )
+                Log.e(TAG, "Failed to save user to Firestore: ${e.message}", e)
             }
         }
 
@@ -155,19 +142,12 @@ class AccountServiceImpl
         }
 
         override suspend fun updatePhoneNumber(newPhoneNumber: String) {
-            // Note: Firebase requires phone verification to update phone numbers
-            // This would require implementing PhoneAuthProvider with SMS verification
-            // For now, throw an exception indicating the feature needs implementation
+            // Phone number updates require SMS verification via PhoneAuthProvider,
+            // which is not yet implemented.
             throw UnsupportedOperationException(
                 "Opdatering af telefonnummer kræver SMS-verifikation. " +
                     "Denne funktion er endnu ikke implementeret.",
             )
-
-            // Full implementation would look like:
-            // 1. Send SMS code: PhoneAuthProvider.verifyPhoneNumber()
-            // 2. User enters code
-            // 3. Create credential: PhoneAuthProvider.getCredential(verificationId, code)
-            // 4. Update phone: Firebase.auth.currentUser!!.updatePhoneNumber(credential).await()
         }
 
         override suspend fun linkAccount(
@@ -187,6 +167,7 @@ class AccountServiceImpl
         ) {
             Firebase.auth.signInWithEmailAndPassword(email, password).await()
             saveUserToFirestore()
+            saveFcmToken()
         }
 
         override suspend fun signOut() {
@@ -197,12 +178,32 @@ class AccountServiceImpl
             val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
             Firebase.auth.signInWithCredential(firebaseCredential).await()
             saveUserToFirestore()
+            saveFcmToken()
         }
 
         override suspend fun deleteAccount() {
             Firebase.auth.currentUser!!
                 .delete()
                 .await()
+        }
+
+        override suspend fun updateFcmToken(token: String) {
+            val uid = currentUserId
+            if (uid.isBlank()) return
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(uid)
+                .update(FCM_TOKEN_FIELD, token)
+                .await()
+        }
+
+        private suspend fun saveFcmToken() {
+            try {
+                val token = FirebaseMessaging.getInstance().token.await()
+                updateFcmToken(token)
+            } catch (e: Exception) {
+                android.util.Log.w(TAG, "Could not fetch or save FCM token: ${e.message}")
+            }
         }
 
         override suspend fun reloadUser() {
@@ -238,5 +239,7 @@ class AccountServiceImpl
 
         companion object {
             private const val USERS_COLLECTION = "users"
+            private const val FCM_TOKEN_FIELD = "fcmToken"
+            private const val TAG = "AccountService"
         }
     }

@@ -108,6 +108,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-messaging")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.navigation3.ui)
     kapt(libs.hilt.compiler)

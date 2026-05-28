@@ -16,6 +16,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.profile.ProfileScreenRoute
 import dk.zlatan.flotmand.Features.profile.account_information.AccountInformationScreenRoute
+import dk.zlatan.flotmand.Features.profile.notificationsettings.NotificationSettingsScreen
 import dk.zlatan.flotmand.Features.profile.switchlanguage.SwitchLanguageScreen
 
 @Suppress("CyclomaticComplexMethod")
@@ -38,6 +39,9 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             onLanguageClick = {
                                 viewModel.navigate(ProfileDestination.SwitchLanguage)
                             },
+                            onNotificationSettingsClick = {
+                                viewModel.navigate(ProfileDestination.NotificationSettings)
+                            },
                         )
                     }
                 }
@@ -58,6 +62,14 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                     }
                 }
 
+                ProfileDestination.NotificationSettings -> {
+                    NavEntry(key) {
+                        NotificationSettingsScreen(
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
+                }
+
                 else -> {
                     NavEntry(key) {
                         ProfileScreenRoute(
@@ -66,6 +78,9 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             },
                             onLanguageClick = {
                                 viewModel.navigate(ProfileDestination.SwitchLanguage)
+                            },
+                            onNotificationSettingsClick = {
+                                viewModel.navigate(ProfileDestination.NotificationSettings)
                             },
                         )
                     }

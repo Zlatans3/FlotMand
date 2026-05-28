@@ -68,10 +68,12 @@ internal fun FrontPageRoute(
     modifier: Modifier = Modifier,
     onDinnerEventClick: (String) -> Unit,
     onDateVotingClick: () -> Unit,
+    onNotificationsClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState,
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val unreadNotificationCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
@@ -95,6 +97,8 @@ internal fun FrontPageRoute(
         topBar = {
             newFmTopAppBar(
                 user = uiState.currentUser,
+                unreadNotificationCount = unreadNotificationCount,
+                onNotificationsClick = onNotificationsClick,
                 onUserClicked = {
                     scope.launch {
                         snackbarHostState.showSnackbar(snackBarText)

@@ -1,9 +1,13 @@
 package dk.zlatan.flotmand
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
 import com.google.android.libraries.places.api.Places
 import dagger.hilt.android.HiltAndroidApp
+import dk.zlatan.flotmand.impl.FlotMandFirebaseMessagingService
 import java.util.Locale
 
 @HiltAndroidApp
@@ -15,6 +19,18 @@ class FlotMandApplication : Application() {
         val apiKey = BuildConfig.GOOGLE_MAPS_API_KEY
         if (apiKey.isNotEmpty() && !Places.isInitialized()) {
             Places.initialize(applicationContext, apiKey)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                FlotMandFirebaseMessagingService.CHANNEL_ID,
+                "Events & Polls",
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = "Notifications for new events and polls"
+            }
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
         }
     }
 

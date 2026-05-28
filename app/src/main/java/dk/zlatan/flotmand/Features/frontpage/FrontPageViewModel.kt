@@ -7,7 +7,9 @@ import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
+import dk.zlatan.flotmand.model.service.NotificationService
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -36,7 +38,13 @@ class FrontPageViewModel
     constructor(
         private val dinnerEventService: DinnerEventService,
         private val accountService: AccountService,
+        private val notificationService: NotificationService,
     ) : ViewModel() {
+
+        val unreadNotificationCount: StateFlow<Int> =
+            notificationService.unreadCount
+                .catch { emit(0) }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
         // TODO: Zlatan 09/01/2026 Putting filternotnull could hide errors when currentUser is null
         val uiState: StateFlow<FrontPageUiState> =
             combine(
@@ -54,36 +62,31 @@ class FrontPageViewModel
                 val previousEvents = sortedEvents.filter { it.eventDate != null && it.eventDate!! < today }
 
                 val publisherIds = sortedEvents.mapNotNull { it.publisherId }.distinct()
-
-                val publishersMap =
-                    if (publisherIds.isNotEmpty()) {
-                        try {
-                            viewModelScope.async { fetchPublishersMap(publisherIds) }.await()
-                        } catch (_: Exception) {
-                            emptyMap()
-                        }
-                    } else {
-                        emptyMap()
-                    }
-
                 val nextEvent = upcomingEvents.firstOrNull { it.eventDate != null }
                 val displayEvents = upcomingEvents.filterNot { it.eventId == nextEvent?.eventId }
 
-                val nextEventPublisher = nextEvent?.publisherId?.let { publishersMap[it] }
-
-                val nextEventParticipants =
-                    if (!nextEvent?.participantIds.isNullOrEmpty()) {
-                        try {
-                            viewModelScope
-                                .async {
-                                    accountService.getUsersByIds(nextEvent?.participantIds ?: emptyList())
-                                }.await()
-                        } catch (_: Exception) {
-                            emptyList()
+                // Fetch publishers and participants concurrently — they are independent.
+                val (publishersMap, nextEventParticipants) = coroutineScope {
+                    val publishers = async {
+                        if (publisherIds.isNotEmpty()) {
+                            try { fetchPublishersMap(publisherIds) } catch (_: Exception) { emptyMap() }
+                        } else {
+                            emptyMap<String, User>()
                         }
-                    } else {
-                        emptyList()
                     }
+                    val participants = async {
+                        if (!nextEvent?.participantIds.isNullOrEmpty()) {
+                            try {
+                                accountService.getUsersByIds(nextEvent.participantIds ?: emptyList())
+                            } catch (_: Exception) { emptyList() }
+                        } else {
+                            emptyList<User>()
+                        }
+                    }
+                    publishers.await() to participants.await()
+                }
+
+                val nextEventPublisher = nextEvent?.publisherId?.let { publishersMap[it] }
 
                 FrontPageUiState(
                     eventList = displayEvents,
@@ -112,7 +115,7 @@ class FrontPageViewModel
                 )
             }.stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(500),
+                started = SharingStarted.WhileSubscribed(5_000),
                 initialValue =
                     FrontPageUiState(
                         currentUser = User(),

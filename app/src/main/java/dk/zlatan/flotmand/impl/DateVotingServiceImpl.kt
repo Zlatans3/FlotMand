@@ -92,6 +92,7 @@ class DateVotingServiceImpl
                         .await()
 
                 Log.d(TAG, "Successfully created date voting with ID: ${docRef.id}")
+
                 return docRef.id
             } catch (e: Exception) {
                 Log.e(TAG, "Error creating date voting: ${e.message}", e)
