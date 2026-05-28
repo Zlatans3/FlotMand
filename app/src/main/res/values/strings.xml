@@ -247,4 +247,14 @@
     <string name="my_events_loading">Henter dine events...</string>
     <string name="my_events_empty_create_prompt">Opret dit første event!</string>
     <string name="add_event_content_description">Tilføj event</string>
+
+    <!-- My Events screen — tab labels -->
+    <string name="tab_upcoming">Kommende</string>
+    <string name="tab_past">Tidligere</string>
+
+    <!-- My Events screen — per-tab empty states -->
+    <string name="no_upcoming_events_title">Ingen kommende events</string>
+    <string name="no_upcoming_events_subtitle">Opret et event og mød dine venner!</string>
+    <string name="no_past_events_title">Ingen tidligere events</string>
+    <string name="no_past_events_subtitle">Events du har deltaget i vises her</string>
 </resources>

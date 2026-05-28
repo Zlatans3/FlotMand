@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.model.Event
+import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
@@ -16,7 +17,8 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 data class MyEventUiState(
-    val eventList: List<Event> = emptyList(),
+    val upcomingEvents: List<Event> = emptyList(),
+    val pastEvents: List<Event> = emptyList(),
     val publishers: Map<String, User> = emptyMap(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
@@ -50,8 +52,16 @@ class MyEventViewModel
                     val publishersMap = publishersList.associateBy { it.id }
                     Log.d(TAG, "Loaded ${publishersMap.size} publishers")
 
+                    val upcomingEvents = events
+                        .filter { it.status == EventStatus.UPCOMING || it.status == EventStatus.ONGOING }
+                        .sortedBy { it.eventDate }
+                    val pastEvents = events
+                        .filter { it.status == EventStatus.COMPLETED }
+                        .sortedByDescending { it.eventDate }
+
                     MyEventUiState(
-                        eventList = events.sortedByDescending { it.eventDate },
+                        upcomingEvents = upcomingEvents,
+                        pastEvents = pastEvents,
                         publishers = publishersMap,
                         isLoading = false,
                         errorMessage = null,
@@ -60,7 +70,8 @@ class MyEventViewModel
                     Log.e(TAG, "Error loading user events: ${e.message}", e)
                     emit(
                         MyEventUiState(
-                            eventList = emptyList(),
+                            upcomingEvents = emptyList(),
+                            pastEvents = emptyList(),
                             publishers = emptyMap(),
                             isLoading = false,
                             errorMessage = "Kunne ikke hente dine events. Prøv igen senere.",
