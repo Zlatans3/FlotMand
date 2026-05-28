@@ -96,7 +96,7 @@ I am hoping to add a lot of interesting entires to this list. Here you will be a
 
 # 🏗️ Structure 
 
-Using MermaidJs to bring you a broad visual representation of how navigation is structered in this app. 
+this app is an Online first app starting with a login screen that lets you authenticate via Gmail through Firebase auth. From there you will land on the home screen with bottomnavigation to let you navigate through the app.
 
 <BR><BR>
 
