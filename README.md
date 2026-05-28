@@ -54,13 +54,13 @@ I love being creative, but designing is hard. I created a figma but most of it i
 
 ## 📱 Some nice looking screenshots
 
-<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/a00794d6-fd7a-4974-a603-2bdfd94f93c6" />
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/a00794d6-fd7a-4974-a603-2bdfd94f93c6" />
 
 
-<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/cf3ee348-9955-485b-bb0f-0bcd9847dfce" />
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/cf3ee348-9955-485b-bb0f-0bcd9847dfce" />
 
 
-<img width="250" height="2424" alt="image" src="https://github.com/user-attachments/assets/14ccd8a8-c211-4c16-83f8-a8f555200e1c" />
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/14ccd8a8-c211-4c16-83f8-a8f555200e1c" />
 
 
 
