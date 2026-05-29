@@ -62,6 +62,9 @@ import java.util.Locale
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
 internal fun FrontPageRoute(
@@ -302,12 +305,26 @@ internal fun FrontpageContent(
                     SectionHeader(
                         title = stringResource(R.string.next_event_section_title),
                     )
-                    Text(
-                        text = stringResource(R.string.no_current_event),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    val composition by rememberLottieComposition(
+                        LottieCompositionSpec.RawRes(R.raw.empty),
                     )
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        LottieAnimation(
+                            composition = composition,
+                            iterations = 1,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 48.dp),
+                        )
+                        Text(
+                            text = stringResource(R.string.no_current_event),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
 

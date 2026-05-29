@@ -17,6 +17,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.profile.ProfileScreenRoute
 import dk.zlatan.flotmand.Features.profile.account_information.AccountInformationScreenRoute
+import dk.zlatan.flotmand.Features.profile.licenses.LicensesScreen
 import dk.zlatan.flotmand.Features.profile.notificationsettings.NotificationSettingsScreen
 import dk.zlatan.flotmand.Features.profile.switchlanguage.SwitchLanguageScreen
 
@@ -51,10 +52,15 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                     NavEntry(key) {
                         AccountInformationScreenRoute(
                             onDismiss = { viewModel.pop() },
-                            onUserDeleted = {
-                                viewModel.resetToRoot()
-                            },
+                            onUserDeleted = { viewModel.resetToRoot() },
+                            onOpenLicenses = { viewModel.navigate(ProfileDestination.Licenses) },
                         )
+                    }
+                }
+
+                ProfileDestination.Licenses -> {
+                    NavEntry(key) {
+                        LicensesScreen(onDismiss = { viewModel.pop() })
                     }
                 }
 

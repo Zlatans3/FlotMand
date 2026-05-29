@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     id("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.google.gms.google.services)
-    id("com.google.android.gms.oss-licenses-plugin")
+    alias(libs.plugins.aboutlibraries.plugin)
 }
 
 val localProperties =
@@ -113,7 +113,8 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.play.services.oss.licenses)
+    implementation(libs.aboutlibraries.compose.m3)
+    implementation(libs.aboutlibraries.core)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation3.runtime)
@@ -141,6 +142,6 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.7.1")
 
-    // OSS Licenses dependency
-    implementation("com.google.android.gms:play-services-oss-licenses:17.1.0")
+
+    implementation("com.airbnb.android:lottie-compose:6.6.6")
 }
