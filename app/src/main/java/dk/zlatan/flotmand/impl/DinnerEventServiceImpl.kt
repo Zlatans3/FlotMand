@@ -118,6 +118,7 @@ class DinnerEventServiceImpl
                 .collection(DINNER_EVENTS_COLLECTION)
                 .add(eventWithUserId)
                 .await()
+
             return docRef.id
         }
 

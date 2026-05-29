@@ -247,4 +247,39 @@
     <string name="my_events_loading">Henter dine events...</string>
     <string name="my_events_empty_create_prompt">Opret dit første event!</string>
     <string name="add_event_content_description">Tilføj event</string>
+
+    <!-- My Events screen — tab labels -->
+    <string name="tab_upcoming">Kommende</string>
+    <string name="tab_past">Tidligere</string>
+
+    <!-- My Events screen — per-tab empty states -->
+    <string name="no_upcoming_events_title">Ingen kommende events</string>
+    <string name="no_upcoming_events_subtitle">Opret et event og mød dine venner!</string>
+    <string name="no_past_events_title">Ingen tidligere events</string>
+    <string name="no_past_events_subtitle">Events du har deltaget i vises her</string>
+
+    <!-- Notification permission dialog -->
+    <string name="notification_permission_title">Hold dig opdateret 🔔</string>
+    <string name="notification_permission_rationale">Vi sender dig en besked, når der oprettes nye events eller afstemninger, så du aldrig går glip af noget.</string>
+    <string name="notification_permission_allow">Tillad</string>
+    <string name="notification_permission_not_now">Ikke nu</string>
+    <string name="notification_permission_blocked_title">Notifikationer er blokeret</string>
+    <string name="notification_permission_blocked_message">Slå notifikationer til under Indstillinger for at blive varslet om nye events og afstemninger.</string>
+    <string name="notification_permission_open_settings">Åbn indstillinger</string>
+
+    <!-- Notifications inbox screen -->
+    <string name="notifications_title">Notifikationer</string>
+    <string name="notifications_mark_all_read">Marker alle som læst</string>
+    <string name="notifications_dismiss">Afvis notifikation</string>
+    <string name="notifications_empty_title">Ingen notifikationer</string>
+    <string name="notifications_empty_subtitle">Nye events og afstemninger vises her</string>
+
+    <!-- Notification settings screen -->
+    <string name="notification_status_label">Status:</string>
+    <string name="notification_settings_title">Notifikations-indstillinger</string>
+    <string name="notification_settings_description">Modtag notifikationer, når der oprettes nye events eller afstemninger, så du altid er med.</string>
+    <string name="notification_status_active">Aktiv</string>
+    <string name="notification_status_inactive">Slået fra</string>
+    <string name="notification_action_allow">Tillad notifikationer</string>
+    <string name="notification_action_manage">Administrer i indstillinger</string>
 </resources>

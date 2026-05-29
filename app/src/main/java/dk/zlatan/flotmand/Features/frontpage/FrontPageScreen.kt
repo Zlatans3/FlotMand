@@ -68,6 +68,7 @@ internal fun FrontPageRoute(
     modifier: Modifier = Modifier,
     onDinnerEventClick: (String) -> Unit,
     onDateVotingClick: () -> Unit,
+    onNotificationsClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState,
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
@@ -95,6 +96,8 @@ internal fun FrontPageRoute(
         topBar = {
             newFmTopAppBar(
                 user = uiState.currentUser,
+                unreadNotificationCount = uiState.unreadNotificationCount,
+                onNotificationsClick = onNotificationsClick,
                 onUserClicked = {
                     scope.launch {
                         snackbarHostState.showSnackbar(snackBarText)

@@ -41,6 +41,7 @@ fun ProfileScreenRoute(
     viewModel: ProfileViewModel = hiltViewModel(),
     navigateToLogin: () -> Unit = {},
     onLanguageClick: () -> Unit = {},
+    onNotificationSettingsClick: () -> Unit = {},
     navigateToAccountInformation: () -> Unit = {},
 ) {
     val user by viewModel.user.collectAsState(initial = User(displayName = set_name))
@@ -68,6 +69,7 @@ fun ProfileScreenRoute(
             },
             onAccountInformationClick = navigateToAccountInformation,
             onLanguageClick = onLanguageClick,
+            onNotificationSettingsClick = onNotificationSettingsClick,
         )
     }
 
@@ -94,7 +96,8 @@ internal fun ProfileScreen(
     onUpdateDisplayNameClick: (String) -> Unit,
     onLogoutClicked: () -> Unit = {},
     onAccountInformationClick: () -> Unit = {},
-    onLanguageClick: () -> Unit
+    onLanguageClick: () -> Unit,
+    onNotificationSettingsClick: () -> Unit = {},
 ) {
     LazyColumn(
         modifier =
@@ -135,8 +138,14 @@ internal fun ProfileScreen(
             VSpacer(12.dp)
             SectionCard(
                 title = stringResource(R.string.language_screen_title),
-                iconRes = FmIcons.globe, // Use a valid icon, e.g., Settings or Globe if Language does not exist
-                onClick = onLanguageClick, // Add this callback to the function signature
+                iconRes = FmIcons.globe,
+                onClick = onLanguageClick,
+            )
+            VSpacer(12.dp)
+            SectionCard(
+                title = stringResource(R.string.notification_settings_title),
+                iconRes = FmIcons.Settings,
+                onClick = onNotificationSettingsClick,
             )
             VSpacer(50.dp)
             Text(

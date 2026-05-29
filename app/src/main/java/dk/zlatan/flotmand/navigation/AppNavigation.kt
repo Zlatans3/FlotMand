@@ -29,12 +29,14 @@ import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.authentication.di.AuthenticationNavigation
 import dk.zlatan.flotmand.Features.bottomnavigation.FmBottomNavigationBar
 import dk.zlatan.flotmand.Features.bottomnavigation.TopLevelDestination
+import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageDestination
 import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigation
 import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigationViewModel
 import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigation
 import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigationViewModel
 import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigation
 import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigationViewModel
+import dk.zlatan.flotmand.design_system.componenets.NotificationPermissionHandler
 
 @Composable
 fun AppNavigation(
@@ -90,6 +92,8 @@ fun AppNavigation(
 
 @Composable
 private fun MainAppContent(modifier: Modifier = Modifier) {
+    NotificationPermissionHandler()
+
     var currentTab: TopLevelDestination by rememberSaveable {
         mutableStateOf(TopLevelDestination.HOME)
     }
@@ -140,6 +144,16 @@ private fun MainAppContent(modifier: Modifier = Modifier) {
                     ProfileNavigation(viewModel = profileViewModel)
                 }
             }
+        }
+    }
+
+    // Switch to HOME tab when the coordinator pushes Notifications (e.g. from a system notification tap)
+    val frontPageStack by frontPageViewModel.navigationStack.collectAsStateWithLifecycle()
+    LaunchedEffect(frontPageStack) {
+        if (frontPageStack.contains(FrontPageDestination.Notifications) &&
+            currentTab != TopLevelDestination.HOME
+        ) {
+            currentTab = TopLevelDestination.HOME
         }
     }
 
