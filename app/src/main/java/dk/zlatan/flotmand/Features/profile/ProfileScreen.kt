@@ -43,6 +43,7 @@ fun ProfileScreenRoute(
     viewModel: ProfileViewModel = hiltViewModel(),
     navigateToLogin: () -> Unit = {},
     onLanguageClick: () -> Unit = {},
+    onNotificationSettingsClick: () -> Unit = {},
     navigateToAccountInformation: () -> Unit = {},
 ) {
     val user by viewModel.user.collectAsState(initial = User(displayName = set_name))
@@ -52,7 +53,7 @@ fun ProfileScreenRoute(
     Scaffold(
         modifier = modifier,
         topBar = {
-            FmTopAppBar()
+            FmTopAppBar(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         },
     ) { paddingValues ->
         val topPaddingValues = paddingValues.calculateTopPadding()
@@ -71,6 +72,7 @@ fun ProfileScreenRoute(
             },
             onAccountInformationClick = navigateToAccountInformation,
             onLanguageClick = onLanguageClick,
+            onNotificationSettingsClick = onNotificationSettingsClick,
         )
     }
 
@@ -98,15 +100,17 @@ internal fun ProfileScreen(
     onLogoutClicked: () -> Unit = {},
     onAccountInformationClick: () -> Unit = {},
     onLanguageClick: () -> Unit,
+    onNotificationSettingsClick: () -> Unit = {},
 ) {
     LazyColumn(
         modifier =
             modifier
-                .background(MaterialTheme.colorScheme.surfaceContainer),
+                .background(MaterialTheme.colorScheme.background),
     ) {
         item {
             HeaderContainer(
                 modifier = Modifier,
+                color = MaterialTheme.colorScheme.secondaryContainer,
             ) {
                 VSpacer(90.dp)
                 ProfileImage(
@@ -139,6 +143,12 @@ internal fun ProfileScreen(
                 title = stringResource(R.string.language_screen_title),
                 iconRes = FmIcons.globe,
                 onClick = onLanguageClick,
+            )
+            VSpacer(12.dp)
+            SectionCard(
+                title = stringResource(R.string.notification_settings_title),
+                iconRes = FmIcons.Settings,
+                onClick = onNotificationSettingsClick,
             )
 
             VSpacer(50.dp)

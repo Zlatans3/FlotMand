@@ -68,6 +68,7 @@ internal fun FrontPageRoute(
     modifier: Modifier = Modifier,
     onDinnerEventClick: (String) -> Unit,
     onDateVotingClick: () -> Unit,
+    onNotificationsClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState,
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
@@ -95,6 +96,8 @@ internal fun FrontPageRoute(
         topBar = {
             newFmTopAppBar(
                 user = uiState.currentUser,
+                unreadNotificationCount = uiState.unreadNotificationCount,
+                onNotificationsClick = onNotificationsClick,
                 onUserClicked = {
                     scope.launch {
                         snackbarHostState.showSnackbar(snackBarText)
@@ -151,7 +154,7 @@ internal fun FrontPageRoute(
                 }
             }
 
-            uiState.eventList.isEmpty() -> {
+            uiState.eventList.isEmpty() && uiState.nextEvent == null && uiState.previousEvents.isEmpty() -> {
                 Box(
                     modifier = modifier.padding(paddingValues).fillMaxSize(),
                     contentAlignment = Alignment.Center,
@@ -273,13 +276,13 @@ internal fun FrontpageContent(
             }
 
             // Next Event section
-            if (nextEvent != null) {
-                val publisher =
-                    nextEventPublisher ?: User(
-                        id = nextEvent.publisherId ?: "",
-                        displayName = "Ukendt bruger",
-                    )
-                item {
+            item {
+                if (nextEvent != null) {
+                    val publisher =
+                        nextEventPublisher ?: User(
+                            id = nextEvent.publisherId ?: "",
+                            displayName = "Ukendt bruger",
+                        )
                     NextEventSection(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                         event = nextEvent,
@@ -293,6 +296,17 @@ internal fun FrontpageContent(
                         isParticipating = nextEventParticipants.any { it.id == user.id },
                         isLoading = false,
                         isPublisher = user.id == nextEvent.publisherId,
+                    )
+                } else {
+                    VSpacer(20.dp)
+                    SectionHeader(
+                        title = stringResource(R.string.next_event_section_title),
+                    )
+                    Text(
+                        text = stringResource(R.string.no_current_event),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     )
                 }
             }
@@ -308,6 +322,7 @@ internal fun FrontpageContent(
                         }
                     VSpacer(20.dp)
                     SectionHeader(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                         title = stringResource(R.string.upcoming_events),
                         actionText = seeMoreOrLess,
                         onActionClick = {
@@ -534,9 +549,6 @@ private fun FrontpageContentPreview() {
 @Composable
 private fun FrontpageEmptyStatePreview() {
     FlotMandTheme {
-        // Provide dummy listState and scrollProgress for preview
-        val listState = rememberLazyListState()
-        val scrollProgress = 0f
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -562,6 +574,40 @@ private fun FrontpageEmptyStatePreview() {
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@PreviewLightDark()
+@Composable
+private fun FrontpageNoCurrentEventPreview() {
+    val previousEvents = previewEvents(3)
+    val mockPublishers =
+        mapOf(
+            "publisher1" to
+                User(
+                    id = "publisher1",
+                    displayName = "John Doe",
+                    email = "john@example.com",
+                ),
+        )
+    FlotMandTheme {
+        val listState = rememberLazyListState()
+        FrontpageContent(
+            modifier = Modifier,
+            eventList = emptyList(),
+            previousEvents = previousEvents,
+            publishers = mockPublishers,
+            onClickEvent = {},
+            onDateVotingClick = {},
+            user = User.mockUserWithCounter(1).first(),
+            nextEvent = null,
+            nextEventPublisher = null,
+            nextEventParticipants = emptyList(),
+            onParticipateClick = {},
+            listState = listState,
+            scrollProgress = 0f,
+        )
     }
 }
 

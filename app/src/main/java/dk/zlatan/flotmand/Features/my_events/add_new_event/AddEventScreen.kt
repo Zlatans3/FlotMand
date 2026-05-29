@@ -10,7 +10,9 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -134,10 +136,24 @@ internal fun AddEventScreen(
         topBar = {
             TopAppBar(
                 title = {
+                    var tapCount by remember { mutableStateOf(0) }
+                    var lastTapMs by remember { mutableStateOf(0L) }
                     Text(
                         text = stringResource(R.string.create_new_event_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                        ) {
+                            val now = System.currentTimeMillis()
+                            if (now - lastTapMs > 2000L) tapCount = 0
+                            lastTapMs = now
+                            if (++tapCount >= 5) {
+                                tapCount = 0
+                                viewModel.autofillTestData()
+                            }
+                        },
                     )
                 },
                 navigationIcon = {

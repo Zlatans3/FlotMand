@@ -37,5 +37,10 @@ interface AccountService {
 
     suspend fun deleteAccount()
 
+    // had troubles with the user not updating after display name change
+    // so added this method to force reload the user and trigger the auth state listener
     suspend fun reloadUser()
+
+    /** Persists [token] to Firestore so Cloud Functions can address this device. */
+    suspend fun updateFcmToken(token: String)
 }

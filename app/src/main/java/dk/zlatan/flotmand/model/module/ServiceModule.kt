@@ -7,10 +7,12 @@ import dagger.hilt.components.SingletonComponent
 import dk.zlatan.flotmand.impl.AccountServiceImpl
 import dk.zlatan.flotmand.impl.DateVotingServiceImpl
 import dk.zlatan.flotmand.impl.DinnerEventServiceImpl
+import dk.zlatan.flotmand.impl.NotificationServiceImpl
 import dk.zlatan.flotmand.impl.PlacesServiceImpl
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DateVotingService
 import dk.zlatan.flotmand.model.service.DinnerEventService
+import dk.zlatan.flotmand.model.service.NotificationService
 import dk.zlatan.flotmand.model.service.PlacesService
 
 @Module
@@ -27,4 +29,7 @@ abstract class ServiceModule {
 
     @Binds
     abstract fun provideDateVotingService(impl: DateVotingServiceImpl): DateVotingService
+
+    @Binds
+    abstract fun provideNotificationService(impl: NotificationServiceImpl): NotificationService
 }

@@ -26,6 +26,7 @@ import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
 import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.DateVotingDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
+import dk.zlatan.flotmand.Features.frontpage.notifications.NotificationsScreen
 import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreen
 import dk.zlatan.flotmand.Features.my_events.add_new_event.EditEventScreen
 import kotlinx.coroutines.launch
@@ -63,6 +64,9 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                             },
                             onDateVotingClick = {
                                 viewModel.navigate(FrontPageDestination.DateVoting)
+                            },
+                            onNotificationsClick = {
+                                viewModel.navigate(FrontPageDestination.Notifications)
                             },
                             snackbarHostState = snackbarHostState,
                         )
@@ -128,9 +132,23 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                     }
                 }
 
+                FrontPageDestination.Notifications -> {
+                    NavEntry(key) {
+                        NotificationsScreen(
+                            onDismiss = { viewModel.pop() },
+                            onEventClick = { eventId ->
+                                viewModel.navigate(FrontPageDestination.EventDetail(eventId))
+                            },
+                            onPollClick = { votingId ->
+                                viewModel.navigate(FrontPageDestination.VotingDetail(votingId))
+                            },
+                        )
+                    }
+                }
+
                 FrontPageDestination.HostRotation -> {
                     NavEntry(key) {
-                        // TODO: Zlatan 23/01/2026 Later
+                        // TODO: Zlatan 23/01/2026 Feature not implemented yet
                     }
                 }
             }

@@ -10,7 +10,8 @@ interface MyEventsNavigationCoordinator {
     val navigationStack: StateFlow<List<MyEventsDestination>>
 
     fun navigate(destination: MyEventsDestination)
+
     fun pop()
+
     fun resetToRoot()
 }
-

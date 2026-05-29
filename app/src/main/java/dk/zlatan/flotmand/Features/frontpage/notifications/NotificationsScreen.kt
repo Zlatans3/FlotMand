@@ -1,0 +1,309 @@
+package dk.zlatan.flotmand.Features.frontpage.notifications
+
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.R
+import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
+import dk.zlatan.flotmand.design_system.icon.FmIcons
+import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
+import dk.zlatan.flotmand.model.AppNotification
+import dk.zlatan.flotmand.model.NotificationType
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NotificationsScreen(
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    onEventClick: (eventId: String) -> Unit,
+    onPollClick: (votingId: String) -> Unit,
+    viewModel: NotificationsViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            FmTopAppBar(
+                textContent = {
+                    Text(
+                        text = stringResource(R.string.notifications_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                },
+                leadingIcon = {
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = FmIcons.ArrowBack,
+                            contentDescription = stringResource(R.string.close),
+                            tint = MaterialTheme.colorScheme.onBackground,
+                        )
+                    }
+                },
+                trailingContent = {
+                    if (uiState.notifications.isNotEmpty()) {
+                        TextButton(onClick = { viewModel.markAllAsRead() }) {
+                            Text(
+                                text = stringResource(R.string.notifications_mark_all_read),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                },
+                containerColor = MaterialTheme.colorScheme.surface,
+            )
+        },
+    ) { paddingValues ->
+        PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refresh() },
+            modifier =
+                Modifier
+                    .padding(top = paddingValues.calculateTopPadding())
+                    .fillMaxSize(),
+        ) {
+            if (uiState.notifications.isEmpty() && !uiState.isLoading) {
+                NotificationsEmptyState(modifier = Modifier.fillMaxSize())
+            } else {
+                LazyColumn(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background),
+                ) {
+                    items(uiState.notifications, key = { it.id }) { notification ->
+                        NotificationItem(
+                            notification = notification,
+                            onClick = {
+                                viewModel.markAsRead(notification.id)
+                                when (notification.notificationType) {
+                                    NotificationType.EVENT -> onEventClick(notification.referenceId)
+                                    NotificationType.POLL -> onPollClick(notification.referenceId)
+                                    NotificationType.UNKNOWN -> Unit
+                                }
+                            },
+                            onDismiss = { viewModel.dismiss(notification.id) },
+                        )
+                    }
+                    item { VSpacer(24.dp) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NotificationItem(
+    notification: AppNotification,
+    onClick: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val type = notification.notificationType
+
+    val bgColor by animateColorAsState(
+        targetValue =
+            if (notification.isRead) {
+                MaterialTheme.colorScheme.surface
+            } else {
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+            },
+        animationSpec = tween(durationMillis = 300),
+        label = "notificationBg",
+    )
+
+    val iconBgColor =
+        when (type) {
+            NotificationType.EVENT -> MaterialTheme.colorScheme.tertiaryContainer
+            NotificationType.POLL -> MaterialTheme.colorScheme.secondaryContainer
+            NotificationType.UNKNOWN -> MaterialTheme.colorScheme.surfaceVariant
+        }
+    val iconTint =
+        when (type) {
+            NotificationType.EVENT -> MaterialTheme.colorScheme.onTertiaryContainer
+            NotificationType.POLL -> MaterialTheme.colorScheme.onSecondaryContainer
+            NotificationType.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    val typeIcon =
+        when (type) {
+            NotificationType.EVENT -> FmIcons.NotificationEvent
+            NotificationType.POLL -> FmIcons.NotificationPoll
+            NotificationType.UNKNOWN -> FmIcons.Bell
+        }
+
+    Row(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(bgColor)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // Type icon in a coloured circle
+        Box(
+            modifier =
+                Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(iconBgColor),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = typeIcon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(22.dp),
+            )
+        }
+
+        Spacer(Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = notification.title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            if (!notification.body.isNullOrBlank()) {
+                Text(
+                    text = notification.body.orEmpty(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                )
+            }
+        }
+
+        // Unread dot
+        if (!notification.isRead) {
+            Box(
+                modifier =
+                    Modifier
+                        .padding(horizontal = 8.dp)
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+            )
+        }
+
+        IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
+            Icon(
+                imageVector = FmIcons.Close,
+                contentDescription = stringResource(R.string.notifications_dismiss),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun NotificationsEmptyState(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Icon(
+            imageVector = FmIcons.BellOutline,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+            modifier = Modifier.size(64.dp),
+        )
+        VSpacer(16.dp)
+        Text(
+            text = stringResource(R.string.notifications_empty_title),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        VSpacer(4.dp)
+        Text(
+            text = stringResource(R.string.notifications_empty_subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NotificationItemUnreadPreview() {
+    FlotMandTheme(dynamicColor = false) {
+        Column {
+            NotificationItem(
+                notification =
+                    AppNotification(
+                        id = "1",
+                        type = NotificationType.EVENT.value,
+                        referenceId = "e1",
+                        title = "🍽️ Nyt event oprettet",
+                        body = "Middag hos Gustav",
+                        isRead = false,
+                        createdAtMillis = System.currentTimeMillis(),
+                    ),
+                onClick = {},
+                onDismiss = {},
+            )
+            NotificationItem(
+                notification =
+                    AppNotification(
+                        id = "2",
+                        type = NotificationType.POLL.value,
+                        referenceId = "p1",
+                        title = "🗳️ Ny afstemning oprettet",
+                        body = "Hvornår passer det?",
+                        isRead = true,
+                        createdAtMillis = System.currentTimeMillis(),
+                    ),
+                onClick = {},
+                onDismiss = {},
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NotificationsEmptyPreview() {
+    FlotMandTheme(dynamicColor = false) {
+        NotificationsEmptyState(modifier = Modifier.fillMaxSize())
+    }
+}

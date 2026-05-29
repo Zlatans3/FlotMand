@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.implementation
 import java.util.Properties
 
 plugins {
@@ -27,12 +26,24 @@ android {
         version = release(36)
     }
 
+    signingConfigs {
+        create("release") {
+            val storeFilePath = localProperties["RELEASE_STORE_FILE"] as String?
+            if (storeFilePath != null) {
+                storeFile = file(storeFilePath)
+                storePassword = localProperties["RELEASE_STORE_PASSWORD"] as String
+                keyAlias = localProperties["RELEASE_KEY_ALIAS"] as String
+                keyPassword = localProperties["RELEASE_KEY_PASSWORD"] as String
+            }
+        }
+    }
+
     defaultConfig {
         applicationId = "dk.zlatan.flotmand"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 5
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"$googleServerClientId\"")
@@ -42,12 +53,18 @@ android {
     }
 
     buildTypes {
+        debug {
+            versionNameSuffix = "-debug"
+            resValue("string", "app_name", "Flotmand - debug")
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -65,6 +82,13 @@ android {
 
 hilt {
     enableAggregatingTask = false
+}
+
+// Disable ART baseline profile merging from libraries.
+// Without this, Compose and other libraries embed baseline profiles that
+// cause INSTALL_BASELINE_PROFILE_FAILED on some devices/emulators.
+tasks.matching { it.name.contains("ArtProfile") }.configureEach {
+    enabled = false
 }
 
 dependencies {
@@ -86,6 +110,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-messaging")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.play.services.oss.licenses)
