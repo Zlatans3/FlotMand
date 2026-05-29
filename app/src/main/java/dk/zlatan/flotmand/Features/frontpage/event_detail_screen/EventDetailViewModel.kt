@@ -11,6 +11,7 @@ import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
+import dk.zlatan.flotmand.model.service.NotificationService
 import dk.zlatan.flotmand.util.combine
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +46,7 @@ internal class EventDetailViewModel
         @Assisted private val eventId: String,
         private val dinnerEventService: DinnerEventService,
         private val accountService: AccountService,
+        private val notificationService: NotificationService,
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -106,6 +108,7 @@ internal class EventDetailViewModel
         init {
             Log.d(TAG, "ViewModel init: eventId=$eventId")
             observeEvent()
+            notificationService.markAsReadByReferenceId(eventId)
         }
 
         private fun observeEvent() {

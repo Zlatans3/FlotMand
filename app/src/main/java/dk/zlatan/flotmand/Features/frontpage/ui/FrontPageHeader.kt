@@ -83,7 +83,7 @@ internal fun FrontPageNewHeader(
 fun newFmTopAppBar(
     modifier: Modifier = Modifier,
     user: User,
-    unreadNotificationCount: Int = 0,
+    unreadNotificationCount: Int,
     onNotificationsClick: () -> Unit = {},
     onUserClicked: (() -> Unit)?,
 ) {
@@ -211,6 +211,7 @@ private fun NewFmTopAppBarPreview() {
         modifier = Modifier.graphicsLayer {},
         user = User.mockUserWithCounter(1).first(),
         onUserClicked = { },
+        unreadNotificationCount = 0,
     )
 }
 

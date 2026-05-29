@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -89,34 +90,39 @@ fun NotificationsScreen(
             )
         },
     ) { paddingValues ->
-        if (uiState.notifications.isEmpty() && !uiState.isLoading) {
-            NotificationsEmptyState(
-                modifier = Modifier
+        PullToRefreshBox(
+            isRefreshing = uiState.isRefreshing,
+            onRefresh = { viewModel.refresh() },
+            modifier =
+                Modifier
                     .padding(top = paddingValues.calculateTopPadding())
                     .fillMaxSize(),
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(top = paddingValues.calculateTopPadding())
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-            ) {
-                items(uiState.notifications, key = { it.id }) { notification ->
-                    NotificationItem(
-                        notification = notification,
-                        onClick = {
-                            viewModel.markAsRead(notification.id)
-                            when (notification.notificationType) {
-                                NotificationType.EVENT -> onEventClick(notification.referenceId)
-                                NotificationType.POLL -> onPollClick(notification.referenceId)
-                                NotificationType.UNKNOWN -> Unit
-                            }
-                        },
-                        onDismiss = { viewModel.dismiss(notification.id) },
-                    )
+        ) {
+            if (uiState.notifications.isEmpty() && !uiState.isLoading) {
+                NotificationsEmptyState(modifier = Modifier.fillMaxSize())
+            } else {
+                LazyColumn(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background),
+                ) {
+                    items(uiState.notifications, key = { it.id }) { notification ->
+                        NotificationItem(
+                            notification = notification,
+                            onClick = {
+                                viewModel.markAsRead(notification.id)
+                                when (notification.notificationType) {
+                                    NotificationType.EVENT -> onEventClick(notification.referenceId)
+                                    NotificationType.POLL -> onPollClick(notification.referenceId)
+                                    NotificationType.UNKNOWN -> Unit
+                                }
+                            },
+                            onDismiss = { viewModel.dismiss(notification.id) },
+                        )
+                    }
+                    item { VSpacer(24.dp) }
                 }
-                item { VSpacer(24.dp) }
             }
         }
     }
@@ -132,45 +138,51 @@ private fun NotificationItem(
     val type = notification.notificationType
 
     val bgColor by animateColorAsState(
-        targetValue = if (notification.isRead) {
-            MaterialTheme.colorScheme.surface
-        } else {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
-        },
+        targetValue =
+            if (notification.isRead) {
+                MaterialTheme.colorScheme.surface
+            } else {
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+            },
         animationSpec = tween(durationMillis = 300),
         label = "notificationBg",
     )
 
-    val iconBgColor = when (type) {
-        NotificationType.EVENT -> MaterialTheme.colorScheme.tertiaryContainer
-        NotificationType.POLL -> MaterialTheme.colorScheme.secondaryContainer
-        NotificationType.UNKNOWN -> MaterialTheme.colorScheme.surfaceVariant
-    }
-    val iconTint = when (type) {
-        NotificationType.EVENT -> MaterialTheme.colorScheme.onTertiaryContainer
-        NotificationType.POLL -> MaterialTheme.colorScheme.onSecondaryContainer
-        NotificationType.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    val typeIcon = when (type) {
-        NotificationType.EVENT -> FmIcons.NotificationEvent
-        NotificationType.POLL -> FmIcons.NotificationPoll
-        NotificationType.UNKNOWN -> FmIcons.Bell
-    }
+    val iconBgColor =
+        when (type) {
+            NotificationType.EVENT -> MaterialTheme.colorScheme.tertiaryContainer
+            NotificationType.POLL -> MaterialTheme.colorScheme.secondaryContainer
+            NotificationType.UNKNOWN -> MaterialTheme.colorScheme.surfaceVariant
+        }
+    val iconTint =
+        when (type) {
+            NotificationType.EVENT -> MaterialTheme.colorScheme.onTertiaryContainer
+            NotificationType.POLL -> MaterialTheme.colorScheme.onSecondaryContainer
+            NotificationType.UNKNOWN -> MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    val typeIcon =
+        when (type) {
+            NotificationType.EVENT -> FmIcons.NotificationEvent
+            NotificationType.POLL -> FmIcons.NotificationPoll
+            NotificationType.UNKNOWN -> FmIcons.Bell
+        }
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(bgColor)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(bgColor)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Type icon in a coloured circle
         Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(iconBgColor),
+            modifier =
+                Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(iconBgColor),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -190,9 +202,9 @@ private fun NotificationItem(
                 fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-            if (notification.body.isNotBlank()) {
+            if (!notification.body.isNullOrBlank()) {
                 Text(
-                    text = notification.body,
+                    text = notification.body.orEmpty(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
@@ -203,11 +215,12 @@ private fun NotificationItem(
         // Unread dot
         if (!notification.isRead) {
             Box(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
+                modifier =
+                    Modifier
+                        .padding(horizontal = 8.dp)
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
             )
         }
 
@@ -256,20 +269,32 @@ private fun NotificationItemUnreadPreview() {
     FlotMandTheme(dynamicColor = false) {
         Column {
             NotificationItem(
-                notification = AppNotification(
-                    id = "1", type = NotificationType.EVENT.value, referenceId = "e1",
-                    title = "🍽️ Nyt event oprettet", body = "Middag hos Gustav",
-                    isRead = false, createdAtMillis = System.currentTimeMillis(),
-                ),
-                onClick = {}, onDismiss = {},
+                notification =
+                    AppNotification(
+                        id = "1",
+                        type = NotificationType.EVENT.value,
+                        referenceId = "e1",
+                        title = "🍽️ Nyt event oprettet",
+                        body = "Middag hos Gustav",
+                        isRead = false,
+                        createdAtMillis = System.currentTimeMillis(),
+                    ),
+                onClick = {},
+                onDismiss = {},
             )
             NotificationItem(
-                notification = AppNotification(
-                    id = "2", type = NotificationType.POLL.value, referenceId = "p1",
-                    title = "🗳️ Ny afstemning oprettet", body = "Hvornår passer det?",
-                    isRead = true, createdAtMillis = System.currentTimeMillis(),
-                ),
-                onClick = {}, onDismiss = {},
+                notification =
+                    AppNotification(
+                        id = "2",
+                        type = NotificationType.POLL.value,
+                        referenceId = "p1",
+                        title = "🗳️ Ny afstemning oprettet",
+                        body = "Hvornår passer det?",
+                        isRead = true,
+                        createdAtMillis = System.currentTimeMillis(),
+                    ),
+                onClick = {},
+                onDismiss = {},
             )
         }
     }

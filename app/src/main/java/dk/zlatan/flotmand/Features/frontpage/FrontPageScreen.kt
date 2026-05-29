@@ -73,7 +73,6 @@ internal fun FrontPageRoute(
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val unreadNotificationCount by viewModel.unreadNotificationCount.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
@@ -97,7 +96,7 @@ internal fun FrontPageRoute(
         topBar = {
             newFmTopAppBar(
                 user = uiState.currentUser,
-                unreadNotificationCount = unreadNotificationCount,
+                unreadNotificationCount = uiState.unreadNotificationCount,
                 onNotificationsClick = onNotificationsClick,
                 onUserClicked = {
                     scope.launch {

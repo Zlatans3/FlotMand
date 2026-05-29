@@ -30,6 +30,7 @@ data class FrontPageUiState(
     val nextEventParticipants: List<User> = emptyList(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
+    val unreadNotificationCount: Int = 0,
 )
 
 @HiltViewModel
@@ -41,16 +42,13 @@ class FrontPageViewModel
         private val notificationService: NotificationService,
     ) : ViewModel() {
 
-        val unreadNotificationCount: StateFlow<Int> =
-            notificationService.unreadCount
-                .catch { emit(0) }
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
         // TODO: Zlatan 09/01/2026 Putting filternotnull could hide errors when currentUser is null
         val uiState: StateFlow<FrontPageUiState> =
             combine(
                 dinnerEventService.allDinnerEvents,
                 accountService.currentUser.filterNotNull(),
-            ) { events, currentUser ->
+                notificationService.unreadCount,
+            ) { events, currentUser, unreadCount ->
                 val today = LocalDate.now()
                 val sortedEvents =
                     events.sortedWith(
@@ -98,6 +96,7 @@ class FrontPageViewModel
                     nextEventParticipants = nextEventParticipants,
                     isLoading = false,
                     errorMessage = null,
+                    unreadNotificationCount = unreadCount,
                 )
             }.catch { _ ->
                 emit(

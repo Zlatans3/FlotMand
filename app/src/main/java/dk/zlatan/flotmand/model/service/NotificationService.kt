@@ -18,4 +18,7 @@ interface NotificationService {
 
     /** Marks every unread notification as read. */
     fun markAllAsRead()
+
+    /** Marks any unread notifications whose referenceId matches as read. */
+    fun markAsReadByReferenceId(referenceId: String)
 }
