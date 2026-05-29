@@ -1,6 +1,5 @@
 package dk.zlatan.flotmand.Features.profile
 
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,7 +15,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,7 +47,6 @@ fun ProfileScreenRoute(
     val user by viewModel.user.collectAsState(initial = User(displayName = set_name))
     val isLoading by viewModel.signOutLoading.collectAsState()
     var sinOutDialogState by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -66,9 +63,6 @@ fun ProfileScreenRoute(
             userImage = user.photoUrl,
             onLogoutClicked = {
                 sinOutDialogState = true
-            },
-            onUpdateDisplayNameClick = { newName ->
-                viewModel.onUpdateDisplayNameClick(newName)
             },
             onAccountInformationClick = navigateToAccountInformation,
             onLanguageClick = onLanguageClick,
@@ -96,7 +90,6 @@ internal fun ProfileScreen(
     modifier: Modifier = Modifier,
     userImage: String? = null,
     userName: String,
-    onUpdateDisplayNameClick: (String) -> Unit,
     onLogoutClicked: () -> Unit = {},
     onAccountInformationClick: () -> Unit = {},
     onLanguageClick: () -> Unit,
@@ -120,13 +113,7 @@ internal fun ProfileScreen(
                     userName = userName,
                 )
                 VSpacer(20.dp)
-                DisplayName(
-                    displayName = userName,
-                    isLoading = false,
-                    onUpdateDisplayNameClick = { updatedName ->
-                        onUpdateDisplayNameClick(updatedName)
-                    },
-                )
+                DisplayName(displayName = userName)
                 VSpacer(12.dp)
             }
         }
@@ -147,7 +134,7 @@ internal fun ProfileScreen(
             VSpacer(12.dp)
             SectionCard(
                 title = stringResource(R.string.notification_settings_title),
-                iconRes = FmIcons.Settings,
+                iconRes = FmIcons.Bell,
                 onClick = onNotificationSettingsClick,
             )
 
@@ -182,7 +169,6 @@ private fun ProfileScreenPreview() {
         ProfileScreen(
             modifier = Modifier,
             userName = "Oliver Payne",
-            onUpdateDisplayNameClick = {},
             onLanguageClick = {},
         )
     }

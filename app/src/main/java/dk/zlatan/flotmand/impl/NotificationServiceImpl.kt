@@ -149,6 +149,22 @@ class NotificationServiceImpl
             }
         }
 
+        override fun dismissAll() {
+            val uid = accountService.currentUserId
+            if (uid.isBlank()) return
+            scope.launch {
+                try {
+                    val docs = itemsCollection(uid).get().await()
+                    if (docs.documents.isEmpty()) return@launch
+                    val batch = Firebase.firestore.batch()
+                    docs.documents.forEach { doc -> batch.delete(doc.reference) }
+                    batch.commit().await()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to dismiss all notifications: ${e.message}")
+                }
+            }
+        }
+
         override fun markAllAsRead() {
             val uid = accountService.currentUserId
             if (uid.isBlank()) return

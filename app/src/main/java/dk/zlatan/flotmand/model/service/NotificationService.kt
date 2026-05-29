@@ -16,6 +16,9 @@ interface NotificationService {
     /** Permanently removes a notification (swipe-to-dismiss / X button). */
     fun dismiss(notificationId: String)
 
+    /** Permanently removes all notifications. */
+    fun dismissAll()
+
     /** Marks every unread notification as read. */
     fun markAllAsRead()
 

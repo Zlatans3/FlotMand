@@ -1,7 +1,11 @@
 package dk.zlatan.flotmand.Features.frontpage.notifications
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,10 +24,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,6 +31,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +44,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
@@ -47,6 +55,8 @@ import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.AppNotification
 import dk.zlatan.flotmand.model.NotificationType
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +68,13 @@ fun NotificationsScreen(
     viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    var dismissingIds by remember { mutableStateOf(setOf<String>()) }
+
+    val onBack: () -> Unit = {
+        viewModel.markAllAsRead()
+        onDismiss()
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -71,7 +88,7 @@ fun NotificationsScreen(
                     )
                 },
                 leadingIcon = {
-                    IconButton(onClick = onDismiss) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             imageVector = FmIcons.ArrowBack,
                             contentDescription = stringResource(R.string.close),
@@ -81,9 +98,9 @@ fun NotificationsScreen(
                 },
                 trailingContent = {
                     if (uiState.notifications.isNotEmpty()) {
-                        TextButton(onClick = { viewModel.markAllAsRead() }) {
+                        TextButton(onClick = { viewModel.dismissAll() }) {
                             Text(
-                                text = stringResource(R.string.notifications_mark_all_read),
+                                text = stringResource(R.string.notifications_clear_all),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.primary,
                             )
@@ -112,18 +129,34 @@ fun NotificationsScreen(
                             .background(MaterialTheme.colorScheme.background),
                 ) {
                     items(uiState.notifications, key = { it.id }) { notification ->
-                        NotificationItem(
-                            notification = notification,
-                            onClick = {
-                                viewModel.markAsRead(notification.id)
-                                when (notification.notificationType) {
-                                    NotificationType.EVENT -> onEventClick(notification.referenceId)
-                                    NotificationType.POLL -> onPollClick(notification.referenceId)
-                                    NotificationType.UNKNOWN -> Unit
-                                }
-                            },
-                            onDismiss = { viewModel.dismiss(notification.id) },
-                        )
+                        AnimatedVisibility(
+                            visible = notification.id !in dismissingIds,
+                            enter = EnterTransition.None,
+                            exit = slideOutHorizontally(
+                                targetOffsetX = { fullWidth -> fullWidth },
+                                animationSpec = tween(durationMillis = 280),
+                            ) + fadeOut(animationSpec = tween(durationMillis = 220)),
+                        ) {
+                            NotificationItem(
+                                notification = notification,
+                                onClick = {
+                                    viewModel.markAsRead(notification.id)
+                                    when (notification.notificationType) {
+                                        NotificationType.EVENT -> onEventClick(notification.referenceId)
+                                        NotificationType.POLL -> onPollClick(notification.referenceId)
+                                        NotificationType.UNKNOWN -> Unit
+                                    }
+                                },
+                                onDismiss = {
+                                    dismissingIds = dismissingIds + notification.id
+                                    scope.launch {
+                                        delay(300)
+                                        viewModel.dismiss(notification.id)
+                                        dismissingIds = dismissingIds - notification.id
+                                    }
+                                },
+                            )
+                        }
                     }
                     item { VSpacer(24.dp) }
                 }

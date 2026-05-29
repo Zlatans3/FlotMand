@@ -78,6 +78,11 @@ class NotificationsViewModel
             notificationService.markAllAsRead()
         }
 
+        fun dismissAll() {
+            _notifications.update { emptyList() }
+            notificationService.dismissAll()
+        }
+
         fun markAsRead(notificationId: String) {
             _notifications.update { current ->
                 current.map { if (it.id == notificationId) it.copy(isRead = true) else it }

@@ -44,8 +44,8 @@
     <!-- Error and validation strings -->
     <string name="error_could_not_load_event">Kunne ikke indlæse event til redigering.</string>
     <string name="error_could_not_fetch_address_details">Kunne ikke hente adressedetaljer</string>
-    <string name="error_event_name_required">Event name is required.</string>
-    <string name="error_location_required">Location is required.</string>
+    <string name="error_event_name_required">Eventnavn er påkrævet.</string>
+    <string name="error_location_required">Lokation er påkrævet.</string>
     <string name="error_geolocation_required">Vælg en gyldig adresse fra forslagene.</string>
     <string name="error_event_date_required">Eventdato er påkrævet.</string>
     <string name="error_event_time_required">Eventtidspunkt er påkrævet.</string>
@@ -161,7 +161,15 @@
 
 
 <!--     strings for -->
-    <string name="date_options_and_users_voted">%1$d dates • %2$d users voted</string>
+    <string name="date_options_and_users_voted">%1$d datoer • %2$d stemte</string>
+    <plurals name="date_options_count">
+        <item quantity="one">%d dato</item>
+        <item quantity="other">%d datoer</item>
+    </plurals>
+    <plurals name="users_voted_count">
+        <item quantity="one">%d stemte</item>
+        <item quantity="other">%d stemte</item>
+    </plurals>
     <string name="today">I dag</string>
     <string name="yesterday">I går</string>
     <string name="days_ago">%1$d dage siden</string>
@@ -270,13 +278,14 @@
     <!-- Notifications inbox screen -->
     <string name="notifications_title">Notifikationer</string>
     <string name="notifications_mark_all_read">Marker alle som læst</string>
+    <string name="notifications_clear_all">Ryd alle</string>
     <string name="notifications_dismiss">Afvis notifikation</string>
     <string name="notifications_empty_title">Ingen notifikationer</string>
     <string name="notifications_empty_subtitle">Nye events og afstemninger vises her</string>
 
     <!-- Notification settings screen -->
     <string name="notification_status_label">Status:</string>
-    <string name="notification_settings_title">Notifikations-indstillinger</string>
+    <string name="notification_settings_title">Notifikationer</string>
     <string name="notification_settings_description">Modtag notifikationer, når der oprettes nye events eller afstemninger, så du altid er med.</string>
     <string name="notification_status_active">Aktiv</string>
     <string name="notification_status_inactive">Slået fra</string>
