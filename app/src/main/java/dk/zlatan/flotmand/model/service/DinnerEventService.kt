@@ -18,4 +18,9 @@ interface DinnerEventService {
     suspend fun readDinnerEvent(dinnerEventId: String): Event?
     suspend fun updateDinnerEvent(dinnerEvent: Event)
     suspend fun deleteDinnerEvent(dinnerEventId: String)
+
+    /**
+     * Deletes all dinner events created by the given user (publisherId).
+     */
+    suspend fun deleteDinnerEventsByUser(userId: String)
 }

@@ -26,3 +26,8 @@
 # Google Places / Maps
 -keep class com.google.android.libraries.places.** { *; }
 -keep class com.google.android.gms.maps.** { *; }
+# If you keep the line number information, uncomment this to
+# hide the original source file name.
+#-renamesourcefileattribute SourceFile
+
+-keep class com.mikepenz.aboutlibraries.** { *; }

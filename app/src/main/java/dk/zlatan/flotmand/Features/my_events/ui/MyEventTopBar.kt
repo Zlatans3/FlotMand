@@ -103,5 +103,4 @@ private fun MyEventTopBarInteractivePreview() {
             onTabSelected = { selected = it },
         )
     }
-
 }

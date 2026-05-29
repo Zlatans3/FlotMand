@@ -132,7 +132,7 @@
     <string name="my_voting">Min Afstemning</string>
     <string name="voting">Afstemning</string>
     <string name="vote_on_dates">Stem på alle datoer hvor du er tilgængelig</string>
-    <string name="created_by">Oprettet af </string>
+    <string name="created_by">Oprettet af</string>
     <string name="dates">Datoer</string>
     <string name="users_voted">Brugere Stemt</string>
     <string name="status">Status</string>
@@ -282,4 +282,20 @@
     <string name="notification_status_inactive">Slået fra</string>
     <string name="notification_action_allow">Tillad notifikationer</string>
     <string name="notification_action_manage">Administrer i indstillinger</string>
+    <!-- New strings for user deletion dialog -->
+    <string name="delete_user_title">Slet bruger?</string>
+    <string name="delete_user_button_title">Slet bruger</string>
+    <string name="delete_user_message">Er du sikker på du vil slette din bruger og data? Denne handling kan ikke fortrydes.</string>
+    <string name="delete_user_success">Bruger slettet.</string>
+    <string name="error_delete_user">Kunne ikke slette bruger: %1$s</string>
+
+    <!-- New string resource for the Open Source Licenses section title -->
+    <string name="open_source_licenses_title">Open Source Licenser</string>
+
+    <!-- New strings for filter and sorting options -->
+    <string name="filter">Sorter</string>
+    <string name="sort_date_asc">Dato (Førstkommende)</string>
+    <string name="sort_date_desc">Dato (Seneste først)</string>
+    <string name="sort_name_az">Navn (A-Å)</string>
+    <string name="sort_name_za">Navn (Å-A)</string>
 </resources>

@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -50,6 +51,9 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                     NavEntry(key) {
                         AccountInformationScreenRoute(
                             onDismiss = { viewModel.pop() },
+                            onUserDeleted = {
+                                viewModel.resetToRoot()
+                            },
                         )
                     }
                 }
@@ -119,7 +123,7 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
         entryDecorators =
             listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
-//            rememberViewModelStoreNavEntryDecorator()
+                rememberViewModelStoreNavEntryDecorator(),
             ),
     )
 }

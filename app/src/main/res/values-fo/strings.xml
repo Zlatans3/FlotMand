@@ -188,4 +188,9 @@
     <string name="faroese_english">Føroyskt</string>
     <string name="profile_section_settings">Stillingar</string>
     <string name="profile_section_user">Brúkari</string>
+    <string name="delete_user_title">Strika brúkara?</string>
+    <string name="delete_user_button_title">Strika brúkara</string>
+    <string name="delete_user_message">Ert tú vísur í, at tú vilt strika tín brúkara og øll data? Henda handling kann ikki angrast.</string>
+    <string name="delete_user_success">Brúkari strikaður.</string>
+    <string name="error_delete_user">Kundi ikki strika brúkara: %1$s</string>
 </resources>

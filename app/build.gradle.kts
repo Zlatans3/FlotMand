@@ -7,14 +7,16 @@ plugins {
     alias(libs.plugins.hilt.android)
     id("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.google.gms.google.services)
+    id("com.google.android.gms.oss-licenses-plugin")
 }
 
-val localProperties = Properties().apply {
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localPropertiesFile.inputStream().use { load(it) }
+val localProperties =
+    Properties().apply {
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { load(it) }
+        }
     }
-}
 val googleServerClientId = localProperties["GOOGLE_SERVER_CLIENT_ID"] as String? ?: ""
 val googleMapsApiKey = localProperties["GOOGLE_MAPS_API_KEY"] as String? ?: ""
 
@@ -60,7 +62,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             signingConfig = signingConfigs.getByName("release")
         }
@@ -111,6 +113,7 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.navigation3.ui)
+    implementation(libs.play.services.oss.licenses)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation3.runtime)
@@ -137,4 +140,7 @@ dependencies {
     implementation("com.google.maps.android:maps-compose:4.4.1")
 
     implementation("androidx.appcompat:appcompat:1.7.1")
+
+    // OSS Licenses dependency
+    implementation("com.google.android.gms:play-services-oss-licenses:17.1.0")
 }

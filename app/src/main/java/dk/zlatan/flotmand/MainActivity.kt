@@ -29,9 +29,9 @@ class MainActivity : ComponentActivity() {
     lateinit var frontPageNavigationCoordinator: FrontPageNavigationCoordinator
 
     override fun attachBaseContext(newBase: Context) {
-        val prefs = newBase.getSharedPreferences("language_prefs", Context.MODE_PRIVATE)
+        val prefs = newBase.getSharedPreferences("language_prefs", MODE_PRIVATE)
         val lang = prefs.getString("selected_language", "da") ?: "da"
-        val locale = Locale(lang)
+        val locale = Locale.forLanguageTag(lang)
         val context = LocaleContextWrapper.wrap(newBase, locale)
         super.attachBaseContext(context)
     }
@@ -39,10 +39,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(
-                lightScrim = android.graphics.Color.TRANSPARENT,
-                darkScrim = android.graphics.Color.TRANSPARENT,
-            )
+            statusBarStyle =
+                SystemBarStyle.auto(
+                    lightScrim = android.graphics.Color.TRANSPARENT,
+                    darkScrim = android.graphics.Color.TRANSPARENT,
+                ),
         )
         // Only handle on a true cold start — savedInstanceState is non-null on rotation.
         if (savedInstanceState == null) {

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.rounded.Grid3x3
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.HowToVote
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PinDrop
 import androidx.compose.material.icons.rounded.Public
@@ -48,6 +49,7 @@ object FmIcons {
     val Bookmarks = Icons.Rounded.Bookmarks
     val BookmarksBorder = Icons.Outlined.Bookmarks
     val Check = Icons.Rounded.Check
+    val info = Icons.Rounded.Info
     val Close = Icons.Rounded.Close
     val Grid3x3 = Icons.Rounded.Grid3x3
     val MoreVert = Icons.Default.MoreVert

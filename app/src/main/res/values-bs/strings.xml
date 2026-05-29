@@ -188,4 +188,9 @@
     <string name="faroese_english">Farski</string>
     <string name="profile_section_settings">Postavke</string>
     <string name="profile_section_user">Korisnik</string>
+    <string name="delete_user_title">Obriši korisnika?</string>
+    <string name="delete_user_button_title">Obriši korisnika</string>
+    <string name="delete_user_message">Da li ste sigurni da želite obrisati svog korisnika i podatke? Ova radnja se ne može poništiti.</string>
+    <string name="delete_user_success">Korisnik obrisan.</string>
+    <string name="error_delete_user">Nije moguće obrisati korisnika: %1$s</string>
 </resources>

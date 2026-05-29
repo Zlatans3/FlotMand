@@ -1,14 +1,21 @@
 package dk.zlatan.flotmand.Features.profile.account_information
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,30 +26,46 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import dk.zlatan.flotmand.Features.profile.account_information.ui.AccountDetailsCard
+import dk.zlatan.flotmand.Features.profile.account_information.ui.DeleteUserDialog
 import dk.zlatan.flotmand.Features.profile.account_information.ui.PersonalInfoCard
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
+import kotlinx.coroutines.CoroutineScope
+import kotlin.jvm.java
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AccountInformationScreenRoute(
     modifier: Modifier = Modifier,
     viewModel: AccountInformationViewModel = hiltViewModel(),
-    onDismiss: () -> Unit = {},
+    onDismiss: () -> Unit,
+    onUserDeleted: () -> Unit = onDismiss,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val showDeleteDialog = remember { mutableStateOf(false) }
+    val isLoading = uiState.isLoading
+
+    var expandDropdownMenu by remember { mutableStateOf(false) }
+    val activity = LocalContext.current
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -63,6 +86,36 @@ internal fun AccountInformationScreenRoute(
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.surface,
+                trailingContent = {
+                    IconButton(onClick = { expandDropdownMenu = !expandDropdownMenu }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Show more options"
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expandDropdownMenu,
+                        onDismissRequest = { expandDropdownMenu = false },
+                        containerColor = MaterialTheme.colorScheme.surface,
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = stringResource(R.string.open_source_licenses_title),
+                                )
+                            },
+                            onClick = {
+                                if (activity != null) {
+                                    val intent =
+                                        Intent(activity, OssLicensesMenuActivity::class.java)
+                                    activity.startActivity(intent)
+                                    expandDropdownMenu = false
+                                }
+                            }
+                        )
+                    }
+                }
             )
         },
     ) { paddingValues ->
@@ -72,15 +125,14 @@ internal fun AccountInformationScreenRoute(
                 modifier
                     .padding(top = topPaddingValues),
             user = uiState.user ?: User(),
-            isLoading = uiState.isLoading,
+            isLoading = isLoading,
             onUpdateDisplayName = { newName -> viewModel.updateDisplayName(newName) },
             onUpdatePhoneNumber = { newPhone ->
                 viewModel.updatePhoneNumber(newPhone)
             },
+            onDeleteUserClick = { showDeleteDialog.value = true },
         )
     }
-
-    val snackbarHostState = remember { SnackbarHostState() }
 
     // Show error message in snackbar
     LaunchedEffect(uiState.errorMessage) {
@@ -88,6 +140,18 @@ internal fun AccountInformationScreenRoute(
             snackbarHostState.showSnackbar(it)
             viewModel.clearError()
         }
+    }
+    // Delete user dialog
+    if (showDeleteDialog.value) {
+        DeleteUserDialog(
+            isLoading = isLoading,
+            onConfirm = {
+                showDeleteDialog.value = false
+                viewModel.deleteUser()
+                onUserDeleted()
+            },
+            onDismiss = { showDeleteDialog.value = false },
+        )
     }
 }
 
@@ -99,6 +163,7 @@ private fun AccountInformationScreenContent(
     isLoading: Boolean = false,
     onUpdateDisplayName: (String) -> Unit,
     onUpdatePhoneNumber: (String) -> Unit,
+    onDeleteUserClick: () -> Unit,
 ) {
     Column(
         modifier =
@@ -122,7 +187,17 @@ private fun AccountInformationScreenContent(
         // Account Details Card
         AccountDetailsCard(user = user)
 
-        VSpacer(16.dp)
+        Spacer(modifier = Modifier.weight(1f))
+        Button(
+            onClick = onDeleteUserClick,
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                ),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        ) {
+            Text(stringResource(R.string.delete_user_button_title))
+        }
     }
 }
 
@@ -144,6 +219,7 @@ private fun AccountInformationScreenPreview() {
             isLoading = false,
             onUpdateDisplayName = {},
             onUpdatePhoneNumber = {},
+            onDeleteUserClick = {},
         )
     }
 }
