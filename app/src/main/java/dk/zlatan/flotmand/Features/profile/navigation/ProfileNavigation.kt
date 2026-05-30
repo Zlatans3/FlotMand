@@ -23,6 +23,7 @@ import dk.zlatan.flotmand.Features.profile.account_information.AccountInformatio
 import dk.zlatan.flotmand.Features.profile.licenses.LicensesScreen
 import dk.zlatan.flotmand.Features.profile.notificationsettings.NotificationSettingsScreen
 import dk.zlatan.flotmand.Features.profile.switchlanguage.SwitchLanguageScreen
+import dk.zlatan.flotmand.Features.profile.theme.ThemeSettingsScreen
 
 private const val PRIVACY_POLICY_URL = "https://zlatans3.github.io/privacy-policy/"
 
@@ -49,6 +50,9 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             },
                             onNotificationSettingsClick = {
                                 viewModel.navigate(ProfileDestination.NotificationSettings)
+                            },
+                            onThemeSettingsClick = {
+                                viewModel.navigate(ProfileDestination.ThemeSettings)
                             },
                             onPrivacyPolicyClick = {
                                 CustomTabsIntent.Builder().build()
@@ -90,6 +94,14 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                     }
                 }
 
+                ProfileDestination.ThemeSettings -> {
+                    NavEntry(key) {
+                        ThemeSettingsScreen(
+                            onDismiss = { viewModel.pop() },
+                        )
+                    }
+                }
+
                 else -> {
                     NavEntry(key) {
                         ProfileScreenRoute(
@@ -101,6 +113,9 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             },
                             onNotificationSettingsClick = {
                                 viewModel.navigate(ProfileDestination.NotificationSettings)
+                            },
+                            onThemeSettingsClick = {
+                                viewModel.navigate(ProfileDestination.ThemeSettings)
                             },
                             onPrivacyPolicyClick = {
                                 CustomTabsIntent.Builder().build()

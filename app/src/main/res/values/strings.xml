@@ -250,6 +250,15 @@
     <string name="profile_section_user">Bruger</string>
     <string name="profile_section_other">Andet</string>
     <string name="privacy_policy">Privatlivspolitik</string>
+    <string name="theme_settings_title">Tema</string>
+    <string name="theme_system">System</string>
+    <string name="theme_system_description">Følger enhedens lys/mørk indstilling</string>
+    <string name="theme_flotmand">Flotmand</string>
+    <string name="theme_flotmand_description">Flotmands egne farver, følger enhedens indstilling</string>
+    <string name="theme_light">Lys</string>
+    <string name="theme_light_description">Altid lys tilstand</string>
+    <string name="theme_dark">Mørk</string>
+    <string name="theme_dark_description">Altid mørk tilstand</string>
 
     <string name="error_loading_event">Noget gik galt</string>
 

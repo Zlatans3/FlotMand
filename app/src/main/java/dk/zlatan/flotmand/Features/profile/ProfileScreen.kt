@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dk.zlatan.flotmand.Features.profile.ui.DisplayName
+import dk.zlatan.flotmand.Features.profile.ui.ProfileStatsRow
 import dk.zlatan.flotmand.Features.profile.ui.SectionCard
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.HeaderContainer
@@ -31,8 +32,6 @@ import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
 
-private const val set_name = "opsæt navn"
-
 // TODO: Zlatan 22/01/2026 Make a navigation destination class
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,10 +42,12 @@ fun ProfileScreenRoute(
     onLanguageClick: () -> Unit = {},
     onNotificationSettingsClick: () -> Unit = {},
     navigateToAccountInformation: () -> Unit = {},
+    onThemeSettingsClick: () -> Unit = {},
     onPrivacyPolicyClick: () -> Unit = {},
 ) {
-    val user by viewModel.user.collectAsState(initial = User(displayName = set_name))
+    val user by viewModel.user.collectAsState(initial = User())
     val isLoading by viewModel.signOutLoading.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     var sinOutDialogState by remember { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
@@ -62,12 +63,16 @@ fun ProfileScreenRoute(
                     .fillMaxSize(),
             userName = user.displayName,
             userImage = user.photoUrl,
+            eventsHosted = uiState.eventsHosted,
+            eventsAttended = uiState.eventsAttended,
+            upcomingEvents = uiState.upcomingEvents,
             onLogoutClicked = {
                 sinOutDialogState = true
             },
             onAccountInformationClick = navigateToAccountInformation,
             onLanguageClick = onLanguageClick,
             onNotificationSettingsClick = onNotificationSettingsClick,
+            onThemeSettingsClick = onThemeSettingsClick,
             onPrivacyPolicyClick = onPrivacyPolicyClick,
         )
     }
@@ -92,10 +97,14 @@ internal fun ProfileScreen(
     modifier: Modifier = Modifier,
     userImage: String? = null,
     userName: String,
+    eventsHosted: Int = 0,
+    eventsAttended: Int = 0,
+    upcomingEvents: Int = 0,
     onLogoutClicked: () -> Unit = {},
     onAccountInformationClick: () -> Unit = {},
     onLanguageClick: () -> Unit,
     onNotificationSettingsClick: () -> Unit = {},
+    onThemeSettingsClick: () -> Unit = {},
     onPrivacyPolicyClick: () -> Unit = {},
 ) {
     LazyColumn(
@@ -108,16 +117,22 @@ internal fun ProfileScreen(
                 modifier = Modifier,
                 color = MaterialTheme.colorScheme.secondaryContainer,
             ) {
-                VSpacer(90.dp)
+                VSpacer(60.dp)
                 ProfileImage(
                     modifier = Modifier,
                     profilePic = userImage,
-                    profileSize = 100.dp,
+                    profileSize = 80.dp,
                     userName = userName,
                 )
-                VSpacer(20.dp)
+                VSpacer(8.dp)
                 DisplayName(displayName = userName)
-                VSpacer(12.dp)
+                VSpacer(16.dp)
+                ProfileStatsRow(
+                    eventsHosted = eventsHosted,
+                    eventsAttended = eventsAttended,
+                    upcomingEvents = upcomingEvents,
+                )
+                VSpacer(20.dp)
             }
         }
         item {
@@ -136,6 +151,12 @@ internal fun ProfileScreen(
             )
             VSpacer(12.dp)
             SectionCard(
+                title = stringResource(R.string.theme_settings_title),
+                iconRes = FmIcons.darkMode,
+                onClick = onThemeSettingsClick,
+            )
+            VSpacer(12.dp)
+            SectionCard(
                 title = stringResource(R.string.notification_settings_title),
                 iconRes = FmIcons.Bell,
                 onClick = onNotificationSettingsClick,
@@ -151,7 +172,8 @@ internal fun ProfileScreen(
             VSpacer(12.dp)
             SectionCard(
                 title = stringResource(R.string.privacy_policy),
-                iconRes = FmIcons.info,
+                iconRes = FmIcons.privacyTip,
+                trailingIcon = FmIcons.openInNew,
                 onClick = onPrivacyPolicyClick,
             )
 
@@ -186,6 +208,9 @@ private fun ProfileScreenPreview() {
         ProfileScreen(
             modifier = Modifier,
             userName = "Oliver Payne",
+            eventsHosted = 12,
+            eventsAttended = 8,
+            upcomingEvents = 3,
             onLanguageClick = {},
         )
     }

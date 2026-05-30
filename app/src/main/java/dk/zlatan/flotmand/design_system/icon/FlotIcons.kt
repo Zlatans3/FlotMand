@@ -35,6 +35,9 @@ import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Upcoming
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.PrivacyTip
 import androidx.compose.material.icons.rounded.ViewDay
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -66,6 +69,9 @@ object FmIcons {
 
     val mapPin = Icons.Rounded.PinDrop
     val chevronRight = Icons.AutoMirrored.Rounded.KeyboardArrowRight
+    val darkMode = Icons.Rounded.DarkMode
+    val openInNew = Icons.Rounded.OpenInNew
+    val privacyTip = Icons.Rounded.PrivacyTip
 
         // top level
     val Home = Icons.Rounded.Home

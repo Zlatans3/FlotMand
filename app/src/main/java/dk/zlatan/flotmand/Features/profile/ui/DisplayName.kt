@@ -17,7 +17,7 @@ fun DisplayName(
 ) {
     Text(
         text = displayName,
-        style = MaterialTheme.typography.displayMedium,
+        style = MaterialTheme.typography.titleLarge,
         color = MaterialTheme.colorScheme.onSurface,
         textAlign = TextAlign.Center,
         modifier = modifier

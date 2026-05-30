@@ -25,6 +25,7 @@ internal fun SectionCard(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     iconRes: ImageVector = FmIcons.Person,
+    trailingIcon: ImageVector = FmIcons.chevronRight,
     title: String,
     onClick: () -> Unit,
 ) {
@@ -61,7 +62,7 @@ internal fun SectionCard(
                 )
             }
             Icon(
-                imageVector = FmIcons.chevronRight,
+                imageVector = trailingIcon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
                 modifier = Modifier.size(22.dp),
