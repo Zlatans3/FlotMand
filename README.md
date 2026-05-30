@@ -101,29 +101,50 @@ this app is an Online first app starting with a login screen that lets you authe
 <BR><BR>
 
 ```mermaid
-graph TD;
-  Login[Login] --> B{Firebase};
-  B --> |authentication| C[Front page];
-  C --> D[My Events]
-  C --> E[profile]
-  C --> |Any event| G[Event details]
-  D --> |CurrentUser event| G
-  E --> |Log out| Login
-  E --> j[Account Information]
-  E --> K[language]
-  C --> H[Polls]
-  H --> i{Poll details}
-  D --> F[Create event]
-  G --> EDIT[Edit event]
-  i --> F
-subgraph Bottom Navigation
-            C
-            D
-            E
-end
-subgraph App launch
-            Login
-end
+graph TD
+      Login[Login] -->|Firebase auth| MainApp
+
+      subgraph App Launch
+          Login
+      end
+
+      subgraph Bottom Navigation
+          FrontPage[Front Page]                                                                                             
+          MyEvents[My Events]
+          Profile[Profile]
+      end
+
+      MainApp --> FrontPage
+      MainApp --> MyEvents
+      MainApp --> Profile
+  
+      %% Front Page stack
+      FrontPage --> Notif[Notifications]
+      FrontPage -->|any event| FP_Detail[Event Detail]
+      FrontPage --> Polls[Polls]
+
+      Notif -->|event tap| FP_Detail
+      Notif -->|poll tap| PollDetail
+
+      Polls --> PollDetail[Poll Detail]                                                                                     
+      PollDetail -->|create event| FP_CreateEvent[Create Event]
+      FP_CreateEvent -->|event created| FP_Detail
+
+      FP_Detail --> FP_Edit[Edit Event]
+
+      %% My Events stack
+      MyEvents --> ME_CreateEvent[Create Event]                                                                             
+      MyEvents -->|own event| ME_Detail[Event Detail]
+      ME_Detail --> ME_Edit[Edit Event]
+      ME_CreateEvent -->|event created| ME_Detail
+
+      %% Profile stack
+      Profile -->|log out| Login                                                                                            
+      Profile --> AccountInfo[Account Information]
+      Profile --> Language[Language]
+      Profile --> NotifSettings[Notification Settings]
+      Profile --> Theme[Theme Settings]
+      AccountInfo --> Licenses[Open Source Licenses]
 ````
 
 # 👤 Can i use this app? 
