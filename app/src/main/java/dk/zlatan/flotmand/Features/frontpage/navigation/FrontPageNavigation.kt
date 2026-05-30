@@ -1,6 +1,5 @@
 package dk.zlatan.flotmand.Features.frontpage.navigation
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
@@ -10,10 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,28 +26,13 @@ import dk.zlatan.flotmand.Features.frontpage.notifications.NotificationsScreen
 import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreen
 import dk.zlatan.flotmand.Features.my_events.add_new_event.EditEventScreen
 import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
-import kotlinx.coroutines.launch
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
 fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel()) {
     val navigationStack: List<FrontPageDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
-    // Navigation overlay for sub-screens
-    val snackbarHostState = SnackbarHostState()
-    val scope = rememberCoroutineScope()
-    var canExitApp by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    BackHandler(enabled = navigationStack.isEmpty()) {
-        if (navigationStack.size > 1) {
-            scope.launch {
-                snackbarHostState.showSnackbar("Press back again to exit")
-            }
-            canExitApp = true
-        }
-        if (canExitApp) {
-            viewModel.pop()
-        }
-    }
     NavDisplay(
         backStack = navigationStack,
         onBack = { viewModel.pop() },

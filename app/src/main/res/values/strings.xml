@@ -318,4 +318,5 @@
     <string name="sort_date_desc">Dato (Seneste først)</string>
     <string name="sort_name_az">Navn (A-Å)</string>
     <string name="sort_name_za">Navn (Å-A)</string>
+    <string name="press_back_again_to_exit">Tryk tilbage igen for at lukke appen</string>
 </resources>

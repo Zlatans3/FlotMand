@@ -1,6 +1,7 @@
 package dk.zlatan.flotmand.navigation
 
 import android.view.WindowManager
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.fadeIn
@@ -12,14 +13,21 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import dk.zlatan.flotmand.R
+import kotlinx.coroutines.launch
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -103,8 +111,37 @@ private fun MainAppContent(modifier: Modifier = Modifier) {
     val myEventsViewModel: MyEventsNavigationViewModel = hiltViewModel()
     val profileViewModel: ProfileNavigationViewModel = hiltViewModel()
 
+    val frontPageStack by frontPageViewModel.navigationStack.collectAsStateWithLifecycle()
+    val myEventsStack by myEventsViewModel.navigationStack.collectAsStateWithLifecycle()
+    val profileStack by profileViewModel.navigationStack.collectAsStateWithLifecycle()
+
+    val isAtRoot = when (currentTab) {
+        TopLevelDestination.HOME -> frontPageStack.size <= 1
+        TopLevelDestination.MY_EVENTS -> myEventsStack.size <= 1
+        TopLevelDestination.PROFILE -> profileStack.size <= 1
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    var canExit by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val activity = LocalActivity.current
+    val exitMessage = stringResource(R.string.press_back_again_to_exit)
+
+    BackHandler(enabled = isAtRoot) {
+        if (canExit) {
+            activity?.finish()
+        } else {
+            canExit = true
+            scope.launch {
+                snackbarHostState.showSnackbar(exitMessage)
+                canExit = false
+            }
+        }
+    }
+
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             FmBottomNavigationBar(
                 currentTab = currentTab,
@@ -148,7 +185,6 @@ private fun MainAppContent(modifier: Modifier = Modifier) {
     }
 
     // Switch to HOME tab when the coordinator pushes Notifications (e.g. from a system notification tap)
-    val frontPageStack by frontPageViewModel.navigationStack.collectAsStateWithLifecycle()
     LaunchedEffect(frontPageStack) {
         if (frontPageStack.contains(FrontPageDestination.Notifications) &&
             currentTab != TopLevelDestination.HOME
