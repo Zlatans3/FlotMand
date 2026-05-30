@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "853949338460",
-    "project_id": "flotmand-e9edf",
-    "storage_bucket": "flotmand-e9edf.firebasestorage.app"
+    "project_number": "1011739191096",
+    "project_id": "flotmand-release",
+    "storage_bucket": "flotmand-release.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:853949338460:android:4c9e027d5056e2bef2a799",
+        "mobilesdk_app_id": "1:1011739191096:android:da8cc8a461253c192f43cd",
         "android_client_info": {
           "package_name": "dk.zlatan.flotmand"
         }
       },
       "oauth_client": [
         {
-          "client_id": "853949338460-19plp92636o8rvmhseg3du1au8i24aov.apps.googleusercontent.com",
+          "client_id": "1011739191096-bi2nugtmjrj005taqk756klf9h9d4e4t.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBcxXxlGeDCTMfDqXeIa2vIalM_OA50CMs"
+          "current_key": "AIzaSyD45kkgVQktLhlN4WEiY8_KxMyb0if7L1U"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "853949338460-19plp92636o8rvmhseg3du1au8i24aov.apps.googleusercontent.com",
+              "client_id": "1011739191096-bi2nugtmjrj005taqk756klf9h9d4e4t.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

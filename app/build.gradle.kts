@@ -17,8 +17,14 @@ val localProperties =
             localPropertiesFile.inputStream().use { load(it) }
         }
     }
-val googleServerClientId = localProperties["GOOGLE_SERVER_CLIENT_ID"] as String? ?: ""
+val googleServerClientIdDebug = localProperties["GOOGLE_SERVER_CLIENT_ID_DEBUG"] as String? ?: ""
+val googleServerClientIdRelease = localProperties["GOOGLE_SERVER_CLIENT_ID_RELEASE"] as String? ?: ""
 val googleMapsApiKey = localProperties["GOOGLE_MAPS_API_KEY"] as String? ?: ""
+
+val commitCount = "git rev-list --count HEAD".trimIndent().let {
+    Runtime.getRuntime().exec(it.split(" ").toTypedArray())
+        .inputStream.bufferedReader().readText().trim().toIntOrNull() ?: 1
+}
 
 android {
     namespace = "dk.zlatan.flotmand"
@@ -42,11 +48,10 @@ android {
         applicationId = "dk.zlatan.flotmand"
         minSdk = 30
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.2"
+        versionCode = commitCount
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"$googleServerClientId\"")
         buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
         resValue("string", "google_maps_key", googleMapsApiKey)
@@ -54,8 +59,10 @@ android {
 
     buildTypes {
         debug {
+            applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             resValue("string", "app_name", "Flotmand - debug")
+            buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"$googleServerClientIdDebug\"")
         }
         release {
             isMinifyEnabled = true
@@ -64,6 +71,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"$googleServerClientIdRelease\"")
             signingConfig = signingConfigs.getByName("release")
         }
     }
