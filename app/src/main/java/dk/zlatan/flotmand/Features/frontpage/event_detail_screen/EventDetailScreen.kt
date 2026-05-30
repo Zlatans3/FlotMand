@@ -55,6 +55,7 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.PublisherSec
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.DateTimeInfoBox
 import dk.zlatan.flotmand.design_system.componenets.ParticipantsInfoBox
+import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
@@ -94,141 +95,145 @@ internal fun EventDetailScreenRoute(
         }
     }
 
-    Scaffold(
+    PredictiveBackScaleContainer(
         modifier = modifier,
-        topBar = {
-            EventDetailTopAppBar(
-                onBackClick = onDismiss,
-                isPublisher = uiState.isPublisher,
-                onDeleteClick = {
-                    showDeleteDialog = true
-                },
-                onEditClick = {
-                    uiState.event?.eventId?.let { onEditEvent(it) }
-                },
-            )
-        },
-    ) { paddingValues ->
-        val topBarPadding = paddingValues.calculateTopPadding()
-        when {
-            // Show content if event exists OR if we're in the process of deleting
-            // This prevents the empty state flash during deletion
-            uiState.event != null -> {
-                val event = uiState.event
-                if (event != null) {
-                    EventDetailScreenContent(
-                        modifier = Modifier.padding(top = topBarPadding),
-                        event = event,
-                        isParticipating = uiState.isParticipated,
-                        publisher = uiState.publisher,
-                        geoLocation = event.geoLocation,
-                        onParticipantsClick = {
-                            if (!event.participantIds.isNullOrEmpty()) {
-                                viewModel.showParticipants()
-                            }
-                        },
-                        isPublisher = uiState.isPublisher,
-                        onParticipateClick = {
-                            viewModel.onUserParticipate()
-                        },
-                        onMapClick = {
-                            val intent =
-                                buildDirectionsChooserIntent(
-                                    latitude = event.geoLocation?.latitude,
-                                    longitude = event.geoLocation?.longitude,
-                                    address = event.location,
-                                )
-                            context.startActivity(intent)
-                        },
-                        participants = uiState.participants,
-                    )
-                }
-            }
-
-            uiState.isLoadingEvent || uiState.isDeleted -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    var show by remember { mutableStateOf(false) }
-                    LaunchedEffect(Unit) {
-                        // Just a small delay to ensure smooth appearance
-                        delay(300)
-                        show = true
+    ) {
+        Scaffold(
+            modifier = Modifier,
+            topBar = {
+                EventDetailTopAppBar(
+                    onBackClick = onDismiss,
+                    isPublisher = uiState.isPublisher,
+                    onDeleteClick = {
+                        showDeleteDialog = true
+                    },
+                    onEditClick = {
+                        uiState.event?.eventId?.let { onEditEvent(it) }
+                    },
+                )
+            },
+        ) { paddingValues ->
+            val topBarPadding = paddingValues.calculateTopPadding()
+            when {
+                // Show content if event exists OR if we're in the process of deleting
+                // This prevents the empty state flash during deletion
+                uiState.event != null -> {
+                    val event = uiState.event
+                    if (event != null) {
+                        EventDetailScreenContent(
+                            modifier = Modifier.padding(top = topBarPadding),
+                            event = event,
+                            isParticipating = uiState.isParticipated,
+                            publisher = uiState.publisher,
+                            geoLocation = event.geoLocation,
+                            onParticipantsClick = {
+                                if (!event.participantIds.isNullOrEmpty()) {
+                                    viewModel.showParticipants()
+                                }
+                            },
+                            isPublisher = uiState.isPublisher,
+                            onParticipateClick = {
+                                viewModel.onUserParticipate()
+                            },
+                            onMapClick = {
+                                val intent =
+                                    buildDirectionsChooserIntent(
+                                        latitude = event.geoLocation?.latitude,
+                                        longitude = event.geoLocation?.longitude,
+                                        address = event.location,
+                                    )
+                                context.startActivity(intent)
+                            },
+                            participants = uiState.participants,
+                        )
                     }
-                    if (show) {
-                        CircularProgressIndicator()
+                }
+
+                uiState.isLoadingEvent || uiState.isDeleted -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        var show by remember { mutableStateOf(false) }
+                        LaunchedEffect(Unit) {
+                            // Just a small delay to ensure smooth appearance
+                            delay(300)
+                            show = true
+                        }
+                        if (show) {
+                            CircularProgressIndicator()
+                            Spacer(modifier = Modifier.padding(8.dp))
+                            Text(text = stringResource(R.string.loading_event))
+                        }
+                    }
+                }
+
+                uiState.eventError != null -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.error_loading_event),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
                         Spacer(modifier = Modifier.padding(8.dp))
-                        Text(text = stringResource(R.string.loading_event))
+                        Text(
+                            text = uiState.eventError!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
-            }
 
-            uiState.eventError != null -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = stringResource(R.string.error_loading_event),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                    Spacer(modifier = Modifier.padding(8.dp))
-                    Text(
-                        text = uiState.eventError!!,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-
-            // Only show null state when not loading and event is still null and not deleted
-            uiState.event == null && !uiState.isDeleted -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = stringResource(R.string.event_not_found),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                    Spacer(modifier = Modifier.padding(8.dp))
-                    Text(
-                        text = stringResource(R.string.event_not_loaded),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                // Only show null state when not loading and event is still null and not deleted
+                uiState.event == null && !uiState.isDeleted -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.event_not_found),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        Spacer(modifier = Modifier.padding(8.dp))
+                        Text(
+                            text = stringResource(R.string.event_not_loaded),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
-    }
 
-    if (uiState.showParticipationBottomSheet) {
-        ParticipantsBottomSheet(
-            onDismiss = {
-                viewModel.onDismissParticipantsSheet()
-            },
-            participants = uiState.participants,
-            publisherId = uiState.publisher?.id,
-        )
-    }
+        if (uiState.showParticipationBottomSheet) {
+            ParticipantsBottomSheet(
+                onDismiss = {
+                    viewModel.onDismissParticipantsSheet()
+                },
+                participants = uiState.participants,
+                publisherId = uiState.publisher?.id,
+            )
+        }
 
-    if (showDeleteDialog) {
-        FmConfirmDialog(
-            title = stringResource(R.string.delete_event_title),
-            message = stringResource(R.string.delete_event_message),
-            confirmText = stringResource(R.string.delete),
-            onDismiss = { showDeleteDialog = false },
-            onConfirmClick = {
-                showDeleteDialog = false
-                viewModel.deleteEvent(eventId)
-            },
-        )
+        if (showDeleteDialog) {
+            FmConfirmDialog(
+                title = stringResource(R.string.delete_event_title),
+                message = stringResource(R.string.delete_event_message),
+                confirmText = stringResource(R.string.delete),
+                onDismiss = { showDeleteDialog = false },
+                onConfirmClick = {
+                    showDeleteDialog = false
+                    viewModel.deleteEvent(eventId)
+                },
+            )
+        }
     }
 }
 

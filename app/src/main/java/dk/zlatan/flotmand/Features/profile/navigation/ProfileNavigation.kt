@@ -24,6 +24,7 @@ import dk.zlatan.flotmand.Features.profile.licenses.LicensesScreen
 import dk.zlatan.flotmand.Features.profile.notificationsettings.NotificationSettingsScreen
 import dk.zlatan.flotmand.Features.profile.switchlanguage.SwitchLanguageScreen
 import dk.zlatan.flotmand.Features.profile.theme.ThemeSettingsScreen
+import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
 
 private const val PRIVACY_POLICY_URL = "https://zlatans3.github.io/privacy-policy/"
 
@@ -64,41 +65,51 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
 
                 ProfileDestination.AccountInformation -> {
                     NavEntry(key) {
-                        AccountInformationScreenRoute(
-                            onDismiss = { viewModel.pop() },
-                            onUserDeleted = { viewModel.resetToRoot() },
-                            onOpenLicenses = { viewModel.navigate(ProfileDestination.Licenses) },
-                        )
+                        PredictiveBackScaleContainer {
+                            AccountInformationScreenRoute(
+                                onDismiss = { viewModel.pop() },
+                                onUserDeleted = { viewModel.resetToRoot() },
+                                onOpenLicenses = { viewModel.navigate(ProfileDestination.Licenses) },
+                            )
+                        }
                     }
                 }
 
                 ProfileDestination.Licenses -> {
                     NavEntry(key) {
-                        LicensesScreen(onDismiss = { viewModel.pop() })
+                        PredictiveBackScaleContainer {
+                            LicensesScreen(onDismiss = { viewModel.pop() })
+                        }
                     }
                 }
 
                 ProfileDestination.SwitchLanguage -> {
                     NavEntry(key) {
-                        SwitchLanguageScreen(
-                            onDismiss = { viewModel.pop() },
-                        )
+                        PredictiveBackScaleContainer {
+                            SwitchLanguageScreen(
+                                onDismiss = { viewModel.pop() },
+                            )
+                        }
                     }
                 }
 
                 ProfileDestination.NotificationSettings -> {
                     NavEntry(key) {
-                        NotificationSettingsScreen(
-                            onDismiss = { viewModel.pop() },
-                        )
+                        PredictiveBackScaleContainer {
+                            NotificationSettingsScreen(
+                                onDismiss = { viewModel.pop() },
+                            )
+                        }
                     }
                 }
 
                 ProfileDestination.ThemeSettings -> {
                     NavEntry(key) {
-                        ThemeSettingsScreen(
-                            onDismiss = { viewModel.pop() },
-                        )
+                        PredictiveBackScaleContainer {
+                            ThemeSettingsScreen(
+                                onDismiss = { viewModel.pop() },
+                            )
+                        }
                     }
                 }
 
@@ -135,25 +146,10 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
             )
         },
         popTransitionSpec = {
-            ContentTransform(
-                EnterTransition.None,
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                ),
-            )
+            ContentTransform(EnterTransition.None, ExitTransition.None)
         },
-        predictivePopTransitionSpec = { progress: Int ->
-            ContentTransform(
-                EnterTransition.None,
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec =
-                        tween<IntOffset>(
-                            durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
-                            easing = FastOutSlowInEasing,
-                        ),
-                ),
-            )
+        predictivePopTransitionSpec = { _: Int ->
+            ContentTransform(EnterTransition.None, ExitTransition.None)
         },
         entryDecorators =
             listOf(

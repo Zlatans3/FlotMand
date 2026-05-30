@@ -19,6 +19,7 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScre
 import dk.zlatan.flotmand.Features.my_events.MyEventScreenRoute
 import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreen
 import dk.zlatan.flotmand.Features.my_events.add_new_event.EditEventScreen
+import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -100,25 +101,10 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
             )
         },
         popTransitionSpec = {
-            ContentTransform(
-                EnterTransition.None,
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                ),
-            )
+            ContentTransform(EnterTransition.None, ExitTransition.None)
         },
-        predictivePopTransitionSpec = { progress: Int ->
-            ContentTransform(
-                EnterTransition.None,
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec =
-                        tween<IntOffset>(
-                            durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
-                            easing = FastOutSlowInEasing,
-                        ),
-                ),
-            )
+        predictivePopTransitionSpec = { _: Int ->
+            ContentTransform(EnterTransition.None, ExitTransition.None)
         },
         entryDecorators =
             listOf(
