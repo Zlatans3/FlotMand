@@ -215,7 +215,7 @@ private fun LoginCard(
     }
 }
 
-// Launches the Credential Manager UI for Google Sign-In
+// Launches the Credential Manager UI for Google Sign-In and returns the result via callbacks
 private suspend fun launchCredManButtonUI(
     context: Context,
     onRequestResult: (Credential) -> Unit,
