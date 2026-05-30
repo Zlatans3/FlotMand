@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -15,7 +14,7 @@ import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
 import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageDestination
 import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigationCoordinator
-import dk.zlatan.flotmand.Features.profile.theme.ThemeViewModel
+import dk.zlatan.flotmand.Features.profile.theme.ThemeRepository
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.design_system.theme.ThemeMode
 import dk.zlatan.flotmand.impl.FlotMandFirebaseMessagingService
@@ -33,7 +32,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var frontPageNavigationCoordinator: FrontPageNavigationCoordinator
 
-    private val themeViewModel: ThemeViewModel by viewModels()
+    @Inject
+    lateinit var themeRepository: ThemeRepository
 
     override fun attachBaseContext(newBase: Context) {
         val prefs = newBase.getSharedPreferences("language_prefs", MODE_PRIVATE)
@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
             handleNotificationIntent(intent)
         }
         setContent {
-            val themeMode by themeViewModel.themeMode.collectAsState()
+            val themeMode by themeRepository.themeMode.collectAsState()
             val systemDark = isSystemInDarkTheme()
             val darkTheme = when (themeMode) {
                 ThemeMode.LIGHT -> false
