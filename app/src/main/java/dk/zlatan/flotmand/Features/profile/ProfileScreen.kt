@@ -43,6 +43,7 @@ fun ProfileScreenRoute(
     onLanguageClick: () -> Unit = {},
     onNotificationSettingsClick: () -> Unit = {},
     navigateToAccountInformation: () -> Unit = {},
+    onPrivacyPolicyClick: () -> Unit = {},
 ) {
     val user by viewModel.user.collectAsState(initial = User(displayName = set_name))
     val isLoading by viewModel.signOutLoading.collectAsState()
@@ -67,6 +68,7 @@ fun ProfileScreenRoute(
             onAccountInformationClick = navigateToAccountInformation,
             onLanguageClick = onLanguageClick,
             onNotificationSettingsClick = onNotificationSettingsClick,
+            onPrivacyPolicyClick = onPrivacyPolicyClick,
         )
     }
 
@@ -94,6 +96,7 @@ internal fun ProfileScreen(
     onAccountInformationClick: () -> Unit = {},
     onLanguageClick: () -> Unit,
     onNotificationSettingsClick: () -> Unit = {},
+    onPrivacyPolicyClick: () -> Unit = {},
 ) {
     LazyColumn(
         modifier =
@@ -136,6 +139,20 @@ internal fun ProfileScreen(
                 title = stringResource(R.string.notification_settings_title),
                 iconRes = FmIcons.Bell,
                 onClick = onNotificationSettingsClick,
+            )
+
+            VSpacer(50.dp)
+            Text(
+                text = stringResource(R.string.profile_section_other),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 20.dp),
+            )
+            VSpacer(12.dp)
+            SectionCard(
+                title = stringResource(R.string.privacy_policy),
+                iconRes = FmIcons.info,
+                onClick = onPrivacyPolicyClick,
             )
 
             VSpacer(50.dp)

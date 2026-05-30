@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.profile.navigation
 
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
@@ -8,7 +9,9 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -21,10 +24,13 @@ import dk.zlatan.flotmand.Features.profile.licenses.LicensesScreen
 import dk.zlatan.flotmand.Features.profile.notificationsettings.NotificationSettingsScreen
 import dk.zlatan.flotmand.Features.profile.switchlanguage.SwitchLanguageScreen
 
+private const val PRIVACY_POLICY_URL = "https://zlatans3.github.io/privacy-policy/"
+
 @Suppress("CyclomaticComplexMethod")
 @Composable
 fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
     val navigationStack: List<ProfileDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     // Navigation overlay for sub-screens
     NavDisplay(
@@ -43,6 +49,10 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             },
                             onNotificationSettingsClick = {
                                 viewModel.navigate(ProfileDestination.NotificationSettings)
+                            },
+                            onPrivacyPolicyClick = {
+                                CustomTabsIntent.Builder().build()
+                                    .launchUrl(context, PRIVACY_POLICY_URL.toUri())
                             },
                         )
                     }
@@ -91,6 +101,10 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             },
                             onNotificationSettingsClick = {
                                 viewModel.navigate(ProfileDestination.NotificationSettings)
+                            },
+                            onPrivacyPolicyClick = {
+                                CustomTabsIntent.Builder().build()
+                                    .launchUrl(context, PRIVACY_POLICY_URL.toUri())
                             },
                         )
                     }
