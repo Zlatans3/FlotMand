@@ -37,10 +37,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="dk.zlatan.flotmand.debug" />
-                  <option name="mobileSdkAppId" value="1:853949338460:android:6abfc9c070de70b6f2a799" />
-                  <option name="projectId" value="flotmand-e9edf" />
-                  <option name="projectNumber" value="853949338460" />
+                  <option name="appId" value="dk.zlatan.flotmand" />
+                  <option name="mobileSdkAppId" value="1:1011739191096:android:da8cc8a461253c192f43cd" />
+                  <option name="projectId" value="flotmand-release" />
+                  <option name="projectNumber" value="1011739191096" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
