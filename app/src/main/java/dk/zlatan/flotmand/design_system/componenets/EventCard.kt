@@ -132,7 +132,7 @@ fun ClosestEventCard(
                         text = event.eventName ?: stringResource(R.string.untitled_event),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
 

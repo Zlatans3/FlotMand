@@ -1,5 +1,9 @@
 package dk.zlatan.flotmand.Features.frontpage.datevoting
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,7 +23,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -32,7 +38,9 @@ internal fun CreateVotingDialog(
     onConfirm: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val maxChar = 100
     var votingName by remember { mutableStateOf("") }
+    var isFocused by remember { mutableStateOf(false) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -66,12 +74,36 @@ internal fun CreateVotingDialog(
 
                     OutlinedTextField(
                         value = votingName,
-                        onValueChange = { votingName = it },
+                        onValueChange = { if (it.length <= maxChar) votingName = it },
                         label = { Text(stringResource(R.string.create_voting_label)) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { isFocused = it.isFocused },
                         placeholder = { Text(stringResource(R.string.create_voting_placeholder)) },
                         singleLine = true,
                         maxLines = 1,
+                        supportingText = {
+                            AnimatedContent(
+                                targetState = isFocused,
+                                transitionSpec = {
+                                    if (targetState) {
+                                        slideInVertically { it } togetherWith slideOutVertically { -it }
+                                    } else {
+                                        slideInVertically { -it } togetherWith slideOutVertically { it }
+                                    }
+                                },
+                            ) { focused ->
+                                if (focused) {
+                                    Text(
+                                        text = "${votingName.length} / $maxChar",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.End,
+                                    )
+                                } else {
+                                    Text("")
+                                }
+                            }
+                        },
                     )
 
                     Row(
