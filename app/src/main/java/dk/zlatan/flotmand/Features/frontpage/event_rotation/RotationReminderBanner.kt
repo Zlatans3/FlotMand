@@ -28,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 
@@ -57,6 +59,13 @@ fun RotationReminderBanner(
                 verticalAlignment = Alignment.Top,
                 modifier = Modifier.padding(start = 16.dp, end = 4.dp, top = 14.dp, bottom = 16.dp),
             ) {
+                Text(
+                    text = "🍽️",
+                    fontSize = 36.sp,
+                )
+
+                HSpacer(12.dp)
+
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Det er din tur i $hostingMonthLabel!",

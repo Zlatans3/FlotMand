@@ -132,14 +132,23 @@ class RotationServiceImpl @Inject constructor() : RotationService {
             val removedIndex = group.rotationOrder.indexOf(userId)
             if (removedIndex == -1) return@runTransaction
             val newOrder = group.rotationOrder.filter { it != userId }
+            val newMembers = group.members.filter { it != userId }
             val newAnchorIndex = if (newOrder.isEmpty()) {
                 0
             } else {
                 val adjusted = if (removedIndex < group.anchorIndex) group.anchorIndex - 1 else group.anchorIndex
                 adjusted % newOrder.size
             }
-            tx.update(docRef, mapOf("rotationOrder" to newOrder, "anchorIndex" to newAnchorIndex))
+            tx.update(
+                docRef,
+                mapOf(
+                    "rotationOrder" to newOrder,
+                    "members" to newMembers,
+                    "anchorIndex" to newAnchorIndex,
+                ),
+            )
         }.await()
+        resetTimelineOverrides(groupId)
     }
 
     override suspend fun assignMonthHost(groupId: String, monthId: String, newHostId: String) {
@@ -176,10 +185,11 @@ class RotationServiceImpl @Inject constructor() : RotationService {
         val docRef = Firebase.firestore.collection(GROUPS).document(groupId)
         Firebase.firestore.runTransaction { tx ->
             val group = tx.get(docRef).toObject<Group>() ?: return@runTransaction
+            val deduped = newOrder.distinct()
             tx.update(
                 docRef,
                 mapOf(
-                    "rotationOrder" to newOrder,
+                    "rotationOrder" to deduped,
                     "anchorIndex" to 0,
                     "anchorMonth" to RotationCalculator.currentMonthId(group.timezone),
                 ),
