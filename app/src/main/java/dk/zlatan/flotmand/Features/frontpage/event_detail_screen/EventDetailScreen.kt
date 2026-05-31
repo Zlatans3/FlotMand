@@ -104,6 +104,7 @@ internal fun EventDetailScreenRoute(
                 EventDetailTopAppBar(
                     onBackClick = onDismiss,
                     isPublisher = uiState.isPublisher,
+                    canEdit = uiState.event?.status != EventStatus.COMPLETED,
                     onDeleteClick = {
                         showDeleteDialog = true
                     },

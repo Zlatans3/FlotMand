@@ -22,6 +22,7 @@ internal fun EventDetailTopAppBar(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     isPublisher: Boolean,
+    canEdit: Boolean = true,
     onDeleteClick: () -> Unit,
     onEditClick: () -> Unit,
 ) {
@@ -38,12 +39,14 @@ internal fun EventDetailTopAppBar(
                 Row(
                     modifier = Modifier,
                 ) {
-                    IconButton(onClick = onEditClick) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.edit_event_content_description),
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
+                    if (canEdit) {
+                        IconButton(onClick = onEditClick) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = stringResource(R.string.edit_event_content_description),
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
                     IconButton(onClick = onDeleteClick) {
                         Icon(
