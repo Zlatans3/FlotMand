@@ -61,7 +61,11 @@ internal fun MyEventContent(
     selectedTab: Int,
     modifier: Modifier = Modifier,
     publishers: Map<String, User> = emptyMap(),
+    isSelectionMode: Boolean = false,
+    selectedEventIds: Set<String> = emptySet(),
     onEventClick: (String) -> Unit = {},
+    onEventLongClick: (String) -> Unit = {},
+    onSelectionToggle: (String) -> Unit = {},
 ) {
     val danishFormatter = remember { DanishDateFormatter.getDanishDateFormatter("E 'd.' d MMM") }
 
@@ -99,7 +103,11 @@ internal fun MyEventContent(
                         events = upcomingEvents,
                         publishers = publishers,
                         formatter = danishFormatter,
+                        isSelectionMode = isSelectionMode,
+                        selectedEventIds = selectedEventIds,
                         onEventClick = onEventClick,
+                        onEventLongClick = onEventLongClick,
+                        onSelectionToggle = onSelectionToggle,
                     )
                 }
             }
@@ -117,7 +125,11 @@ internal fun MyEventContent(
                         events = pastEvents,
                         publishers = publishers,
                         formatter = danishFormatter,
+                        isSelectionMode = isSelectionMode,
+                        selectedEventIds = selectedEventIds,
                         onEventClick = onEventClick,
+                        onEventLongClick = onEventLongClick,
+                        onSelectionToggle = onSelectionToggle,
                     )
                 }
             }
@@ -137,6 +149,10 @@ private fun EventList(
     formatter: DateTimeFormatter,
     onEventClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    isSelectionMode: Boolean = false,
+    selectedEventIds: Set<String> = emptySet(),
+    onEventLongClick: (String) -> Unit = {},
+    onSelectionToggle: (String) -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -149,14 +165,21 @@ private fun EventList(
                 ?.replaceFirstChar { it.uppercase() }
                 .orEmpty()
             val publisher = publishers[event.publisherId]
+            val eventId = event.eventId.orEmpty()
 
             EventCard(
+                modifier = Modifier.animateItem(),
                 userProfilePic = publisher?.photoUrl,
                 userName = publisher?.displayName.orEmpty(),
                 eventName = event.eventName.orEmpty(),
                 eventDate = formattedDate,
                 eventTime = event.eventStartTime?.toString().orEmpty(),
-                onClick = { event.eventId?.let { onEventClick(it) } },
+                isSelectionMode = isSelectionMode,
+                isSelected = eventId in selectedEventIds,
+                onClick = {
+                    if (isSelectionMode) onSelectionToggle(eventId) else onEventClick(eventId)
+                },
+                onLongClick = { onEventLongClick(eventId) },
             )
         }
     }

@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.my_events
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,9 +56,15 @@ internal fun MyEventScreenRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Tab state: 0 = Upcoming, 1 = Past.
-    // Hoisted to the route so it feeds both the top-bar and the content body.
     var selectedTab by remember { mutableIntStateOf(0) }
+    var selectedEventIds by remember { mutableStateOf(emptySet<String>()) }
+    val isSelectionMode = selectedEventIds.isNotEmpty()
+
+    val currentEvents = if (selectedTab == 0) uiState.upcomingEvents else uiState.pastEvents
+
+    BackHandler(enabled = isSelectionMode) {
+        selectedEventIds = emptySet()
+    }
 
     Scaffold(
         modifier = modifier,
@@ -64,7 +72,21 @@ internal fun MyEventScreenRoute(
         topBar = {
             MyEventTopBar(
                 selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
+                onTabSelected = {
+                    selectedTab = it
+                    selectedEventIds = emptySet()
+                },
+                isSelectionMode = isSelectionMode,
+                selectedCount = selectedEventIds.size,
+                totalCount = currentEvents.size,
+                onDeleteSelected = {
+                    viewModel.deleteEvents(selectedEventIds)
+                    selectedEventIds = emptySet()
+                },
+                onToggleSelectAll = {
+                    val allIds = currentEvents.mapNotNull { it.eventId }.toSet()
+                    selectedEventIds = if (selectedEventIds.size == currentEvents.size) emptySet() else allIds
+                },
             )
         },
     ) { paddingValues ->
@@ -94,8 +116,20 @@ internal fun MyEventScreenRoute(
                     pastEvents = uiState.pastEvents,
                     publishers = uiState.publishers,
                     selectedTab = selectedTab,
+                    isSelectionMode = isSelectionMode,
+                    selectedEventIds = selectedEventIds,
                     onAddEventClick = onAddEventClick,
                     onEventClick = onEventClick,
+                    onEventLongClick = { id ->
+                        selectedEventIds = selectedEventIds + id
+                    },
+                    onSelectionToggle = { id ->
+                        selectedEventIds = if (id in selectedEventIds) {
+                            selectedEventIds - id
+                        } else {
+                            selectedEventIds + id
+                        }
+                    },
                 )
             }
         }
@@ -125,8 +159,12 @@ internal fun MyEventScreen(
     publishers: Map<String, User>,
     selectedTab: Int,
     modifier: Modifier = Modifier,
+    isSelectionMode: Boolean = false,
+    selectedEventIds: Set<String> = emptySet(),
     onAddEventClick: () -> Unit = {},
     onEventClick: (String) -> Unit = {},
+    onEventLongClick: (String) -> Unit = {},
+    onSelectionToggle: (String) -> Unit = {},
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         MyEventContent(
@@ -135,7 +173,11 @@ internal fun MyEventScreen(
             pastEvents = pastEvents,
             selectedTab = selectedTab,
             publishers = publishers,
+            isSelectionMode = isSelectionMode,
+            selectedEventIds = selectedEventIds,
             onEventClick = onEventClick,
+            onEventLongClick = onEventLongClick,
+            onSelectionToggle = onSelectionToggle,
         )
 
         ExtendedFloatingActionButton(

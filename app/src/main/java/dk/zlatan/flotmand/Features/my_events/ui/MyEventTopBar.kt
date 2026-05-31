@@ -1,11 +1,25 @@
 package dk.zlatan.flotmand.Features.my_events.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -14,8 +28,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.R
@@ -40,6 +56,11 @@ internal fun MyEventTopBar(
     selectedTab: Int = 0,
     onTabSelected: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
+    isSelectionMode: Boolean = false,
+    selectedCount: Int = 0,
+    totalCount: Int = 0,
+    onDeleteSelected: () -> Unit = {},
+    onToggleSelectAll: () -> Unit = {},
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -63,14 +84,59 @@ internal fun MyEventTopBar(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            SegmentedControl(
-                selectedIndex = selectedTab,
-                options = listOf(
-                    stringResource(R.string.tab_upcoming),
-                    stringResource(R.string.tab_past),
-                ),
-                onOptionSelected = onTabSelected,
-            )
+            AnimatedContent(
+                targetState = isSelectionMode,
+                transitionSpec = {
+                    if (targetState) {
+                        slideInHorizontally { -it } + fadeIn() togetherWith slideOutHorizontally { it } + fadeOut()
+                    } else {
+                        slideInHorizontally { it } + fadeIn() togetherWith slideOutHorizontally { -it } + fadeOut()
+                    }
+                },
+                label = "topBarMode",
+            ) { selectionMode ->
+                if (selectionMode) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        IconButton(onClick = onToggleSelectAll) {
+                            Icon(
+                                imageVector = if (selectedCount == totalCount) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+                                contentDescription = "Vælg alle",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                        Text(
+                            text = "$selectedCount valgt",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        IconButton(
+                            onClick = onDeleteSelected,
+                            enabled = selectedCount > 0,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = "Slet valgte",
+                                tint = if (selectedCount > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                } else {
+                    SegmentedControl(
+                        selectedIndex = selectedTab,
+                        options = listOf(
+                            stringResource(R.string.tab_upcoming),
+                            stringResource(R.string.tab_past),
+                        ),
+                        onOptionSelected = onTabSelected,
+                    )
+                }
+            }
         }
     }
 }
