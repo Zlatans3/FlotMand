@@ -29,7 +29,10 @@ import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
-fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel()) {
+fun FrontPageNavigation(
+    onEventCreated: (String) -> Unit = {},
+    viewModel: FrontPageNavigationViewModel = hiltViewModel(),
+) {
     val navigationStack: List<FrontPageDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -104,7 +107,7 @@ fun FrontPageNavigation(viewModel: FrontPageNavigationViewModel = hiltViewModel(
                                 onDismiss = { viewModel.pop() },
                                 onEventCreated = { eventId ->
                                     viewModel.resetToRoot()
-                                    viewModel.navigate(FrontPageDestination.EventDetail(eventId))
+                                    onEventCreated(eventId)
                                 },
                             )
                         }

@@ -47,6 +47,7 @@ internal fun DateVotingRoute(
     modifier: Modifier = Modifier,
     onVotingClick: (String) -> Unit,
     onDismiss: () -> Unit,
+    showBackButton: Boolean = true,
     viewModel: DateVotingListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,9 +90,11 @@ internal fun DateVotingRoute(
             FmTopAppBar(
                 containerColor = MaterialTheme.colorScheme.surface,
                 leadingIcon = {
-                    FmBackButton(
-                        onBackClick = onDismiss,
-                    )
+                    if (showBackButton) {
+                        FmBackButton(
+                            onBackClick = onDismiss,
+                        )
+                    }
                 },
                 textContent = {
                     Text(

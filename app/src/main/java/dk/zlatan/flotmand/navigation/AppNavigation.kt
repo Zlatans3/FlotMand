@@ -40,8 +40,11 @@ import dk.zlatan.flotmand.Features.bottomnavigation.TopLevelDestination
 import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageDestination
 import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigation
 import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigationViewModel
+import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsDestination
 import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigation
 import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigationViewModel
+import dk.zlatan.flotmand.Features.polls.navigation.PollsNavigation
+import dk.zlatan.flotmand.Features.polls.navigation.PollsNavigationViewModel
 import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigation
 import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigationViewModel
 import dk.zlatan.flotmand.design_system.componenets.NotificationPermissionHandler
@@ -110,13 +113,16 @@ private fun MainAppContent(modifier: Modifier = Modifier) {
     val frontPageViewModel: FrontPageNavigationViewModel = hiltViewModel()
     val myEventsViewModel: MyEventsNavigationViewModel = hiltViewModel()
     val profileViewModel: ProfileNavigationViewModel = hiltViewModel()
+    val pollsViewModel: PollsNavigationViewModel = hiltViewModel()
 
     val frontPageStack by frontPageViewModel.navigationStack.collectAsStateWithLifecycle()
+    val pollsStack by pollsViewModel.navigationStack.collectAsStateWithLifecycle()
     val myEventsStack by myEventsViewModel.navigationStack.collectAsStateWithLifecycle()
     val profileStack by profileViewModel.navigationStack.collectAsStateWithLifecycle()
 
     val isAtRoot = when (currentTab) {
         TopLevelDestination.HOME -> frontPageStack.size <= 1
+        TopLevelDestination.POLLS -> pollsStack.size <= 1
         TopLevelDestination.MY_EVENTS -> myEventsStack.size <= 1
         TopLevelDestination.PROFILE -> profileStack.size <= 1
     }
@@ -153,6 +159,7 @@ private fun MainAppContent(modifier: Modifier = Modifier) {
                             TopLevelDestination.HOME -> frontPageViewModel.resetToRoot()
                             TopLevelDestination.MY_EVENTS -> myEventsViewModel.resetToRoot()
                             TopLevelDestination.PROFILE -> profileViewModel.resetToRoot()
+                            TopLevelDestination.POLLS -> pollsViewModel.resetToRoot()
                         }
                     } else {
                         currentTab = destination
@@ -170,7 +177,13 @@ private fun MainAppContent(modifier: Modifier = Modifier) {
         ) {
             when (currentTab) {
                 TopLevelDestination.HOME -> {
-                    FrontPageNavigation(viewModel = frontPageViewModel)
+                    FrontPageNavigation(
+                        viewModel = frontPageViewModel,
+                        onEventCreated = { eventId ->
+                            currentTab = TopLevelDestination.MY_EVENTS
+                            myEventsViewModel.navigate(MyEventsDestination.EventDetail(eventId))
+                        },
+                    )
                 }
 
                 TopLevelDestination.MY_EVENTS -> {
@@ -179,6 +192,16 @@ private fun MainAppContent(modifier: Modifier = Modifier) {
 
                 TopLevelDestination.PROFILE -> {
                     ProfileNavigation(viewModel = profileViewModel)
+                }
+
+                TopLevelDestination.POLLS -> {
+                    PollsNavigation(
+                        viewModel = pollsViewModel,
+                        onEventCreated = { eventId ->
+                            currentTab = TopLevelDestination.MY_EVENTS
+                            myEventsViewModel.navigate(MyEventsDestination.EventDetail(eventId))
+                        },
+                    )
                 }
             }
         }

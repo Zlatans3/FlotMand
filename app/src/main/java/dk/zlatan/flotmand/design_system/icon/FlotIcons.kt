@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Upcoming
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Bookmark
 import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material.icons.rounded.Bookmarks
@@ -90,4 +91,6 @@ object FmIcons {
     // Notification type icons
     val NotificationEvent = Icons.Rounded.DinnerDining
     val NotificationPoll = Icons.Rounded.HowToVote
+
+    val BarChart = Icons.Rounded.BarChart
 }
