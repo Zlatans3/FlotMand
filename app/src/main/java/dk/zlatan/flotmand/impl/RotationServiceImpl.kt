@@ -6,6 +6,7 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import dk.zlatan.flotmand.model.Group
 import dk.zlatan.flotmand.model.RotationMonth
+import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.RotationService
 import dk.zlatan.flotmand.util.RotationCalculator
 import kotlinx.coroutines.channels.awaitClose
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+import java.util.UUID
 import javax.inject.Inject
 
 class RotationServiceImpl @Inject constructor() : RotationService {
@@ -158,6 +160,44 @@ class RotationServiceImpl @Inject constructor() : RotationService {
                 ),
             )
             .await()
+    }
+
+    override suspend fun createGhostUser(groupId: String, displayName: String) {
+        val ghostId = UUID.randomUUID().toString()
+        Firebase.firestore
+            .collection(USERS)
+            .document(ghostId)
+            .set(User(displayName = displayName.trim(), isGhost = true, isAnonymous = false))
+            .await()
+        addUserToRotation(groupId, ghostId)
+    }
+
+    override suspend fun reorderRotation(groupId: String, newOrder: List<String>) {
+        val docRef = Firebase.firestore.collection(GROUPS).document(groupId)
+        Firebase.firestore.runTransaction { tx ->
+            val group = tx.get(docRef).toObject<Group>() ?: return@runTransaction
+            tx.update(
+                docRef,
+                mapOf(
+                    "rotationOrder" to newOrder,
+                    "anchorIndex" to 0,
+                    "anchorMonth" to RotationCalculator.currentMonthId(group.timezone),
+                ),
+            )
+        }.await()
+    }
+
+    override suspend fun resetTimelineOverrides(groupId: String) {
+        val docs = Firebase.firestore
+            .collection(GROUPS)
+            .document(groupId)
+            .collection(TIMELINE)
+            .get()
+            .await()
+        if (docs.isEmpty) return
+        Firebase.firestore.runBatch { batch ->
+            docs.documents.forEach { batch.delete(it.reference) }
+        }.await()
     }
 
     companion object {

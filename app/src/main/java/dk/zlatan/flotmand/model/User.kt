@@ -12,7 +12,8 @@ data class User(
     val photoUrl: String = "",
     val isAnonymous: Boolean = true,
     val fcmToken: String = "",
-    val dismissedBannerMonth: String? = null,   // "YYYY-MM" — resets automatically each month by comparison
+    val dismissedBannerMonth: String? = null,
+    val isGhost: Boolean = false,
 ) {
     fun getFirstName(): String = displayName.split(" ").firstOrNull() ?: displayName
 

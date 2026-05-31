@@ -151,6 +151,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.1")
 
 
+    implementation(libs.reorderable)
     implementation("com.airbnb.android:lottie-compose:6.6.6")
     implementation(libs.androidx.browser)
 }

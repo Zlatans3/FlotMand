@@ -13,4 +13,7 @@ interface RotationService {
     suspend fun addUserToRotation(groupId: String, userId: String)
     suspend fun removeUserFromRotation(groupId: String, userId: String)
     suspend fun assignMonthHost(groupId: String, monthId: String, newHostId: String)
+    suspend fun createGhostUser(groupId: String, displayName: String)
+    suspend fun reorderRotation(groupId: String, newOrder: List<String>)
+    suspend fun resetTimelineOverrides(groupId: String)
 }

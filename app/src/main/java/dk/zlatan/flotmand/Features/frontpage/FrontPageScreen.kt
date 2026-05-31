@@ -19,9 +19,12 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -77,6 +80,7 @@ internal fun FrontPageRoute(
     onDinnerEventClick: (String) -> Unit,
     onDateVotingClick: () -> Unit,
     onNotificationsClick: () -> Unit = {},
+    onHostRotationClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState,
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
@@ -216,6 +220,7 @@ internal fun FrontPageRoute(
                     onVacantCardClick = viewModel::onVacantCardClick,
                     showAddSelf = !uiState.isCurrentUserInRotation,
                     onAddSelf = viewModel::onAddSelfToRotation,
+                    onHostRotationClick = onHostRotationClick,
                 )
                 RotationBottomSheet(
                     state = bottomSheetState,
@@ -256,6 +261,7 @@ internal fun FrontpageContent(
     onVacantCardClick: (monthId: String) -> Unit = {},
     showAddSelf: Boolean = false,
     onAddSelf: () -> Unit = {},
+    onHostRotationClick: () -> Unit = {},
 ) {
     // State for showing all events
     var showAllEvents by remember { mutableStateOf(false) }
@@ -412,9 +418,8 @@ internal fun FrontpageContent(
                 VSpacer(20.dp)
                 SectionHeader(
                     title = stringResource(R.string.next_flotte_mand),
-//                    actionText = "Se mere",
-                    onActionClick = {
-                    },
+                    actionIcon = Icons.Filled.Settings,
+                    onActionClick = onHostRotationClick,
                 )
                 VSpacer(20.dp)
 
@@ -483,6 +488,7 @@ private fun SectionHeader(
     modifier: Modifier = Modifier,
     title: String,
     actionText: String? = null,
+    actionIcon: ImageVector? = null,
     onActionClick: (() -> Unit)? = null,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -499,18 +505,29 @@ private fun SectionHeader(
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        if (actionText != null) {
-            ClickableText(
-                text = AnnotatedString(actionText),
-                style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                    ),
-                onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onActionClick?.invoke()
-                },
-            )
+        when {
+            actionIcon != null -> {
+                IconButton(onClick = { onActionClick?.invoke() }) {
+                    Icon(
+                        imageVector = actionIcon,
+                        contentDescription = title,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            actionText != null -> {
+                ClickableText(
+                    text = AnnotatedString(actionText),
+                    style =
+                        MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onActionClick?.invoke()
+                    },
+                )
+            }
         }
     }
 }
