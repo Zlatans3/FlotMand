@@ -47,7 +47,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.R
+import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationImagesAndNames
+import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationReminderBanner
+import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationTimeline
+import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationTimelineItem
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageNewHeader
 import dk.zlatan.flotmand.Features.frontpage.ui.NextEventSection
 import dk.zlatan.flotmand.Features.frontpage.ui.newFmTopAppBar
@@ -77,6 +81,7 @@ internal fun FrontPageRoute(
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val bottomSheetState by viewModel.bottomSheetState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
@@ -202,6 +207,24 @@ internal fun FrontPageRoute(
                     listState = listState,
                     scrollProgress = scrollProgress,
                     onHeaderMeasured = { headerHeightPx = it },
+                    rotationTimeline = uiState.rotationTimeline,
+                    showRotationBanner = uiState.showRotationBanner,
+                    rotationBannerMonthLabel = uiState.rotationBannerMonthLabel,
+                    onDismissBanner = viewModel::onDismissBanner,
+                    onBannerCreateClick = onDateVotingClick,
+                    onNormalCardClick = viewModel::onHostCardClick,
+                    onVacantCardClick = viewModel::onVacantCardClick,
+                    showAddSelf = !uiState.isCurrentUserInRotation,
+                    onAddSelf = viewModel::onAddSelfToRotation,
+                )
+                RotationBottomSheet(
+                    state = bottomSheetState,
+                    members = uiState.groupMembers,
+                    onDismiss = viewModel::onDismissBottomSheet,
+                    onGiveUpSpot = viewModel::onGiveUpSpot,
+                    onShowUserPicker = viewModel::onShowUserPicker,
+                    onRemoveFromRotation = viewModel::onRemoveFromRotation,
+                    onAssignUser = viewModel::onAssignUserToMonth,
                 )
             }
         }
@@ -224,6 +247,15 @@ internal fun FrontpageContent(
     listState: androidx.compose.foundation.lazy.LazyListState,
     scrollProgress: Float,
     onHeaderMeasured: (Int) -> Unit = {},
+    rotationTimeline: List<RotationTimelineItem> = emptyList(),
+    showRotationBanner: Boolean = false,
+    rotationBannerMonthLabel: String = "",
+    onDismissBanner: () -> Unit = {},
+    onBannerCreateClick: () -> Unit = {},
+    onNormalCardClick: (monthId: String, hostId: String, hostName: String) -> Unit = { _, _, _ -> },
+    onVacantCardClick: (monthId: String) -> Unit = {},
+    showAddSelf: Boolean = false,
+    onAddSelf: () -> Unit = {},
 ) {
     // State for showing all events
     var showAllEvents by remember { mutableStateOf(false) }
@@ -266,6 +298,17 @@ internal fun FrontpageContent(
                         },
                 )
                 VSpacer(8.dp)
+            }
+
+            // Rotation reminder banner — only rendered when visible
+            item {
+                RotationReminderBanner(
+                    visible = showRotationBanner,
+                    hostingMonthLabel = rotationBannerMonthLabel,
+                    onDismiss = onDismissBanner,
+                    onCreateClick = onBannerCreateClick,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                )
             }
 
             // Date Voting Card
@@ -375,7 +418,19 @@ internal fun FrontpageContent(
                 )
                 VSpacer(20.dp)
 
-                RotationImagesAndNames()
+                if (rotationTimeline.isNotEmpty()) {
+                    RotationTimeline(
+                        items = rotationTimeline,
+                        onNormalCardClick = onNormalCardClick,
+                        onVacantCardClick = onVacantCardClick,
+                        showAddSelf = showAddSelf,
+                        onAddSelf = onAddSelf,
+                    )
+                } else {
+                    RotationImagesAndNames(
+                        onAddSelf = onAddSelf,
+                    )
+                }
             }
             // Previous events section
             if (previousEvents.isNotEmpty()) {

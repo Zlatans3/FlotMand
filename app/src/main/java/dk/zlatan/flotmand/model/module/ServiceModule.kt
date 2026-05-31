@@ -9,11 +9,13 @@ import dk.zlatan.flotmand.impl.DateVotingServiceImpl
 import dk.zlatan.flotmand.impl.DinnerEventServiceImpl
 import dk.zlatan.flotmand.impl.NotificationServiceImpl
 import dk.zlatan.flotmand.impl.PlacesServiceImpl
+import dk.zlatan.flotmand.impl.RotationServiceImpl
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DateVotingService
 import dk.zlatan.flotmand.model.service.DinnerEventService
 import dk.zlatan.flotmand.model.service.NotificationService
 import dk.zlatan.flotmand.model.service.PlacesService
+import dk.zlatan.flotmand.model.service.RotationService
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -32,4 +34,7 @@ abstract class ServiceModule {
 
     @Binds
     abstract fun provideNotificationService(impl: NotificationServiceImpl): NotificationService
+
+    @Binds
+    abstract fun provideRotationService(impl: RotationServiceImpl): RotationService
 }

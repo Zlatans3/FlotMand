@@ -13,6 +13,8 @@ interface AccountService {
 
     suspend fun getUserById(userId: String): User?
 
+    fun observeUserById(userId: String): Flow<User?>
+
     suspend fun getUsersByIds(userIds: List<String>): List<User>
 
     suspend fun createAnonymousAccount()

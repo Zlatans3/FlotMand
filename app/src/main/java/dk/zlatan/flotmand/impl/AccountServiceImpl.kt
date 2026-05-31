@@ -62,6 +62,18 @@ class AccountServiceImpl
 
         override fun getUserProfile(): User = Firebase.auth.currentUser.toNotesUser()
 
+        override fun observeUserById(userId: String): Flow<User?> =
+            callbackFlow {
+                val reg = Firebase.firestore
+                    .collection(USERS_COLLECTION)
+                    .document(userId)
+                    .addSnapshotListener { snap, err ->
+                        if (err != null) { close(err); return@addSnapshotListener }
+                        trySend(snap?.toObject<User>())
+                    }
+                awaitClose { reg.remove() }
+            }
+
         override suspend fun getUserById(userId: String): User? =
             try {
                 Firebase.firestore
