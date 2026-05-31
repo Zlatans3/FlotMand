@@ -44,7 +44,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
@@ -103,12 +105,12 @@ private fun HostRotationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Rækkefølge") },
+                title = { Text(stringResource(R.string.rotation_order_title)) },
                 navigationIcon = {
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Tilbage",
+                            contentDescription = stringResource(R.string.back_content_description),
                         )
                     }
                 },
@@ -116,7 +118,7 @@ private fun HostRotationScreen(
                     IconButton(onClick = onAddGhostUserClick) {
                         Icon(
                             imageVector = Icons.Filled.PersonAdd,
-                            contentDescription = "Tilføj bruger",
+                            contentDescription = stringResource(R.string.add_user_content_description),
                         )
                     }
                 },
@@ -133,7 +135,7 @@ private fun HostRotationScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .navigationBarsPadding(),
             ) {
-                Text("Nulstil placeringer")
+                Text(stringResource(R.string.reset_placements))
             }
         },
     ) { padding ->
@@ -160,7 +162,7 @@ private fun HostRotationScreen(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Filled.DragHandle,
-                                            contentDescription = "Flyt",
+                                            contentDescription = stringResource(R.string.drag_handle_content_description),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
@@ -228,7 +230,7 @@ private fun RotationMemberRow(
 
         if (user.isGhost) {
             Text(
-                text = "Gæst",
+                text = stringResource(R.string.guest_label),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(end = 4.dp),
@@ -238,7 +240,7 @@ private fun RotationMemberRow(
         IconButton(onClick = onRemove) {
             Icon(
                 imageVector = Icons.Filled.RemoveCircleOutline,
-                contentDescription = "Fjern",
+                contentDescription = stringResource(R.string.remove_content_description),
                 tint = MaterialTheme.colorScheme.error,
             )
         }
@@ -253,14 +255,14 @@ private fun AddGhostUserDialog(
     var name by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Tilføj bruger") },
+        title = { Text(stringResource(R.string.add_user_title)) },
         text = {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Navn") },
+                label = { Text(stringResource(R.string.name_label)) },
                 singleLine = true,
-                placeholder = { Text("F.eks. Peter") },
+                placeholder = { Text(stringResource(R.string.name_placeholder)) },
             )
         },
         confirmButton = {
@@ -268,12 +270,12 @@ private fun AddGhostUserDialog(
                 onClick = { onConfirm(name) },
                 enabled = name.isNotBlank(),
             ) {
-                Text("Tilføj")
+                Text(stringResource(R.string.add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Annuller")
+                Text(stringResource(R.string.cancel))
             }
         },
     )

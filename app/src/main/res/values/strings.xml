@@ -320,4 +320,21 @@
     <string name="sort_name_az">Navn (A-Å)</string>
     <string name="sort_name_za">Navn (Å-A)</string>
     <string name="press_back_again_to_exit">Tryk tilbage igen for at lukke appen</string>
+
+    <!-- My Events — selection mode -->
+    <string name="selection_count">%1$d valgt</string>
+    <string name="select_all_content_description">Vælg alle</string>
+    <string name="delete_selected_content_description">Slet valgte</string>
+
+    <!-- Host Rotation screen -->
+    <string name="rotation_order_title">Rækkefølge</string>
+    <string name="add_user_title">Tilføj bruger</string>
+    <string name="add_user_content_description">Tilføj bruger</string>
+    <string name="drag_handle_content_description">Flyt</string>
+    <string name="guest_label">Gæst</string>
+    <string name="remove_content_description">Fjern</string>
+    <string name="reset_placements">Nulstil placeringer</string>
+    <string name="name_label">Navn</string>
+    <string name="name_placeholder">F.eks. Peter</string>
+    <string name="add">Tilføj</string>
 </resources>

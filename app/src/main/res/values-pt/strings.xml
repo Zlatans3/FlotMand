@@ -193,4 +193,84 @@
     <string name="delete_user_message">Tem certeza de que deseja excluir seu usuário e dados? Esta ação não pode ser desfeita.</string>
     <string name="delete_user_success">Usuário excluído.</string>
     <string name="error_delete_user">Não foi possível excluir o usuário: %1$s</string>
+
+    <string name="polls_title">Votações</string>
+    <string name="retry">Tentar novamente</string>
+    <string name="error_no_google_account">Nenhuma conta Google encontrada neste dispositivo. Adicione uma conta em Configurações e tente novamente.</string>
+    <string name="no_current_event">Nenhum evento próximo agora</string>
+
+    <string name="profile_section_other">Outro</string>
+    <string name="privacy_policy">Política de privacidade</string>
+    <string name="theme_settings_title">Tema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_system_description">Segue a configuração claro/escuro do dispositivo</string>
+    <string name="theme_flotmand">Flotmand</string>
+    <string name="theme_flotmand_description">Cores próprias do Flotmand, segue a configuração do dispositivo</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_light_description">Sempre no modo claro</string>
+    <string name="theme_dark">Escuro</string>
+    <string name="theme_dark_description">Sempre no modo escuro</string>
+
+    <string name="error_loading_event">Algo deu errado</string>
+    <string name="my_events_loading">Carregando seus eventos...</string>
+    <string name="my_events_empty_create_prompt">Crie seu primeiro evento!</string>
+    <string name="add_event_content_description">Adicionar evento</string>
+    <string name="tab_upcoming">Próximos</string>
+    <string name="tab_past">Anteriores</string>
+    <string name="no_upcoming_events_title">Nenhum evento próximo</string>
+    <string name="no_upcoming_events_subtitle">Crie um evento e encontre seus amigos!</string>
+    <string name="no_past_events_title">Nenhum evento passado</string>
+    <string name="no_past_events_subtitle">Eventos que você organizou aparecem aqui</string>
+
+    <string name="notification_permission_title">Fique por dentro 🔔</string>
+    <string name="notification_permission_rationale">Enviamos uma mensagem quando novos eventos ou votações são criados, para que você nunca perca nada.</string>
+    <string name="notification_permission_allow">Permitir</string>
+    <string name="notification_permission_not_now">Agora não</string>
+    <string name="notification_permission_blocked_title">Notificações bloqueadas</string>
+    <string name="notification_permission_blocked_message">Ative as notificações em Configurações para receber avisos sobre novos eventos e votações.</string>
+    <string name="notification_permission_open_settings">Abrir configurações</string>
+    <string name="notifications_title">Notificações</string>
+    <string name="notifications_mark_all_read">Marcar todas como lidas</string>
+    <string name="notifications_clear_all">Limpar todas</string>
+    <string name="notifications_dismiss">Dispensar notificação</string>
+    <string name="notifications_empty_title">Nenhuma notificação</string>
+    <string name="notifications_empty_subtitle">Novos eventos e votações aparecem aqui</string>
+    <string name="notification_status_label">Status:</string>
+    <string name="notification_settings_title">Notificações</string>
+    <string name="notification_settings_description">Receba notificações quando novos eventos ou votações forem criados, para que você esteja sempre por dentro.</string>
+    <string name="notification_status_active">Ativo</string>
+    <string name="notification_status_inactive">Desativado</string>
+    <string name="notification_action_allow">Permitir notificações</string>
+    <string name="notification_action_manage">Gerenciar nas configurações</string>
+
+    <string name="open_source_licenses_title">Licenças Open Source</string>
+    <string name="filter">Ordenar</string>
+    <string name="sort_date_asc">Data (Mais próxima)</string>
+    <string name="sort_date_desc">Data (Mais recente)</string>
+    <string name="sort_name_az">Nome (A-Z)</string>
+    <string name="sort_name_za">Nome (Z-A)</string>
+    <string name="press_back_again_to_exit">Pressione voltar novamente para fechar o app</string>
+
+    <string name="selection_count">%1$d selecionado</string>
+    <string name="select_all_content_description">Selecionar todos</string>
+    <string name="delete_selected_content_description">Excluir selecionados</string>
+    <string name="rotation_order_title">Ordem de rotação</string>
+    <string name="add_user_title">Adicionar usuário</string>
+    <string name="add_user_content_description">Adicionar usuário</string>
+    <string name="drag_handle_content_description">Mover</string>
+    <string name="guest_label">Convidado</string>
+    <string name="remove_content_description">Remover</string>
+    <string name="reset_placements">Redefinir posições</string>
+    <string name="name_label">Nome</string>
+    <string name="name_placeholder">Ex: Pedro</string>
+    <string name="add">Adicionar</string>
+
+    <plurals name="date_options_count">
+        <item quantity="one">%d data</item>
+        <item quantity="other">%d datas</item>
+    </plurals>
+    <plurals name="users_voted_count">
+        <item quantity="one">%d votou</item>
+        <item quantity="other">%d votaram</item>
+    </plurals>
 </resources>

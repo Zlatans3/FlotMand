@@ -104,12 +104,12 @@ internal fun MyEventTopBar(
                         IconButton(onClick = onToggleSelectAll) {
                             Icon(
                                 imageVector = if (selectedCount == totalCount) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-                                contentDescription = "Vælg alle",
+                                contentDescription = stringResource(R.string.select_all_content_description),
                                 tint = MaterialTheme.colorScheme.onSurface,
                             )
                         }
                         Text(
-                            text = "$selectedCount valgt",
+                            text = stringResource(R.string.selection_count, selectedCount),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -121,7 +121,7 @@ internal fun MyEventTopBar(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Delete,
-                                contentDescription = "Slet valgte",
+                                contentDescription = stringResource(R.string.delete_selected_content_description),
                                 tint = if (selectedCount > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }

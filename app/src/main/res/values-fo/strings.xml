@@ -193,4 +193,84 @@
     <string name="delete_user_message">Ert tú vísur í, at tú vilt strika tín brúkara og øll data? Henda handling kann ikki angrast.</string>
     <string name="delete_user_success">Brúkari strikaður.</string>
     <string name="error_delete_user">Kundi ikki strika brúkara: %1$s</string>
+
+    <string name="polls_title">Atkvøður</string>
+    <string name="retry">Royn aftur</string>
+    <string name="error_no_google_account">Eingin Google-konto funnin á hesum tæki. Legg konto afturat undir Stillingar og royn aftur.</string>
+    <string name="no_current_event">Einki komandi tiltak nú</string>
+
+    <string name="profile_section_other">Annað</string>
+    <string name="privacy_policy">Persónupolitikkur</string>
+    <string name="theme_settings_title">Tema</string>
+    <string name="theme_system">System</string>
+    <string name="theme_system_description">Fylgir tækis ljóst/dimmur stillingu</string>
+    <string name="theme_flotmand">Flotmand</string>
+    <string name="theme_flotmand_description">Flotmands egnar litir, fylgja tækis stillingu</string>
+    <string name="theme_light">Ljóst</string>
+    <string name="theme_light_description">Altíð ljóst</string>
+    <string name="theme_dark">Dimmur</string>
+    <string name="theme_dark_description">Altíð dimmur</string>
+
+    <string name="error_loading_event">Eitthvað fór úrskeiðis</string>
+    <string name="my_events_loading">Heintar tín tiltøk...</string>
+    <string name="my_events_empty_create_prompt">Stovna títt fyrsta tiltak!</string>
+    <string name="add_event_content_description">Legg tiltak afturat</string>
+    <string name="tab_upcoming">Komandi</string>
+    <string name="tab_past">Fyrri</string>
+    <string name="no_upcoming_events_title">Eingi komandi tiltøk</string>
+    <string name="no_upcoming_events_subtitle">Stovna eitt tiltak og møt tínar vinar!</string>
+    <string name="no_past_events_title">Eingi liðin tiltøk</string>
+    <string name="no_past_events_subtitle">Tiltøk tú hevur verið vertur fyri vísa her</string>
+
+    <string name="notification_permission_title">Hald teg dagfaran 🔔</string>
+    <string name="notification_permission_rationale">Vit senda tær boð, tá ið nýggj tiltøk ella atkvøður verða stovnað, so tú aldri missir av neinum.</string>
+    <string name="notification_permission_allow">Loyv</string>
+    <string name="notification_permission_not_now">Ikki nú</string>
+    <string name="notification_permission_blocked_title">Fráboðanir eru blokkerar</string>
+    <string name="notification_permission_blocked_message">Slæk fráboðanir til undir Stillingar at fáa boð um nýggj tiltøk og atkvøður.</string>
+    <string name="notification_permission_open_settings">Lat stillingar upp</string>
+    <string name="notifications_title">Fráboðanir</string>
+    <string name="notifications_mark_all_read">Merk allar sum lesnar</string>
+    <string name="notifications_clear_all">Strika allar</string>
+    <string name="notifications_dismiss">Avvís fráboðan</string>
+    <string name="notifications_empty_title">Eingi fráboðanir</string>
+    <string name="notifications_empty_subtitle">Nýggj tiltøk og atkvøður vísa her</string>
+    <string name="notification_status_label">Støða:</string>
+    <string name="notification_settings_title">Fráboðanir</string>
+    <string name="notification_settings_description">Fá fráboðanir, tá ið nýggj tiltøk ella atkvøður verða stovnað, so tú altíð ert við.</string>
+    <string name="notification_status_active">Virkin</string>
+    <string name="notification_status_inactive">Óvirkin</string>
+    <string name="notification_action_allow">Loyv fráboðanir</string>
+    <string name="notification_action_manage">Stýr í stillingum</string>
+
+    <string name="open_source_licenses_title">Open Source Loyvi</string>
+    <string name="filter">Raðlegg</string>
+    <string name="sort_date_asc">Dato (Fyrstkomandi)</string>
+    <string name="sort_date_desc">Dato (Seinasti fyrst)</string>
+    <string name="sort_name_az">Navn (A-Ø)</string>
+    <string name="sort_name_za">Navn (Ø-A)</string>
+    <string name="press_back_again_to_exit">Trýst aftur aftur at lata appina aftur</string>
+
+    <string name="selection_count">%1$d valt</string>
+    <string name="select_all_content_description">Vel allar</string>
+    <string name="delete_selected_content_description">Strika valdu</string>
+    <string name="rotation_order_title">Raðfylgd</string>
+    <string name="add_user_title">Legg brúkara afturat</string>
+    <string name="add_user_content_description">Legg brúkara afturat</string>
+    <string name="drag_handle_content_description">Flyt</string>
+    <string name="guest_label">Gestur</string>
+    <string name="remove_content_description">Fjarn</string>
+    <string name="reset_placements">Endurstilla røð</string>
+    <string name="name_label">Navn</string>
+    <string name="name_placeholder">T.d. Petur</string>
+    <string name="add">Legg afturat</string>
+
+    <plurals name="date_options_count">
+        <item quantity="one">%d dato</item>
+        <item quantity="other">%d datoer</item>
+    </plurals>
+    <plurals name="users_voted_count">
+        <item quantity="one">%d atkvøddi</item>
+        <item quantity="other">%d atkvøddu</item>
+    </plurals>
 </resources>
