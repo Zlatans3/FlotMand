@@ -275,8 +275,8 @@
     <!-- My Events screen — per-tab empty states -->
     <string name="no_upcoming_events_title">Ingen kommende events</string>
     <string name="no_upcoming_events_subtitle">Opret et event og mød dine venner!</string>
-    <string name="no_past_events_title">Ingen tidligere events</string>
-    <string name="no_past_events_subtitle">Events du har deltaget i vises her</string>
+    <string name="no_past_events_title">Ingen afholdte events</string>
+    <string name="no_past_events_subtitle">Events du har været vært for vises her</string>
 
     <!-- Notification permission dialog -->
     <string name="notification_permission_title">Hold dig opdateret 🔔</string>
