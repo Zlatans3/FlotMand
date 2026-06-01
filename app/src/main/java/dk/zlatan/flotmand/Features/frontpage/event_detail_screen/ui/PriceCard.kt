@@ -239,7 +239,7 @@ private fun HostEditCard(
                     color = MaterialTheme.colorScheme.error,
                 )
                 perPerson != null -> Text(
-                    text = "${stringResource(R.string.price_becomes_prefix)} ${perPerson.formatKr()} ${stringResource(R.string.price_per_person_suffix)}",
+                    text = "${stringResource(R.string.price_becomes_prefix)} ${perPerson.formatKr(withSuffix = false)} ${stringResource(R.string.price_per_person_suffix)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
@@ -322,7 +322,7 @@ private fun HostDisplayCard(
             }
             if (pricePerPerson != null) {
                 Text(
-                    text = "${pricePerPerson.formatKr()} ${stringResource(R.string.price_per_person_suffix)}",
+                    text = "${pricePerPerson.formatKr(withSuffix = false)} ${stringResource(R.string.price_per_person_suffix)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
