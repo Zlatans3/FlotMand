@@ -132,6 +132,8 @@
     <string name="create_voting_placeholder">F.eks. hos David</string>
     <string name="voting_list_title">Afstemninger</string>
     <string name="voting_list_loading">Henter afstemninger...</string>
+    <string name="voting_list_empty">Ingen\nafstemninger\nendnu</string>
+    <string name="voting_list_empty_subtitle">Hvornår passer det bedst?\nOpret en afstemning og find ud af det</string>
     <string name="create_voting_content_description">Opret ny afstemning</string>
     <string name="error_could_not_create_voting">Kunne ikke oprette afstemning: %1$s</string>
     <string name="date_icon_content_description">Dato ikon</string>

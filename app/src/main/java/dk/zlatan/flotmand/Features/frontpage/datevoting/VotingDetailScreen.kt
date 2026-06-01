@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -27,6 +27,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -159,14 +163,57 @@ internal fun DateVotingScreen(
                         VotingListHeader(onCreateVoting = onCreateVoting)
                     }
 
-                    items(uiState.votings) { voting ->
-                        votingListItem(
-                            voting = voting,
-                            isCreator = voting.creatorId == uiState.currentUserId,
-                            onClick = {
-                                voting.votingId?.let { onVotingClick(it) }
-                            },
-                        )
+                    if (uiState.votings.isEmpty()) {
+                        item {
+                            val composition by rememberLottieComposition(
+                                LottieCompositionSpec.RawRes(R.raw.three_cut),
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillParentMaxHeight(0.8f)
+                                    .fillMaxWidth(),
+                            ) {
+                                // Large poster-style text anchored to upper-right
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(top = 24.dp, end = 8.dp),
+                                    horizontalAlignment = Alignment.End,
+                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.voting_list_empty),
+                                        style = MaterialTheme.typography.displaySmall,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.voting_list_empty_subtitle),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                                    )
+                                }
+                                // Cozy animation anchored to bottom-left
+                                LottieAnimation(
+                                    composition = composition,
+                                    iterations = LottieConstants.IterateForever,
+                                    modifier = Modifier
+                                        .size(240.dp)
+                                        .align(Alignment.BottomStart),
+                                )
+                            }
+                        }
+                    } else {
+                        items(uiState.votings) { voting ->
+                            votingListItem(
+                                voting = voting,
+                                isCreator = voting.creatorId == uiState.currentUserId,
+                                onClick = {
+                                    voting.votingId?.let { onVotingClick(it) }
+                                },
+                            )
+                        }
                     }
                 }
             }
