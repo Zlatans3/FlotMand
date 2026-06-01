@@ -165,6 +165,21 @@ class NotificationServiceImpl
             }
         }
 
+        override suspend fun sendToUsers(userIds: List<String>, notification: AppNotification) {
+            if (userIds.isEmpty()) return
+            try {
+                val db = Firebase.firestore
+                val batch = db.batch()
+                userIds.forEach { uid ->
+                    val docRef = itemsCollection(uid).document()
+                    batch.set(docRef, notification)
+                }
+                batch.commit().await()
+            } catch (e: Exception) {
+                Log.e(TAG, "sendToUsers: FAILED — ${e.message}", e)
+            }
+        }
+
         override fun markAllAsRead() {
             val uid = accountService.currentUserId
             if (uid.isBlank()) return

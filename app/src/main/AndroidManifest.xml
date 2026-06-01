@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <queries>
+        <package android:name="dk.danskebank.mobilepay" />
+    </queries>
+
     <application
         android:name=".FlotMandApplication"
         android:allowBackup="true"

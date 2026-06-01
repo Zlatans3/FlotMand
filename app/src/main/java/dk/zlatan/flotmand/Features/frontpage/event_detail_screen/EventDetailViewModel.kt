@@ -7,7 +7,9 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dk.zlatan.flotmand.model.AppNotification
 import dk.zlatan.flotmand.model.Event
+import dk.zlatan.flotmand.model.NotificationType
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
@@ -36,7 +38,11 @@ data class EventDetailUiState(
     val isPublisher: Boolean = false,
     val isParticipated: Boolean? = false,
     val isDeleted: Boolean = false,
-    val eventError: String? = null, // <-- Added error state
+    val eventError: String? = null,
+    /** Raw text the host has typed into the total-price field. */
+    val totalPriceInput: String = "",
+    /** Total price divided by participant count; null when input is blank or unparseable. */
+    val pricePerPerson: Double? = null,
 )
 
 @HiltViewModel(assistedFactory = EventDetailViewModel.Factory::class)
@@ -62,7 +68,11 @@ internal class EventDetailViewModel
         private val _isPublisher = MutableStateFlow(false)
         private val _isParticipated = MutableStateFlow<Boolean?>(false)
         private val _isDeleted = MutableStateFlow(false)
-        private val _eventError = MutableStateFlow<String?>(null) // <-- Added error state
+        private val _eventError = MutableStateFlow<String?>(null)
+        private val _totalPriceInput = MutableStateFlow("")
+
+        // Guards against overwriting the host's in-progress edit when Firestore re-emits.
+        private var totalPriceInitialized = false
 
         private var eventObserverJob: Job? = null
 
@@ -77,6 +87,7 @@ internal class EventDetailViewModel
                 _isParticipated,
                 _isDeleted,
                 _eventError,
+                _totalPriceInput,
             ) {
                 event,
                 publisher,
@@ -87,7 +98,10 @@ internal class EventDetailViewModel
                 isParticipated,
                 isDeleted,
                 eventError,
+                totalPriceInput,
                 ->
+                val pricePerPerson = totalPriceInput.toDoubleOrNull()
+                    ?.let { total -> if (participants.isNotEmpty()) total / participants.size else null }
                 EventDetailUiState(
                     event = event,
                     publisher = publisher,
@@ -98,6 +112,8 @@ internal class EventDetailViewModel
                     isParticipated = isParticipated,
                     isDeleted = isDeleted,
                     eventError = eventError,
+                    totalPriceInput = totalPriceInput,
+                    pricePerPerson = pricePerPerson,
                 )
             }.stateIn(
                 viewModelScope,
@@ -136,6 +152,12 @@ internal class EventDetailViewModel
                             val isPublisher =
                                 event.publisherId != null && event.publisherId == currentUserId
                             val isParticipated = event.participantIds?.contains(currentUserId) ?: false
+
+                            if (!totalPriceInitialized) {
+                                _totalPriceInput.value = event.totalPrice
+                                    ?.toBigDecimal()?.stripTrailingZeros()?.toPlainString() ?: ""
+                                totalPriceInitialized = true
+                            }
 
                             _event.value = event
                             _isPublisher.value = isPublisher
@@ -225,7 +247,9 @@ internal class EventDetailViewModel
             _isPublisher.value = false
             _isParticipated.value = false
             _isDeleted.value = false
-            _eventError.value = null // <-- Clear error on clearAll
+            _eventError.value = null
+            _totalPriceInput.value = ""
+            totalPriceInitialized = false
         }
 
         // Optionally, add a new function to handle event unavailable state
@@ -249,6 +273,44 @@ internal class EventDetailViewModel
                     _isDeleted.value = true
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to delete event: ${e.message}", e)
+                }
+            }
+        }
+
+        fun onTotalPriceChanged(input: String) {
+            _totalPriceInput.value = input
+        }
+
+        fun saveTotalPrice() {
+            viewModelScope.launch {
+                if (!_isPublisher.value) return@launch
+                val currentEvent = _event.value ?: return@launch
+                val price = _totalPriceInput.value.toDoubleOrNull() ?: return@launch
+                try {
+                    val updatedEvent = currentEvent.copy(totalPrice = price)
+                    dinnerEventService.updateDinnerEvent(updatedEvent)
+                    _event.value = updatedEvent
+
+                    val recipientIds = currentEvent.participantIds
+                        ?.filter { it != currentEvent.publisherId }
+                        ?: emptyList()
+                    if (recipientIds.isNotEmpty()) {
+                        val participantCount = _participants.value.size.takeIf { it > 0 } ?: 1
+                        val pricePerPerson = price / participantCount
+                        val notification = AppNotification(
+                            type = NotificationType.EVENT.value,
+                            referenceId = currentEvent.eventId.orEmpty(),
+                            title = currentEvent.eventName ?: "Middag",
+                            body = "Prisen er sat til ${"%.2f".format(pricePerPerson)} kr. per person",
+                            isRead = false,
+                            createdAtMillis = System.currentTimeMillis(),
+                        )
+                        notificationService.sendToUsers(recipientIds, notification)
+                    }
+                    Log.d(TAG, "saveTotalPrice: saved $price for event ${currentEvent.eventId}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "saveTotalPrice: failed — ${e.message}", e)
+                    _eventError.value = e.message
                 }
             }
         }

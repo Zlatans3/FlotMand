@@ -51,6 +51,7 @@ import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCa
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.EventDetailTopAppBar
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.ParticipantsBottomSheet
+import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.PriceCard
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.PublisherSection
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.DateTimeInfoBox
@@ -146,6 +147,10 @@ internal fun EventDetailScreenRoute(
                                 context.startActivity(intent)
                             },
                             participants = uiState.participants,
+                            totalPriceInput = uiState.totalPriceInput,
+                            pricePerPerson = uiState.pricePerPerson,
+                            onTotalPriceChanged = viewModel::onTotalPriceChanged,
+                            onSaveTotalPrice = viewModel::saveTotalPrice,
                         )
                     }
                 }
@@ -250,6 +255,10 @@ private fun EventDetailScreenContent(
     onParticipateClick: () -> Unit,
     onMapClick: () -> Unit,
     participants: List<User>,
+    totalPriceInput: String = "",
+    pricePerPerson: Double? = null,
+    onTotalPriceChanged: (String) -> Unit = {},
+    onSaveTotalPrice: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     var showFab by remember { mutableStateOf(true) }
@@ -307,6 +316,18 @@ private fun EventDetailScreenContent(
                         participants.find { it.id == participantId }
                     } ?: emptyList(),
                 onClick = onParticipantsClick,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+
+            VSpacer(12.dp)
+
+            PriceCard(
+                isPublisher = isPublisher,
+                totalPrice = event.totalPrice,
+                totalPriceInput = totalPriceInput,
+                pricePerPerson = pricePerPerson,
+                onTotalPriceChanged = onTotalPriceChanged,
+                onSave = onSaveTotalPrice,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
 

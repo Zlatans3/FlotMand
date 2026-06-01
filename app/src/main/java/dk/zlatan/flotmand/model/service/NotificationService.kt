@@ -4,6 +4,11 @@ import dk.zlatan.flotmand.model.AppNotification
 import kotlinx.coroutines.flow.Flow
 
 interface NotificationService {
+    /**
+     * Writes a notification into each listed user's notification collection.
+     * Used to broadcast price updates and other host-initiated events to participants.
+     */
+    suspend fun sendToUsers(userIds: List<String>, notification: AppNotification)
     /** Real-time stream of all notifications for the current user, newest first. */
     val notifications: Flow<List<AppNotification>>
 

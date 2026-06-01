@@ -92,6 +92,7 @@ class DinnerEventServiceImpl
                         participantIds = doc.get("participantIds") as? List<String>,
                         eventName = doc.getString("eventName"),
                         location = doc.getString("location"),
+                        totalPrice = doc.getDouble("totalPrice"),
                         eventDateString = doc.getString("eventDateString"),
                         eventStartTimeString = doc.getString("eventStartTimeString"),
                     )

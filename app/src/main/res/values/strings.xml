@@ -67,6 +67,21 @@
     <!-- New strings for DateTimeInfoBox.kt -->
     <string name="date_label_upper">DATO</string>
     <string name="time_label_upper">TIDSPUNKT</string>
+    <string name="price_label_upper">PRIS</string>
+    <string name="price_your_share_label_upper">DIN PRIS</string>
+    <string name="price_add">Tilføj pris</string>
+    <string name="price_add_content_description">Tilføj pris til eventet</string>
+    <string name="price_edit_content_description">Rediger pris</string>
+    <string name="price_total_input_label">Total pris</string>
+    <string name="price_input_placeholder">f.eks. 500</string>
+    <string name="price_save">Gem pris</string>
+    <string name="price_cancel">Annuller</string>
+    <string name="price_per_person_suffix">kr. pr. person</string>
+    <string name="price_becomes_prefix">Det bliver</string>
+    <string name="price_kr_suffix">kr.</string>
+    <string name="price_total_suffix">i alt</string>
+    <string name="mobilepay_open_content_description">Betal med MobilePay</string>
+    <string name="mobilepay_not_found">MobilePay kunne ikke findes på denne enhed</string>
     <string name="participants_label">FLOTTE MÆND</string>
     <string name="participants_answered">%1$d har svaret</string>
     <string name="participants_content_description">Deltagere</string>
