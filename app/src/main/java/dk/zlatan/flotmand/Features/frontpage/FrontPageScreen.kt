@@ -136,7 +136,7 @@ internal fun FrontPageRoute(
                     LottieAnimation(
                         composition = loadingComposition,
                         iterations = LottieConstants.IterateForever,
-                        modifier = Modifier.size(200.dp),
+                        modifier = Modifier.size(100.dp),
                     )
                 }
             }
