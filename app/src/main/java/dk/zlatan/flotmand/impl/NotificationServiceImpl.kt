@@ -166,7 +166,11 @@ class NotificationServiceImpl
         }
 
         override suspend fun sendToUsers(userIds: List<String>, notification: AppNotification) {
-            if (userIds.isEmpty()) return
+            if (userIds.isEmpty()) {
+                Log.w(TAG, "sendToUsers: recipient list is empty, skipping")
+                return
+            }
+            Log.d(TAG, "sendToUsers: sending to ${userIds.size} user(s): $userIds")
             try {
                 val db = Firebase.firestore
                 val batch = db.batch()
@@ -175,8 +179,17 @@ class NotificationServiceImpl
                     batch.set(docRef, notification)
                 }
                 batch.commit().await()
+                Log.d(TAG, "sendToUsers: batch committed successfully")
             } catch (e: Exception) {
-                Log.e(TAG, "sendToUsers: FAILED — ${e.message}", e)
+                // Most likely cause: Firestore security rules deny writes to other users'
+                // notification collections. Fix: allow `create` for any authenticated user
+                // in your Firestore rules (see README or inline comment below).
+                //
+                // match /notifications/{userId}/items/{itemId} {
+                //   allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+                //   allow create: if request.auth != null;
+                // }
+                Log.e(TAG, "sendToUsers: FAILED (check Firestore rules) — ${e.javaClass.simpleName}: ${e.message}", e)
             }
         }
 

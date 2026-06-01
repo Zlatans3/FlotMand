@@ -7,9 +7,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dk.zlatan.flotmand.model.AppNotification
 import dk.zlatan.flotmand.model.Event
-import dk.zlatan.flotmand.model.NotificationType
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
@@ -43,6 +41,15 @@ data class EventDetailUiState(
     val totalPriceInput: String = "",
     /** Total price divided by participant count; null when input is blank or unparseable. */
     val pricePerPerson: Double? = null,
+    val isSavingPrice: Boolean = false,
+    val priceError: String? = null,
+)
+
+/** Bundles price-input UI state into a single flow to stay within the 10-flow combine limit. */
+private data class PriceInputState(
+    val input: String = "",
+    val isSaving: Boolean = false,
+    val error: String? = null,
 )
 
 @HiltViewModel(assistedFactory = EventDetailViewModel.Factory::class)
@@ -69,7 +76,7 @@ internal class EventDetailViewModel
         private val _isParticipated = MutableStateFlow<Boolean?>(false)
         private val _isDeleted = MutableStateFlow(false)
         private val _eventError = MutableStateFlow<String?>(null)
-        private val _totalPriceInput = MutableStateFlow("")
+        private val _priceInputState = MutableStateFlow(PriceInputState())
 
         // Guards against overwriting the host's in-progress edit when Firestore re-emits.
         private var totalPriceInitialized = false
@@ -87,7 +94,7 @@ internal class EventDetailViewModel
                 _isParticipated,
                 _isDeleted,
                 _eventError,
-                _totalPriceInput,
+                _priceInputState,
             ) {
                 event,
                 publisher,
@@ -98,9 +105,9 @@ internal class EventDetailViewModel
                 isParticipated,
                 isDeleted,
                 eventError,
-                totalPriceInput,
+                priceInputState,
                 ->
-                val pricePerPerson = totalPriceInput.toDoubleOrNull()
+                val pricePerPerson = priceInputState.input.toDoubleOrNull()
                     ?.let { total -> if (participants.isNotEmpty()) total / participants.size else null }
                 EventDetailUiState(
                     event = event,
@@ -112,8 +119,10 @@ internal class EventDetailViewModel
                     isParticipated = isParticipated,
                     isDeleted = isDeleted,
                     eventError = eventError,
-                    totalPriceInput = totalPriceInput,
+                    totalPriceInput = priceInputState.input,
                     pricePerPerson = pricePerPerson,
+                    isSavingPrice = priceInputState.isSaving,
+                    priceError = priceInputState.error,
                 )
             }.stateIn(
                 viewModelScope,
@@ -154,8 +163,10 @@ internal class EventDetailViewModel
                             val isParticipated = event.participantIds?.contains(currentUserId) ?: false
 
                             if (!totalPriceInitialized) {
-                                _totalPriceInput.value = event.totalPrice
-                                    ?.toBigDecimal()?.stripTrailingZeros()?.toPlainString() ?: ""
+                                _priceInputState.update { it.copy(
+                                    input = event.totalPrice
+                                        ?.toBigDecimal()?.stripTrailingZeros()?.toPlainString() ?: ""
+                                ) }
                                 totalPriceInitialized = true
                             }
 
@@ -248,7 +259,7 @@ internal class EventDetailViewModel
             _isParticipated.value = false
             _isDeleted.value = false
             _eventError.value = null
-            _totalPriceInput.value = ""
+            _priceInputState.value = PriceInputState()
             totalPriceInitialized = false
         }
 
@@ -278,39 +289,29 @@ internal class EventDetailViewModel
         }
 
         fun onTotalPriceChanged(input: String) {
-            _totalPriceInput.value = input
+            // Clear any previous error as soon as the host starts correcting their input.
+            _priceInputState.update { it.copy(input = input, error = null) }
         }
 
         fun saveTotalPrice() {
             viewModelScope.launch {
                 if (!_isPublisher.value) return@launch
+                if (_priceInputState.value.isSaving) return@launch  // prevent double-tap
                 val currentEvent = _event.value ?: return@launch
-                val price = _totalPriceInput.value.toDoubleOrNull() ?: return@launch
+                val price = _priceInputState.value.input.toDoubleOrNull() ?: return@launch
+
+                _priceInputState.update { it.copy(isSaving = true, error = null) }
                 try {
                     val updatedEvent = currentEvent.copy(totalPrice = price)
                     dinnerEventService.updateDinnerEvent(updatedEvent)
                     _event.value = updatedEvent
-
-                    val recipientIds = currentEvent.participantIds
-                        ?.filter { it != currentEvent.publisherId }
-                        ?: emptyList()
-                    if (recipientIds.isNotEmpty()) {
-                        val participantCount = _participants.value.size.takeIf { it > 0 } ?: 1
-                        val pricePerPerson = price / participantCount
-                        val notification = AppNotification(
-                            type = NotificationType.EVENT.value,
-                            referenceId = currentEvent.eventId.orEmpty(),
-                            title = currentEvent.eventName ?: "Middag",
-                            body = "Prisen er sat til ${"%.2f".format(pricePerPerson)} kr. per person",
-                            isRead = false,
-                            createdAtMillis = System.currentTimeMillis(),
-                        )
-                        notificationService.sendToUsers(recipientIds, notification)
-                    }
+                    _priceInputState.update { it.copy(isSaving = false) }
+                    // Notifications (FCM + in-app) are handled by the onEventPriceSet
+                    // Cloud Function which fires on the totalPrice field change.
                     Log.d(TAG, "saveTotalPrice: saved $price for event ${currentEvent.eventId}")
                 } catch (e: Exception) {
                     Log.e(TAG, "saveTotalPrice: failed — ${e.message}", e)
-                    _eventError.value = e.message
+                    _priceInputState.update { it.copy(isSaving = false, error = "Kunne ikke gemme prisen. Prøv igen.") }
                 }
             }
         }

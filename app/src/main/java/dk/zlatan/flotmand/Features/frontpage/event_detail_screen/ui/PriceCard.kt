@@ -12,9 +12,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,6 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -30,6 +35,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,7 +54,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.R
-import dk.zlatan.flotmand.design_system.componenets.buttons.FmPrimaryButton
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.icon.FmIcons
@@ -60,11 +65,23 @@ internal fun PriceCard(
     totalPrice: Double?,
     totalPriceInput: String,
     pricePerPerson: Double?,
+    isSavingPrice: Boolean,
+    priceError: String?,
     onTotalPriceChanged: (String) -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isEditing by remember { mutableStateOf(false) }
+
+    // Detect the isSavingPrice true→false transition. Because the price update and the
+    // isSaving=false happen in the same coroutine, they land in the same frame, so comparing
+    // totalPrice across frames would always be equal by the time we check. Tracking whether
+    // we were saving is the only reliable way to know "a save just completed".
+    var wasSaving by remember { mutableStateOf(false) }
+    LaunchedEffect(isSavingPrice, priceError) {
+        if (wasSaving && !isSavingPrice && priceError == null) isEditing = false
+        wasSaving = isSavingPrice
+    }
 
     AnimatedContent(
         targetState = when {
@@ -85,11 +102,10 @@ internal fun PriceCard(
             PriceCardState.HostEdit -> HostEditCard(
                 totalPriceInput = totalPriceInput,
                 pricePerPerson = pricePerPerson,
+                isSaving = isSavingPrice,
+                error = priceError,
                 onTotalPriceChanged = onTotalPriceChanged,
-                onSave = {
-                    onSave()
-                    isEditing = false
-                },
+                onSave = onSave,
                 onCancel = {
                     onTotalPriceChanged(totalPrice?.formatKr(withSuffix = false) ?: "")
                     isEditing = false
@@ -163,6 +179,8 @@ private fun HostEmptyCard(
 private fun HostEditCard(
     totalPriceInput: String,
     pricePerPerson: Double?,
+    isSaving: Boolean,
+    error: String?,
     onTotalPriceChanged: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
@@ -197,6 +215,8 @@ private fun HostEditCard(
             placeholder = { Text(text = stringResource(R.string.price_input_placeholder)) },
             suffix = { Text(text = stringResource(R.string.price_kr_suffix)) },
             singleLine = true,
+            enabled = !isSaving,
+            isError = error != null,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
                 imeAction = ImeAction.Done,
@@ -207,22 +227,23 @@ private fun HostEditCard(
             shape = RoundedCornerShape(8.dp),
         )
         VSpacer(6.dp)
-        // Live per-person indicator
+        // Live per-person indicator — replaced by the error when one exists
         AnimatedContent(
-            targetState = pricePerPerson,
+            targetState = error to pricePerPerson,
             transitionSpec = { fadeIn() togetherWith fadeOut() },
-        ) { perPerson ->
-            if (perPerson != null) {
-                Text(
+        ) { (err, perPerson) ->
+            when {
+                err != null -> Text(
+                    text = err,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                perPerson != null -> Text(
                     text = "${stringResource(R.string.price_becomes_prefix)} ${perPerson.formatKr()} ${stringResource(R.string.price_per_person_suffix)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                 )
-            } else {
-                Text(
-                    text = "",
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                else -> Text(text = "", style = MaterialTheme.typography.bodySmall)
             }
         }
         VSpacer(14.dp)
@@ -231,22 +252,32 @@ private fun HostEditCard(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(onClick = onCancel) {
-                Text(
-                    text = stringResource(R.string.price_cancel),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            TextButton(
+                onClick = onCancel,
+                enabled = !isSaving,
+            ) {
+                Text(text = stringResource(R.string.price_cancel))
             }
             HSpacer(8.dp)
-            FmPrimaryButton(
-                text = stringResource(R.string.price_save),
+            Button(
                 onClick = {
                     focusManager.clearFocus()
                     onSave()
                 },
-                isLoading = false,
-                isAffirmed = false,
-            )
+                enabled = !isSaving,
+                shape = RoundedCornerShape(8.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(text = stringResource(R.string.price_save))
+            }
         }
     }
 }
@@ -397,6 +428,42 @@ private fun HostEditPreview() {
         HostEditCard(
             totalPriceInput = "300",
             pricePerPerson = 60.0,
+            isSaving = false,
+            error = null,
+            onTotalPriceChanged = {},
+            onSave = {},
+            onCancel = {},
+            modifier = Modifier.padding(16.dp),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HostEditSavingPreview() {
+    FlotMandTheme {
+        HostEditCard(
+            totalPriceInput = "300",
+            pricePerPerson = 60.0,
+            isSaving = true,
+            error = null,
+            onTotalPriceChanged = {},
+            onSave = {},
+            onCancel = {},
+            modifier = Modifier.padding(16.dp),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HostEditErrorPreview() {
+    FlotMandTheme {
+        HostEditCard(
+            totalPriceInput = "300",
+            pricePerPerson = 60.0,
+            isSaving = false,
+            error = "Kunne ikke gemme prisen. Prøv igen.",
             onTotalPriceChanged = {},
             onSave = {},
             onCancel = {},

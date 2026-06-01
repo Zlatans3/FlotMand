@@ -149,6 +149,8 @@ internal fun EventDetailScreenRoute(
                             participants = uiState.participants,
                             totalPriceInput = uiState.totalPriceInput,
                             pricePerPerson = uiState.pricePerPerson,
+                            isSavingPrice = uiState.isSavingPrice,
+                            priceError = uiState.priceError,
                             onTotalPriceChanged = viewModel::onTotalPriceChanged,
                             onSaveTotalPrice = viewModel::saveTotalPrice,
                         )
@@ -257,6 +259,8 @@ private fun EventDetailScreenContent(
     participants: List<User>,
     totalPriceInput: String = "",
     pricePerPerson: Double? = null,
+    isSavingPrice: Boolean = false,
+    priceError: String? = null,
     onTotalPriceChanged: (String) -> Unit = {},
     onSaveTotalPrice: () -> Unit = {},
 ) {
@@ -326,6 +330,8 @@ private fun EventDetailScreenContent(
                 totalPrice = event.totalPrice,
                 totalPriceInput = totalPriceInput,
                 pricePerPerson = pricePerPerson,
+                isSavingPrice = isSavingPrice,
+                priceError = priceError,
                 onTotalPriceChanged = onTotalPriceChanged,
                 onSave = onSaveTotalPrice,
                 modifier = Modifier.padding(horizontal = 16.dp),

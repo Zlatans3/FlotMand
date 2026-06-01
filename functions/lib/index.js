@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onPollCreated = exports.onEventCreated = void 0;
+exports.onPollCreated = exports.onEventPriceSet = exports.onEventCreated = void 0;
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 admin.initializeApp();
@@ -71,6 +71,35 @@ exports.onEventCreated = functions.firestore
     ]);
     const publisherName = ((_c = publisherDoc.data()) === null || _c === void 0 ? void 0 : _c.displayName) || "En bruger";
     await fanOut(users, "event", `🍽️ ${publisherName} har oprettet et nyt event`, eventName, snapshot.id);
+});
+// ── Trigger: price set or updated on an event ────────────────────────────────
+exports.onEventPriceSet = functions.firestore
+    .document("dinnerEvents/{eventId}")
+    .onUpdate(async (change, context) => {
+    var _a, _b, _c;
+    const before = change.before.data();
+    const after = change.after.data();
+    const priceBefore = before.totalPrice;
+    const priceAfter = after.totalPrice;
+    // Only fire when totalPrice is newly added or changed
+    if (priceAfter == null || priceAfter === priceBefore)
+        return;
+    const publisherId = (_a = after.publisherId) !== null && _a !== void 0 ? _a : "";
+    const participantIds = (_b = after.participantIds) !== null && _b !== void 0 ? _b : [];
+    const eventName = (_c = after.eventName) !== null && _c !== void 0 ? _c : "Middag";
+    const recipientIds = participantIds.filter((id) => id !== publisherId);
+    if (recipientIds.length === 0)
+        return;
+    const participantCount = participantIds.length > 0 ? participantIds.length : 1;
+    const pricePerPerson = priceAfter / participantCount;
+    const formatted = pricePerPerson % 1 === 0
+        ? `${Math.round(pricePerPerson)}`
+        : pricePerPerson.toFixed(2);
+    const userDocs = await Promise.all(recipientIds.map((uid) => db.collection("users").doc(uid).get()));
+    const users = userDocs
+        .filter((doc) => doc.exists)
+        .map((doc) => { var _a; return ({ uid: doc.id, fcmToken: (_a = doc.data()) === null || _a === void 0 ? void 0 : _a.fcmToken }); });
+    await fanOut(users, "event", eventName, `Prisen er sat til ${formatted} kr. pr. person`, context.params.eventId);
 });
 // ── Trigger: new poll ─────────────────────────────────────────────────────────
 exports.onPollCreated = functions.firestore

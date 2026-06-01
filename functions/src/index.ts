@@ -96,6 +96,50 @@ export const onEventCreated = functions.firestore
     );
   });
 
+// ── Trigger: price set or updated on an event ────────────────────────────────
+
+export const onEventPriceSet = functions.firestore
+  .document("dinnerEvents/{eventId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    const priceBefore: number | undefined = before.totalPrice;
+    const priceAfter: number | undefined = after.totalPrice;
+
+    // Only fire when totalPrice is newly added or changed
+    if (priceAfter == null || priceAfter === priceBefore) return;
+
+    const publisherId: string = after.publisherId ?? "";
+    const participantIds: string[] = after.participantIds ?? [];
+    const eventName: string = after.eventName ?? "Middag";
+    const recipientIds = participantIds.filter((id) => id !== publisherId);
+
+    if (recipientIds.length === 0) return;
+
+    const participantCount = participantIds.length > 0 ? participantIds.length : 1;
+    const pricePerPerson = priceAfter / participantCount;
+    const formatted =
+      pricePerPerson % 1 === 0
+        ? `${Math.round(pricePerPerson)}`
+        : pricePerPerson.toFixed(2);
+
+    const userDocs = await Promise.all(
+      recipientIds.map((uid) => db.collection("users").doc(uid).get()),
+    );
+    const users: UserRow[] = userDocs
+      .filter((doc) => doc.exists)
+      .map((doc) => ({ uid: doc.id, fcmToken: doc.data()?.fcmToken }));
+
+    await fanOut(
+      users,
+      "event",
+      eventName,
+      `Prisen er sat til ${formatted} kr. pr. person`,
+      context.params.eventId,
+    );
+  });
+
 // ── Trigger: new poll ─────────────────────────────────────────────────────────
 
 export const onPollCreated = functions.firestore
