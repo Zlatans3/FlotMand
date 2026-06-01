@@ -23,18 +23,21 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+enum class RsvpStatus { NONE, LOADING, ACCEPTED, DECLINED }
+
 /**
  * UI state for Event Detail screen.
- * - isParticipated tri-state: false = not participating (default), null = loading, true = participating
+ * - rsvpStatus LOADING means a toggle is in-flight.
  */
 data class EventDetailUiState(
     val event: Event? = null,
     val publisher: User? = null,
     val participants: List<User> = emptyList(),
+    val declinedUsers: List<User> = emptyList(),
     val isLoadingEvent: Boolean = false,
     val showParticipationBottomSheet: Boolean = false,
     val isPublisher: Boolean = false,
-    val isParticipated: Boolean? = false,
+    val rsvpStatus: RsvpStatus = RsvpStatus.NONE,
     val isDeleted: Boolean = false,
     val eventError: String? = null,
     /** Raw text the host has typed into the total-price field. */
@@ -43,13 +46,25 @@ data class EventDetailUiState(
     val pricePerPerson: Double? = null,
     val isSavingPrice: Boolean = false,
     val priceError: String? = null,
-)
+) {
+    val isParticipated: Boolean? get() = when (rsvpStatus) {
+        RsvpStatus.LOADING -> null
+        RsvpStatus.ACCEPTED -> true
+        else -> false
+    }
+}
 
 /** Bundles price-input UI state into a single flow to stay within the 10-flow combine limit. */
 private data class PriceInputState(
     val input: String = "",
     val isSaving: Boolean = false,
     val error: String? = null,
+)
+
+/** Bundles both user lists into a single flow to stay within the 10-flow combine limit. */
+private data class ParticipantsData(
+    val joined: List<User> = emptyList(),
+    val declined: List<User> = emptyList(),
 )
 
 @HiltViewModel(assistedFactory = EventDetailViewModel.Factory::class)
@@ -69,11 +84,11 @@ internal class EventDetailViewModel
         // Internal state flows
         private val _event = MutableStateFlow<Event?>(null)
         private val _publisher = MutableStateFlow<User?>(null)
-        private val _participants = MutableStateFlow<List<User>>(emptyList())
+        private val _participantsData = MutableStateFlow(ParticipantsData())
         private val _isLoadingEvent = MutableStateFlow(false)
         private val _showParticipationBottomSheet = MutableStateFlow(false)
         private val _isPublisher = MutableStateFlow(false)
-        private val _isParticipated = MutableStateFlow<Boolean?>(false)
+        private val _rsvpStatus = MutableStateFlow(RsvpStatus.NONE)
         private val _isDeleted = MutableStateFlow(false)
         private val _eventError = MutableStateFlow<String?>(null)
         private val _priceInputState = MutableStateFlow(PriceInputState())
@@ -87,36 +102,40 @@ internal class EventDetailViewModel
             combine(
                 _event,
                 _publisher,
-                _participants,
+                _participantsData,
                 _isLoadingEvent,
                 _showParticipationBottomSheet,
                 _isPublisher,
-                _isParticipated,
+                _rsvpStatus,
                 _isDeleted,
                 _eventError,
                 _priceInputState,
             ) {
                 event,
                 publisher,
-                participants,
+                participantsData,
                 isLoadingEvent,
                 showParticipationBottomSheet,
                 isPublisher,
-                isParticipated,
+                rsvpStatus,
                 isDeleted,
                 eventError,
                 priceInputState,
                 ->
                 val pricePerPerson = priceInputState.input.toDoubleOrNull()
-                    ?.let { total -> if (participants.isNotEmpty()) total / participants.size else null }
+                    ?.let { total ->
+                        val count = participantsData.joined.size
+                        if (count > 0) total / count else null
+                    }
                 EventDetailUiState(
                     event = event,
                     publisher = publisher,
-                    participants = participants,
+                    participants = participantsData.joined,
+                    declinedUsers = participantsData.declined,
                     isLoadingEvent = isLoadingEvent,
                     showParticipationBottomSheet = showParticipationBottomSheet,
                     isPublisher = isPublisher,
-                    isParticipated = isParticipated,
+                    rsvpStatus = rsvpStatus,
                     isDeleted = isDeleted,
                     eventError = eventError,
                     totalPriceInput = priceInputState.input,
@@ -139,9 +158,7 @@ internal class EventDetailViewModel
         private fun observeEvent() {
             viewModelScope.launch {
                 Log.e(TAG, "Starting to observe event: id=$eventId")
-                _isLoadingEvent.update {
-                    true
-                }
+                _isLoadingEvent.update { true }
                 try {
                     dinnerEventService
                         .observeDinnerEvent(eventId)
@@ -160,31 +177,39 @@ internal class EventDetailViewModel
                             val currentUserId = accountService.currentUserId
                             val isPublisher =
                                 event.publisherId != null && event.publisherId == currentUserId
-                            val isParticipated = event.participantIds?.contains(currentUserId) ?: false
+
+                            if (_rsvpStatus.value != RsvpStatus.LOADING) {
+                                val rsvp = when {
+                                    event.participantIds?.contains(currentUserId) == true -> RsvpStatus.ACCEPTED
+                                    event.declinedIds?.contains(currentUserId) == true -> RsvpStatus.DECLINED
+                                    else -> RsvpStatus.NONE
+                                }
+                                _rsvpStatus.value = rsvp
+                            }
 
                             if (!totalPriceInitialized) {
-                                _priceInputState.update { it.copy(
-                                    input = event.totalPrice
-                                        ?.toBigDecimal()?.stripTrailingZeros()?.toPlainString() ?: ""
-                                ) }
+                                _priceInputState.update {
+                                    it.copy(
+                                        input = event.totalPrice
+                                            ?.toBigDecimal()?.stripTrailingZeros()?.toPlainString() ?: "",
+                                    )
+                                }
                                 totalPriceInitialized = true
                             }
 
                             _event.value = event
                             _isPublisher.value = isPublisher
-                            _isParticipated.value = isParticipated
                             _isLoadingEvent.value = false
 
-                            // Refresh publisher and participants when relevant fields change
                             _publisher.value = loadPublisherSync(event.publisherId)
-                            _participants.value = loadParticipantsSync(event.participantIds)
+                            val joined = loadParticipantsSync(event.participantIds)
+                            val declined = loadParticipantsSync(event.declinedIds)
+                            _participantsData.value = ParticipantsData(joined = joined, declined = declined)
                         }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error observing event: ${e.message}", e)
                     _eventError.value = e.message
-                    _isLoadingEvent.update {
-                        false
-                    }
+                    _isLoadingEvent.update { false }
                 }
             }
         }
@@ -199,52 +224,80 @@ internal class EventDetailViewModel
             }
         }
 
-        private suspend fun loadParticipantsSync(participantIds: List<String>?): List<User> {
-            if (participantIds.isNullOrEmpty()) return emptyList()
+        private suspend fun loadParticipantsSync(ids: List<String>?): List<User> {
+            if (ids.isNullOrEmpty()) return emptyList()
             return try {
-                accountService.getUsersByIds(participantIds)
+                accountService.getUsersByIds(ids)
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to load participants: ${e.message}", e)
+                Log.e(TAG, "Failed to load users: ${e.message}", e)
                 emptyList()
             }
         }
 
-        fun onUserParticipate() {
+        fun onUserRsvp(accepted: Boolean) {
             viewModelScope.launch {
                 val currentEvent = _event.value
                 val userId = accountService.currentUserId
 
                 if (currentEvent == null) {
-                    Log.w(TAG, "onUserParticipate called but event is null")
+                    Log.w(TAG, "onUserRsvp called but event is null")
                     return@launch
                 }
-
                 if (currentEvent.publisherId == userId) {
-                    Log.i(TAG, "Publisher cannot participate; ignoring click. publisherId=$userId")
+                    Log.i(TAG, "Publisher cannot RSVP; ignoring. publisherId=$userId")
                     return@launch
                 }
 
                 try {
-                    _isParticipated.value = null
-                    val existingIds = currentEvent.participantIds ?: emptyList()
-                    val isCurrentlyParticipating = existingIds.contains(userId)
-                    val updatedIds =
-                        if (isCurrentlyParticipating) {
-                            existingIds.filterNot { it == userId }
+                    _rsvpStatus.value = RsvpStatus.LOADING
+
+                    val currentParticipantIds = currentEvent.participantIds ?: emptyList()
+                    val currentDeclinedIds = currentEvent.declinedIds ?: emptyList()
+
+                    val newParticipantIds: List<String>
+                    val newDeclinedIds: List<String>
+
+                    if (accepted) {
+                        val alreadyAccepted = currentParticipantIds.contains(userId)
+                        newParticipantIds = if (alreadyAccepted) {
+                            currentParticipantIds.filterNot { it == userId }
                         } else {
-                            existingIds + userId
+                            currentParticipantIds + userId
                         }
-                    val updatedEvent = currentEvent.copy(participantIds = updatedIds)
+                        newDeclinedIds = currentDeclinedIds.filterNot { it == userId }
+                        _rsvpStatus.value = if (alreadyAccepted) RsvpStatus.NONE else RsvpStatus.ACCEPTED
+                    } else {
+                        val alreadyDeclined = currentDeclinedIds.contains(userId)
+                        newDeclinedIds = if (alreadyDeclined) {
+                            currentDeclinedIds.filterNot { it == userId }
+                        } else {
+                            currentDeclinedIds + userId
+                        }
+                        newParticipantIds = currentParticipantIds.filterNot { it == userId }
+                        _rsvpStatus.value = if (alreadyDeclined) RsvpStatus.NONE else RsvpStatus.DECLINED
+                    }
+
+                    val updatedEvent = currentEvent.copy(
+                        participantIds = newParticipantIds,
+                        declinedIds = newDeclinedIds,
+                    )
                     dinnerEventService.updateDinnerEvent(updatedEvent)
                     _event.value = updatedEvent
-                    _participants.value = loadParticipantsSync(updatedIds)
+
+                    val joined = loadParticipantsSync(newParticipantIds)
+                    val declined = loadParticipantsSync(newDeclinedIds)
+                    _participantsData.value = ParticipantsData(joined = joined, declined = declined)
                     _showParticipationBottomSheet.value = false
-                    _isParticipated.value = !isCurrentlyParticipating
-                    val action = if (isCurrentlyParticipating) "removed" else "added"
-                    Log.d(TAG, "User $userId $action to participants for event ${updatedEvent.eventId}")
+
+                    Log.d(TAG, "RSVP updated: accepted=$accepted for event ${updatedEvent.eventId}")
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to toggle participant: ${e.message}", e)
-                    _isParticipated.value = currentEvent.participantIds?.contains(userId) ?: false
+                    Log.e(TAG, "Failed to update RSVP: ${e.message}", e)
+                    val fallback = when {
+                        currentEvent.participantIds?.contains(userId) == true -> RsvpStatus.ACCEPTED
+                        currentEvent.declinedIds?.contains(userId) == true -> RsvpStatus.DECLINED
+                        else -> RsvpStatus.NONE
+                    }
+                    _rsvpStatus.value = fallback
                 }
             }
         }
@@ -252,18 +305,17 @@ internal class EventDetailViewModel
         private fun clearAll() {
             _event.value = null
             _publisher.value = null
-            _participants.value = emptyList()
+            _participantsData.value = ParticipantsData()
             _isLoadingEvent.value = false
             _showParticipationBottomSheet.value = false
             _isPublisher.value = false
-            _isParticipated.value = false
+            _rsvpStatus.value = RsvpStatus.NONE
             _isDeleted.value = false
             _eventError.value = null
             _priceInputState.value = PriceInputState()
             totalPriceInitialized = false
         }
 
-        // Optionally, add a new function to handle event unavailable state
         fun onEventUnavailable() {
             clearAll()
         }
@@ -289,14 +341,13 @@ internal class EventDetailViewModel
         }
 
         fun onTotalPriceChanged(input: String) {
-            // Clear any previous error as soon as the host starts correcting their input.
             _priceInputState.update { it.copy(input = input, error = null) }
         }
 
         fun saveTotalPrice() {
             viewModelScope.launch {
                 if (!_isPublisher.value) return@launch
-                if (_priceInputState.value.isSaving) return@launch  // prevent double-tap
+                if (_priceInputState.value.isSaving) return@launch
                 val currentEvent = _event.value ?: return@launch
                 val price = _priceInputState.value.input.toDoubleOrNull() ?: return@launch
 
@@ -306,8 +357,6 @@ internal class EventDetailViewModel
                     dinnerEventService.updateDinnerEvent(updatedEvent)
                     _event.value = updatedEvent
                     _priceInputState.update { it.copy(isSaving = false) }
-                    // Notifications (FCM + in-app) are handled by the onEventPriceSet
-                    // Cloud Function which fires on the totalPrice field change.
                     Log.d(TAG, "saveTotalPrice: saved $price for event ${currentEvent.eventId}")
                 } catch (e: Exception) {
                     Log.e(TAG, "saveTotalPrice: failed — ${e.message}", e)

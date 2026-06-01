@@ -21,11 +21,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -89,16 +96,11 @@ internal fun EventDetailScreenRoute(
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // Navigate away immediately when deleted, before content can update
     LaunchedEffect(uiState.isDeleted) {
-        if (uiState.isDeleted) {
-            onDismiss()
-        }
+        if (uiState.isDeleted) onDismiss()
     }
 
-    PredictiveBackScaleContainer(
-        modifier = modifier,
-    ) {
+    PredictiveBackScaleContainer(modifier = modifier) {
         Scaffold(
             modifier = Modifier,
             topBar = {
@@ -106,44 +108,36 @@ internal fun EventDetailScreenRoute(
                     onBackClick = onDismiss,
                     isPublisher = uiState.isPublisher,
                     canEdit = uiState.event?.status != EventStatus.COMPLETED,
-                    onDeleteClick = {
-                        showDeleteDialog = true
-                    },
-                    onEditClick = {
-                        uiState.event?.eventId?.let { onEditEvent(it) }
-                    },
+                    onDeleteClick = { showDeleteDialog = true },
+                    onEditClick = { uiState.event?.eventId?.let { onEditEvent(it) } },
                 )
             },
         ) { paddingValues ->
             val topBarPadding = paddingValues.calculateTopPadding()
             when {
-                // Show content if event exists OR if we're in the process of deleting
-                // This prevents the empty state flash during deletion
                 uiState.event != null -> {
                     val event = uiState.event
                     if (event != null) {
                         EventDetailScreenContent(
                             modifier = Modifier.padding(top = topBarPadding),
                             event = event,
-                            isParticipating = uiState.isParticipated,
+                            rsvpStatus = uiState.rsvpStatus,
                             publisher = uiState.publisher,
                             geoLocation = event.geoLocation,
                             onParticipantsClick = {
-                                if (!event.participantIds.isNullOrEmpty()) {
-                                    viewModel.showParticipants()
-                                }
+                                val hasAnyone = !event.participantIds.isNullOrEmpty() ||
+                                    !event.declinedIds.isNullOrEmpty()
+                                if (hasAnyone) viewModel.showParticipants()
                             },
                             isPublisher = uiState.isPublisher,
-                            onParticipateClick = {
-                                viewModel.onUserParticipate()
-                            },
+                            onAccept = { viewModel.onUserRsvp(accepted = true) },
+                            onDecline = { viewModel.onUserRsvp(accepted = false) },
                             onMapClick = {
-                                val intent =
-                                    buildDirectionsChooserIntent(
-                                        latitude = event.geoLocation?.latitude,
-                                        longitude = event.geoLocation?.longitude,
-                                        address = event.location,
-                                    )
+                                val intent = buildDirectionsChooserIntent(
+                                    latitude = event.geoLocation?.latitude,
+                                    longitude = event.geoLocation?.longitude,
+                                    address = event.location,
+                                )
                                 context.startActivity(intent)
                             },
                             participants = uiState.participants,
@@ -165,7 +159,6 @@ internal fun EventDetailScreenRoute(
                     ) {
                         var show by remember { mutableStateOf(false) }
                         LaunchedEffect(Unit) {
-                            // Just a small delay to ensure smooth appearance
                             delay(300)
                             show = true
                         }
@@ -197,7 +190,6 @@ internal fun EventDetailScreenRoute(
                     }
                 }
 
-                // Only show null state when not loading and event is still null and not deleted
                 uiState.event == null && !uiState.isDeleted -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -222,10 +214,9 @@ internal fun EventDetailScreenRoute(
 
         if (uiState.showParticipationBottomSheet) {
             ParticipantsBottomSheet(
-                onDismiss = {
-                    viewModel.onDismissParticipantsSheet()
-                },
+                onDismiss = { viewModel.onDismissParticipantsSheet() },
                 participants = uiState.participants,
+                declinedUsers = uiState.declinedUsers,
                 publisherId = uiState.publisher?.id,
             )
         }
@@ -250,11 +241,12 @@ private fun EventDetailScreenContent(
     modifier: Modifier = Modifier,
     event: Event,
     geoLocation: GeoLocation?,
-    isParticipating: Boolean?,
+    rsvpStatus: RsvpStatus = RsvpStatus.NONE,
     publisher: User?,
     isPublisher: Boolean,
     onParticipantsClick: () -> Unit,
-    onParticipateClick: () -> Unit,
+    onAccept: () -> Unit,
+    onDecline: () -> Unit,
     onMapClick: () -> Unit,
     participants: List<User>,
     totalPriceInput: String = "",
@@ -276,19 +268,16 @@ private fun EventDetailScreenContent(
                 delta
             }.distinctUntilChanged()
             .collectLatest { delta ->
-                if (abs(delta) > 4) {
-                    showFab = delta < 0
-                }
+                if (abs(delta) > 4) showFab = delta < 0
             }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier =
-                modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .background(MaterialTheme.colorScheme.background),
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .background(MaterialTheme.colorScheme.background),
         ) {
             VSpacer(20.dp)
             DetailHeader(
@@ -304,7 +293,6 @@ private fun EventDetailScreenContent(
             )
             VSpacer(20.dp)
 
-            // Date and Time Info Boxes
             DateTimeInfoBox(
                 date = event.eventDate,
                 time = event.eventStartTime,
@@ -313,12 +301,11 @@ private fun EventDetailScreenContent(
 
             VSpacer(20.dp)
 
-            // Participants Info Box
             ParticipantsInfoBox(
-                participants =
-                    event.participantIds?.mapNotNull { participantId ->
-                        participants.find { it.id == participantId }
-                    } ?: emptyList(),
+                participants = event.participantIds?.mapNotNull { participantId ->
+                    participants.find { it.id == participantId }
+                } ?: emptyList(),
+                declinedCount = event.declinedIds?.size ?: 0,
                 onClick = onParticipantsClick,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
@@ -339,13 +326,10 @@ private fun EventDetailScreenContent(
 
             VSpacer(20.dp)
 
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 20.dp),
-            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
 
             VSpacer(20.dp)
 
-            // Only show map if we have valid coordinates
             if (geoLocation != null && geoLocation.isValid()) {
                 Text(
                     text = "Lokation",
@@ -358,71 +342,186 @@ private fun EventDetailScreenContent(
                     addressName = event.streetAddress,
                     cityName = event.city,
                     geoLocation = geoLocation,
-                    eventDate = null, // No date badge in detail screen
+                    eventDate = null,
                     onCardClick = onMapClick,
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                 )
             }
 
             VSpacer(40.dp)
-
-            Spacer(modifier = Modifier.height(80.dp)) // Padding for FAB overlap
+            Spacer(modifier = Modifier.height(80.dp))
         }
 
         if (!isPublisher && event.status == EventStatus.UPCOMING) {
-            val participationText =
-                if (isParticipating == true) {
-                    stringResource(R.string.participating)
-                } else {
-                    stringResource(
-                        R.string.participate,
-                    )
-                }
             AnimatedVisibility(
                 visible = showFab,
                 modifier = Modifier.align(Alignment.BottomEnd),
                 enter = fadeIn(animationSpec = tween(200)) + slideInVertically(initialOffsetY = { it / 2 }),
                 exit = fadeOut(animationSpec = tween(200)) + slideOutVertically(targetOffsetY = { it / 2 }),
             ) {
+                RsvpFab(
+                    rsvpStatus = rsvpStatus,
+                    onAccept = onAccept,
+                    onDecline = onDecline,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RsvpFab(
+    rsvpStatus: RsvpStatus,
+    onAccept: () -> Unit,
+    onDecline: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    // Collapse when a new RSVP choice lands
+    LaunchedEffect(rsvpStatus) {
+        if (rsvpStatus != RsvpStatus.LOADING) expanded = false
+    }
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        // Two RSVP option buttons that animate up when expanded
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn(tween(200)) + slideInVertically(tween(200)) { it / 2 },
+            exit = fadeOut(tween(150)) + slideOutVertically(tween(150)) { it / 2 },
+        ) {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // "Deltager" option
+                Button(
+                    onClick = {
+                        onAccept()
+                        expanded = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+                ) {
+                    Icon(
+                        imageVector = FmIcons.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Spacer(Modifier.padding(horizontal = 4.dp))
+                    Text(text = stringResource(R.string.participating))
+                }
+
+                // "Deltager ikke" option
+                Button(
+                    onClick = {
+                        onDecline()
+                        expanded = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+                ) {
+                    Icon(
+                        imageVector = FmIcons.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Spacer(Modifier.padding(horizontal = 4.dp))
+                    Text(text = stringResource(R.string.decline))
+                }
+            }
+        }
+
+        // Main button: round X when expanded, extended FAB otherwise
+        AnimatedContent(
+            targetState = expanded,
+            transitionSpec = {
+                (fadeIn(tween(200)) + scaleIn(tween(200))) togetherWith
+                    (fadeOut(tween(120)) + scaleOut(tween(120)))
+            },
+        ) { isExpanded ->
+            if (isExpanded) {
+                FloatingActionButton(
+                    onClick = { expanded = false },
+                    shape = CircleShape,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 6.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.rsvp_close_content_description),
+                    )
+                }
+            } else {
+                val isLoading = rsvpStatus == RsvpStatus.LOADING
                 ExtendedFloatingActionButton(
-                    elevation =
-                        FloatingActionButtonDefaults.elevation(
-                            defaultElevation = 8.dp,
-                            pressedElevation = 12.dp,
-                        ),
+                    elevation = FloatingActionButtonDefaults.elevation(
+                        defaultElevation = 8.dp,
+                        pressedElevation = 12.dp,
+                    ),
                     text = {
-                        Text(
-                            text = participationText,
-                            style = MaterialTheme.typography.bodyLarge,
-                        )
+                        when (rsvpStatus) {
+                            RsvpStatus.ACCEPTED -> Text(
+                                text = stringResource(R.string.participating),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                            RsvpStatus.DECLINED -> Text(
+                                text = stringResource(R.string.decline),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                            else -> Text(
+                                text = stringResource(R.string.participate),
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
                     },
                     icon = {
-                        AnimatedContent(
-                            targetState = isParticipating == true,
-                            transitionSpec = {
-                                fadeIn(tween(220)) + scaleIn(tween(220)) togetherWith fadeOut(
-                                    tween(
-                                        120,
-                                    ),
-                                ) + scaleOut(tween(120))
-                            },
-                        ) { participating ->
-                            if (participating) {
-                                Icon(imageVector = FmIcons.Check, contentDescription = null)
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                            )
+                        } else {
+                            AnimatedContent(
+                                targetState = rsvpStatus,
+                                transitionSpec = {
+                                    fadeIn(tween(220)) + scaleIn(tween(220)) togetherWith
+                                        fadeOut(tween(120)) + scaleOut(tween(120))
+                                },
+                            ) { status ->
+                                when (status) {
+                                    RsvpStatus.ACCEPTED -> Icon(imageVector = FmIcons.Check, contentDescription = null)
+                                    RsvpStatus.DECLINED -> Icon(imageVector = FmIcons.Close, contentDescription = null)
+                                    else -> Spacer(Modifier)
+                                }
                             }
                         }
                     },
-                    onClick = onParticipateClick,
+                    onClick = { if (!isLoading) expanded = true },
                     expanded = true,
-                    containerColor = if (isParticipating == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    modifier =
-                        Modifier
-                            .padding(horizontal = 16.dp, vertical = 24.dp),
+                    containerColor = when (rsvpStatus) {
+                        RsvpStatus.DECLINED -> MaterialTheme.colorScheme.errorContainer
+                        else -> MaterialTheme.colorScheme.primary
+                    },
+                    contentColor = when (rsvpStatus) {
+                        RsvpStatus.DECLINED -> MaterialTheme.colorScheme.onErrorContainer
+                        else -> MaterialTheme.colorScheme.onPrimary
+                    },
                 )
             }
         }
@@ -434,13 +533,10 @@ private fun buildDirectionsChooserIntent(
     longitude: Double?,
     address: String?,
 ): Intent {
-    // Prefer precise lat/lng if available
     val primaryUri: Uri =
         if (latitude != null && longitude != null) {
-            // Google Maps direction URI with coordinates
             Uri.parse("google.navigation:q=$latitude,$longitude")
         } else {
-            // Fall back to address text
             val encoded = Uri.encode(address ?: "")
             Uri.parse("google.navigation:q=$encoded")
         }
@@ -448,10 +544,8 @@ private fun buildDirectionsChooserIntent(
     val mapIntent = Intent(Intent.ACTION_VIEW, primaryUri)
     mapIntent.setPackage("com.google.android.apps.maps")
 
-    // Build a generic chooser to allow other providers if Google Maps isn't installed
     val chooser = Intent.createChooser(mapIntent, "Åbn navigation med")
 
-    // Also add a generic geo: fallback without package (some map apps listen to this)
     val geoQuery =
         if (latitude != null && longitude != null) {
             "geo:0,0?q=$latitude,$longitude"
@@ -476,8 +570,9 @@ private fun EventDetailScreenPreview() {
         participants = User.mockUserWithCounter(5),
         isPublisher = false,
         onParticipantsClick = {},
-        onParticipateClick = {},
-        isParticipating = true,
+        onAccept = {},
+        onDecline = {},
+        rsvpStatus = RsvpStatus.ACCEPTED,
         onMapClick = {},
     )
 }
@@ -489,36 +584,15 @@ private fun EventDetailScreenIsPublisherPreview() {
     EventDetailScreenContent(
         modifier = Modifier,
         event = event,
-        geoLocation = null, // Test without map
+        geoLocation = null,
         publisher = User.mockUserWithCounter(1).first(),
         participants = User.mockUserWithCounter(5),
         isPublisher = true,
         onParticipantsClick = {},
-        onParticipateClick = {},
-        isParticipating = false,
+        onAccept = {},
+        onDecline = {},
         onMapClick = {},
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun PrintListPreview() {
-    val event = Event.staticTestEvents.first()
-    val publisher =
-        User(
-            id = "test-publisher",
-            displayName = "Test Publisher",
-            email = "publisher@test.com",
-        )
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            text = "Event: ${event.eventName}\nDate: ${event.eventDate}\nTime: ${event.eventStartTime}\nHost: ${publisher.displayName}",
-        )
-    }
 }
 
 @Preview(showBackground = true)

@@ -58,6 +58,10 @@
     <string name="participants_count">%1$d deltagere</string>
     <string name="participating">Deltager</string>
     <string name="participate">Deltag</string>
+    <string name="decline">Deltager ikke</string>
+    <string name="rsvp_close_content_description">Luk RSVP menu</string>
+    <string name="participants_attending_label">Deltager</string>
+    <string name="participants_declined_label">Deltager ikke</string>
     <string name="location_content_description">Lokation</string>
     <string name="check_icon_content_description">Tjek ikon</string>
     <string name="date_content_description">Dato</string>

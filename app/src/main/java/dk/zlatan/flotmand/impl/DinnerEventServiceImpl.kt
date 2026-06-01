@@ -90,6 +90,7 @@ class DinnerEventServiceImpl
                         eventId = doc.id,
                         publisherId = doc.getString("publisherId"),
                         participantIds = doc.get("participantIds") as? List<String>,
+                        declinedIds = doc.get("declinedIds") as? List<String>,
                         eventName = doc.getString("eventName"),
                         location = doc.getString("location"),
                         totalPrice = doc.getDouble("totalPrice"),
