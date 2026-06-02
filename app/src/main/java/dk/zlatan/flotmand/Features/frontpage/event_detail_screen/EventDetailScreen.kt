@@ -468,26 +468,21 @@ private fun RsvpFab(
                 }
             } else {
                 val isLoading = rsvpStatus == RsvpStatus.LOADING
+                val rsvpText = when (rsvpStatus) {
+                    RsvpStatus.ACCEPTED -> stringResource(R.string.participating)
+                    RsvpStatus.DECLINED -> stringResource(R.string.decline)
+                    else -> stringResource(R.string.participate)
+                }
                 ExtendedFloatingActionButton(
                     elevation = FloatingActionButtonDefaults.elevation(
                         defaultElevation = 8.dp,
                         pressedElevation = 12.dp,
                     ),
                     text = {
-                        when (rsvpStatus) {
-                            RsvpStatus.ACCEPTED -> Text(
-                                text = stringResource(R.string.participating),
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                            RsvpStatus.DECLINED -> Text(
-                                text = stringResource(R.string.decline),
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                            else -> Text(
-                                text = stringResource(R.string.participate),
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                        }
+                        Text(
+                            text = rsvpText,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
                     },
                     icon = {
                         if (isLoading) {
