@@ -537,7 +537,7 @@ private fun buildDirectionsChooserIntent(
         if (latitude != null && longitude != null) {
             Uri.parse("google.navigation:q=$latitude,$longitude")
         } else {
-            val encoded = Uri.encode(address ?: "")
+            val encoded = Uri.encode(address.orEmpty())
             Uri.parse("google.navigation:q=$encoded")
         }
 
@@ -550,7 +550,7 @@ private fun buildDirectionsChooserIntent(
         if (latitude != null && longitude != null) {
             "geo:0,0?q=$latitude,$longitude"
         } else {
-            "geo:0,0?q=" + Uri.encode(address ?: "")
+            "geo:0,0?q=" + Uri.encode(address.orEmpty())
         }
     val geoIntent = Intent(Intent.ACTION_VIEW, Uri.parse(geoQuery))
     chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(geoIntent))

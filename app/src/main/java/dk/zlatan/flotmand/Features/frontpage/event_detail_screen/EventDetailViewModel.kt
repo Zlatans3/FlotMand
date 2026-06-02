@@ -191,7 +191,7 @@ internal class EventDetailViewModel
                                 _priceInputState.update {
                                     it.copy(
                                         input = event.totalPrice
-                                            ?.toBigDecimal()?.stripTrailingZeros()?.toPlainString() ?: "",
+                                            ?.toBigDecimal()?.stripTrailingZeros()?.toPlainString().orEmpty(),
                                     )
                                 }
                                 totalPriceInitialized = true

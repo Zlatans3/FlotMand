@@ -65,7 +65,7 @@ class AccountInformationViewModel
                     accountService.reloadUser()
                 } catch (e: Exception) {
                     _errorMessage.value =
-                        stringProvider.getString(R.string.error_update_display_name, e.message ?: "")
+                        stringProvider.getString(R.string.error_update_display_name, e.message.orEmpty())
                 } finally {
                     _isLoading.value = false
                 }
@@ -84,13 +84,9 @@ class AccountInformationViewModel
                     _isLoading.value = true
                     _errorMessage.value = null
                     accountService.updatePhoneNumber(newPhoneNumber)
-                    // Reload user to trigger AuthStateListener and update UI
-                    accountService.reloadUser()
-                } catch (e: UnsupportedOperationException) {
-                    _errorMessage.value = e.message
                 } catch (e: Exception) {
                     _errorMessage.value =
-                        stringProvider.getString(R.string.error_update_phone_number, e.message ?: "")
+                        stringProvider.getString(R.string.error_update_phone_number, e.message.orEmpty())
                 } finally {
                     _isLoading.value = false
                 }
@@ -116,7 +112,7 @@ class AccountInformationViewModel
                     dinnerEventService.deleteDinnerEventsByUser(userId)
                     accountService.deleteAccount()
                 } catch (e: Exception) {
-                    _errorMessage.value = stringProvider.getString(R.string.error_delete_user, e.message ?: "")
+                    _errorMessage.value = stringProvider.getString(R.string.error_delete_user, e.message.orEmpty())
                 } finally {
                     _isLoading.value = false
                 }

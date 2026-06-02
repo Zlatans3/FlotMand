@@ -107,7 +107,7 @@ internal fun PriceCard(
                 onTotalPriceChanged = onTotalPriceChanged,
                 onSave = onSave,
                 onCancel = {
-                    onTotalPriceChanged(totalPrice?.formatKr(withSuffix = false) ?: "")
+                    onTotalPriceChanged(totalPrice?.formatKr(withSuffix = false).orEmpty())
                     isEditing = false
                 },
             )

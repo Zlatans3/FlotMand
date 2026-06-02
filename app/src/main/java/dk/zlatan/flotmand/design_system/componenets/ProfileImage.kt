@@ -78,10 +78,11 @@ private fun getInitials(userName: String): String {
     val parts = userName.trim().split(" ").filter { it.isNotEmpty() }
     return when {
         parts.size >= 2 -> {
-            (parts[0].firstOrNull()?.toString() ?: "") + (
+            (parts[0].firstOrNull()?.toString().orEmpty()) + (
                 parts[1]
                     .firstOrNull()
-                    ?.toString() ?: ""
+                    ?.toString()
+                    .orEmpty()
             )
         }
 

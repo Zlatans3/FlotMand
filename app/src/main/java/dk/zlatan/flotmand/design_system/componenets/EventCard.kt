@@ -81,11 +81,11 @@ fun ClosestEventCard(
 
     // Format date
     val monthFormatter = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH)
-    val month = event.eventDate?.format(monthFormatter)?.uppercase() ?: ""
-    val day = event.eventDate?.dayOfMonth?.toString() ?: ""
+    val month = event.eventDate?.format(monthFormatter)?.uppercase().orEmpty()
+    val day = event.eventDate?.dayOfMonth?.toString().orEmpty()
     // Format time
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    val eventTime = event.eventStartTime?.format(timeFormatter) ?: ""
+    val eventTime = event.eventStartTime?.format(timeFormatter).orEmpty()
     val participantsCount = event.participantIds?.size ?: 0
 
     Card(

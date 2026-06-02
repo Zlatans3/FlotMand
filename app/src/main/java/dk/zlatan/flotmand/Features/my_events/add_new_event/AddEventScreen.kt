@@ -546,7 +546,7 @@ private fun EventScreenContent(
         Row(modifier = Modifier.fillMaxWidth()) {
             EventTextField(
                 label = stringResource(R.string.date_label),
-                value = event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
+                value = event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")).orEmpty(),
                 onValueChange = { }, // Read-only
                 placeholder = stringResource(R.string.date_placeholder),
                 modifier = Modifier.weight(1f),
@@ -570,7 +570,7 @@ private fun EventScreenContent(
 
             EventTextField(
                 label = stringResource(R.string.time_label),
-                value = event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
+                value = event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")).orEmpty(),
                 onValueChange = { }, // Read-only
                 placeholder = stringResource(R.string.time_placeholder),
                 modifier = Modifier.weight(1f),

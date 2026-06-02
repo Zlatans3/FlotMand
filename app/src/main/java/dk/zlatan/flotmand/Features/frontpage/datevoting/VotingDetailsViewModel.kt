@@ -109,7 +109,7 @@ class DateVotingListViewModel
                     }
                 } catch (e: Exception) {
                     _transientState.update {
-                        it.copy(snackbarMessage = stringProvider.getString(R.string.error_could_not_create_voting, e.message ?: ""))
+                        it.copy(snackbarMessage = stringProvider.getString(R.string.error_could_not_create_voting, e.message.orEmpty()))
                     }
                 }
             }

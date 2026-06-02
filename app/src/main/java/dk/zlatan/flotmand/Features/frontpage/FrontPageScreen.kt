@@ -330,7 +330,7 @@ internal fun FrontpageContent(
                 if (nextEvent != null) {
                     val publisher =
                         nextEventPublisher ?: User(
-                            id = nextEvent.publisherId ?: "",
+                            id = nextEvent.publisherId.orEmpty(),
                             displayName = "Ukendt bruger",
                         )
                     NextEventSection(
@@ -397,7 +397,7 @@ internal fun FrontpageContent(
 
                 items(eventsToShow) { eventDetails ->
                     val publisher = publishers[eventDetails.publisherId]
-                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() } ?: ""
+                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() }.orEmpty()
                     EventCard(
                         modifier =
                             Modifier
@@ -405,7 +405,7 @@ internal fun FrontpageContent(
                         userName = publisher?.displayName ?: "Ukendt bruger",
                         eventName = eventDetails.eventName.orEmpty(),
                         eventDate = formattedDate,
-                        eventTime = eventDetails.eventStartTime?.toString() ?: "",
+                        eventTime = eventDetails.eventStartTime?.toString().orEmpty(),
                         userProfilePic = publisher?.photoUrl,
                         onClick = {
                             onClickEvent(eventDetails.eventId.orEmpty())
@@ -458,7 +458,7 @@ internal fun FrontpageContent(
 
                 items(previousEventsToShow) { eventDetails ->
                     val publisher = publishers[eventDetails.publisherId]
-                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() } ?: ""
+                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() }.orEmpty()
                     EventCard(
                         modifier =
                             Modifier
@@ -467,7 +467,7 @@ internal fun FrontpageContent(
                         userName = publisher?.displayName ?: "Ukendt bruger",
                         eventName = eventDetails.eventName.orEmpty(),
                         eventDate = formattedDate,
-                        eventTime = eventDetails.eventStartTime?.toString() ?: "",
+                        eventTime = eventDetails.eventStartTime?.toString().orEmpty(),
                         userProfilePic = publisher?.photoUrl,
                         onClick = {
                             onClickEvent(eventDetails.eventId.orEmpty())
