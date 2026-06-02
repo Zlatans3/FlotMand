@@ -239,6 +239,7 @@
     <string name="save">Gem</string>
     <string name="not_specified">Ikke angivet</string>
     <string name="edit_content_description">Rediger %1$s</string>
+    <string name="delete_content_description">Slet %1$s</string>
 
     <!-- New strings for personal info card -->
     <string name="personal_info_title">Personlige Oplysninger</string>
@@ -246,6 +247,11 @@
     <string name="personal_info_email">Email</string>
     <string name="personal_info_phone">Telefon</string>
     <string name="personal_info_add_phone">Tilføj telefonnummer</string>
+    <string name="personal_info_phone_note">Deles med deltagere til betaling via MobilePay</string>
+    <string name="phone_consent_dialog_title">Dit telefonnummer deles</string>
+    <string name="phone_consent_dialog_message">Dit telefonnummer bliver synligt for alle deltagere på events, du er vært for. Det bruges udelukkende til at gøre det nemt at betale via MobilePay.\n\nDu kan til enhver tid fjerne det igen.</string>
+    <string name="phone_consent_dialog_confirm">Forstået</string>
+    <string name="phone_consent_dialog_no_thanks">Nej tak</string>
 
     <!-- New string for AccountInformationScreen -->
     <string name="account_information_title">Konto Information</string>
@@ -253,7 +259,7 @@
     <!-- Error strings for AccountInformationViewModel -->
     <string name="error_display_name_blank">Navn må ikke være tomt</string>
     <string name="error_update_display_name">Kunne ikke opdatere navn</string>
-    <string name="error_invalid_phone_number">Indtast et gyldigt telefonnummer (f.eks. +45 12 34 56 78)</string>
+    <string name="error_invalid_phone_number">Indtast et gyldigt dansk telefonnummer (8 cifre)</string>
     <string name="error_update_phone_number">Kunne ikke opdatere telefonnummer</string>
 
     <!-- Language screen strings -->

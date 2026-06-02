@@ -1,6 +1,8 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui
 
 import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
@@ -67,6 +69,7 @@ internal fun PriceCard(
     pricePerPerson: Double?,
     isSavingPrice: Boolean,
     priceError: String?,
+    hostPhoneNumber: String?,
     onTotalPriceChanged: (String) -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
@@ -120,6 +123,7 @@ internal fun PriceCard(
 
             PriceCardState.ParticipantDisplay -> ParticipantPriceCard(
                 pricePerPerson = pricePerPerson,
+                hostPhoneNumber = hostPhoneNumber,
             )
 
             PriceCardState.Hidden -> Unit
@@ -340,10 +344,12 @@ private fun HostDisplayCard(
 @Composable
 private fun ParticipantPriceCard(
     pricePerPerson: Double?,
+    hostPhoneNumber: String?,
     modifier: Modifier = Modifier,
 ) {
     if (pricePerPerson == null) return
     val context = LocalContext.current
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -374,7 +380,13 @@ private fun ParticipantPriceCard(
             )
         }
         FilledIconButton(
-            onClick = { launchMobilePay(context) },
+            onClick = {
+                if (!hostPhoneNumber.isNullOrBlank()) {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText("phone", hostPhoneNumber))
+                }
+                launchMobilePay(context)
+            },
             colors = IconButtonDefaults.filledIconButtonColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -395,7 +407,7 @@ private fun launchMobilePay(context: Context) {
             .getLaunchIntentForPackage(MOBILEPAY_PACKAGE)
             ?: throw ActivityNotFoundException()
         context.startActivity(intent)
-    } catch (e: ActivityNotFoundException) {
+    } catch (_: ActivityNotFoundException) {
         Toast.makeText(
             context,
             context.getString(R.string.mobilepay_not_found),
@@ -489,6 +501,10 @@ private fun HostDisplayPreview() {
 @Composable
 private fun ParticipantPreview() {
     FlotMandTheme {
-        ParticipantPriceCard(pricePerPerson = 60.0, modifier = Modifier.padding(16.dp))
+        ParticipantPriceCard(
+            pricePerPerson = 60.0,
+            hostPhoneNumber = "+4512345678",
+            modifier = Modifier.padding(16.dp),
+        )
     }
 }

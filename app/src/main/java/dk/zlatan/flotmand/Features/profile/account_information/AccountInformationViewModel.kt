@@ -73,8 +73,8 @@ class AccountInformationViewModel
         }
 
         fun updatePhoneNumber(newPhoneNumber: String) {
-            // Basic validation
-            if (newPhoneNumber.isNotBlank() && !isValidPhoneNumber(newPhoneNumber)) {
+            val digits = newPhoneNumber.filter { it.isDigit() }
+            if (digits.isNotEmpty() && digits.length != 8) {
                 _errorMessage.value = stringProvider.getString(R.string.error_invalid_phone_number)
                 return
             }
@@ -83,7 +83,7 @@ class AccountInformationViewModel
                 try {
                     _isLoading.value = true
                     _errorMessage.value = null
-                    accountService.updatePhoneNumber(newPhoneNumber)
+                    accountService.updatePhoneNumber(digits)
                 } catch (e: Exception) {
                     _errorMessage.value =
                         stringProvider.getString(R.string.error_update_phone_number, e.message.orEmpty())
@@ -91,12 +91,6 @@ class AccountInformationViewModel
                     _isLoading.value = false
                 }
             }
-        }
-
-        private fun isValidPhoneNumber(phoneNumber: String): Boolean {
-            // Basic validation: should start with + and contain only digits, spaces, and +
-            val cleaned = phoneNumber.replace(" ", "").replace("-", "")
-            return cleaned.matches(Regex("^\\+?[0-9]{8,15}$"))
         }
 
         fun clearError() {

@@ -120,9 +120,8 @@ internal fun AccountInformationScreenRoute(
             user = uiState.user ?: User(),
             isLoading = isLoading,
             onUpdateDisplayName = { newName -> viewModel.updateDisplayName(newName) },
-            onUpdatePhoneNumber = { newPhone ->
-                viewModel.updatePhoneNumber(newPhone)
-            },
+            onUpdatePhoneNumber = { newPhone -> viewModel.updatePhoneNumber(newPhone) },
+            onDeletePhoneNumber = { viewModel.updatePhoneNumber("") },
             onDeleteUserClick = { showDeleteDialog.value = true },
         )
     }
@@ -156,6 +155,7 @@ private fun AccountInformationScreenContent(
     isLoading: Boolean = false,
     onUpdateDisplayName: (String) -> Unit,
     onUpdatePhoneNumber: (String) -> Unit,
+    onDeletePhoneNumber: () -> Unit,
     onDeleteUserClick: () -> Unit,
 ) {
     Column(
@@ -175,6 +175,7 @@ private fun AccountInformationScreenContent(
             isLoading = isLoading,
             onUpdateDisplayName = onUpdateDisplayName,
             onUpdatePhoneNumber = onUpdatePhoneNumber,
+            onDeletePhoneNumber = onDeletePhoneNumber,
         )
 
         // Account Details Card
@@ -212,6 +213,7 @@ private fun AccountInformationScreenPreview() {
             isLoading = false,
             onUpdateDisplayName = {},
             onUpdatePhoneNumber = {},
+            onDeletePhoneNumber = {},
             onDeleteUserClick = {},
         )
     }

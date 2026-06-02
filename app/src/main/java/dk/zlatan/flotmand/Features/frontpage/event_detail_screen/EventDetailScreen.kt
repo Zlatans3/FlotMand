@@ -319,6 +319,7 @@ private fun EventDetailScreenContent(
                 pricePerPerson = pricePerPerson,
                 isSavingPrice = isSavingPrice,
                 priceError = priceError,
+                hostPhoneNumber = publisher?.phoneNumber,
                 onTotalPriceChanged = onTotalPriceChanged,
                 onSave = onSaveTotalPrice,
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -583,6 +584,68 @@ private fun EventDetailScreenIsPublisherPreview() {
         publisher = User.mockUserWithCounter(1).first(),
         participants = User.mockUserWithCounter(5),
         isPublisher = true,
+        onParticipantsClick = {},
+        onAccept = {},
+        onDecline = {},
+        onMapClick = {},
+    )
+}
+
+@Preview(name = "Pricing — Host", showBackground = true)
+@Composable
+private fun EventDetailPricingHostPreview() {
+    val event = Event.staticTestEvents.first().copy(totalPrice = 300.0)
+    EventDetailScreenContent(
+        modifier = Modifier,
+        event = event,
+        geoLocation = null,
+        publisher = User.mockUserWithCounter(1).first(),
+        participants = User.mockUserWithCounter(5),
+        isPublisher = true,
+        totalPriceInput = "300",
+        pricePerPerson = 60.0,
+        onParticipantsClick = {},
+        onAccept = {},
+        onDecline = {},
+        onMapClick = {},
+    )
+}
+
+@Preview(name = "Pricing — Deltager", showBackground = true)
+@Composable
+private fun EventDetailPricingDeltagerPreview() {
+    val event = Event.staticTestEvents.first().copy(totalPrice = 300.0)
+    EventDetailScreenContent(
+        modifier = Modifier,
+        event = event,
+        geoLocation = null,
+        publisher = User.mockUserWithCounter(1).first().copy(phoneNumber = "+45 12 34 56 78"),
+        participants = User.mockUserWithCounter(5),
+        isPublisher = false,
+        totalPriceInput = "300",
+        pricePerPerson = 60.0,
+        rsvpStatus = RsvpStatus.ACCEPTED,
+        onParticipantsClick = {},
+        onAccept = {},
+        onDecline = {},
+        onMapClick = {},
+    )
+}
+
+@Preview(name = "Pricing — Deltager (ingen værtsnummer)", showBackground = true)
+@Composable
+private fun EventDetailPricingDeltagerNoPhonePreview() {
+    val event = Event.staticTestEvents.first().copy(totalPrice = 300.0)
+    EventDetailScreenContent(
+        modifier = Modifier,
+        event = event,
+        geoLocation = null,
+        publisher = User.mockUserWithCounter(1).first().copy(phoneNumber = ""),
+        participants = User.mockUserWithCounter(5),
+        isPublisher = false,
+        totalPriceInput = "300",
+        pricePerPerson = 60.0,
+        rsvpStatus = RsvpStatus.ACCEPTED,
         onParticipantsClick = {},
         onAccept = {},
         onDecline = {},
