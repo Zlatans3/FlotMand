@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -26,8 +27,9 @@ class ProfileViewModel @Inject constructor(
     private val accountService: AccountService,
     private val dinnerEventService: DinnerEventService,
 ) : FmAppViewModel() {
-    private val _user = MutableStateFlow(User())
-    val user: StateFlow<User> = _user.asStateFlow()
+    val user: StateFlow<User> = accountService.currentUser
+        .map { it ?: User() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), User())
 
     private val _signOutLoading = MutableStateFlow(false)
     val signOutLoading: StateFlow<Boolean> = _signOutLoading.asStateFlow()
@@ -53,12 +55,6 @@ class ProfileViewModel @Inject constructor(
                 },
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
-
-    init {
-        launchCatching {
-            _user.value = accountService.getUserProfile()
-        }
-    }
 
     fun signOut() {
         launchCatching {

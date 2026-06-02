@@ -45,7 +45,7 @@ internal fun PersonalInfoCard(
                     add(
                         EditableInfoItem(
                             label = stringResource(R.string.personal_info_name),
-                            value = user.displayName,
+                            value = editedDisplayName,
                             isEditing = isEditingDisplayName,
                             editedValue = editedDisplayName,
                             onEditClick = { isEditingDisplayName = true },
@@ -73,7 +73,7 @@ internal fun PersonalInfoCard(
                 add(
                     EditableInfoItem(
                         label = stringResource(R.string.personal_info_phone),
-                        value = user.phoneNumber,
+                        value = editedPhoneNumber,
                         isEditing = isEditingPhoneNumber,
                         editedValue = editedPhoneNumber,
                         onEditClick = { isEditingPhoneNumber = true },
