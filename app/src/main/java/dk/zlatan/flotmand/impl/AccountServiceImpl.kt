@@ -1,5 +1,7 @@
 package dk.zlatan.flotmand.impl
 
+import android.net.Uri
+import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -10,8 +12,8 @@ import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
-import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.storage.storage
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import kotlinx.coroutines.CoroutineScope
@@ -182,6 +184,31 @@ class AccountServiceImpl
                 .await()
             val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
             _manualUserUpdates.emit(authUser.copy(phoneNumber = newPhoneNumber))
+        }
+
+        override suspend fun updateProfilePhoto(imageUri: Uri) {
+            val uid = currentUserId
+            val storageRef = Firebase.storage.reference.child("profile_images/$uid/photo.jpg")
+            storageRef.putFile(imageUri).await()
+            val downloadUrl = storageRef.downloadUrl.await().toString()
+
+            val profileUpdates = userProfileChangeRequest { photoUri = Uri.parse(downloadUrl) }
+            Firebase.auth.currentUser!!.updateProfile(profileUpdates).await()
+
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(uid)
+                .update("photoUrl", downloadUrl)
+                .await()
+
+            val firestoreUser = getUserById(uid)
+            val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
+            _manualUserUpdates.emit(
+                authUser.copy(
+                    photoUrl = downloadUrl,
+                    phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
+                )
+            )
         }
 
         override suspend fun linkAccount(

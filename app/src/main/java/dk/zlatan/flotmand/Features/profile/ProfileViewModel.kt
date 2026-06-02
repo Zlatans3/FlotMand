@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.profile
 
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.Features.FmAppViewModel
@@ -34,6 +35,9 @@ class ProfileViewModel @Inject constructor(
     private val _signOutLoading = MutableStateFlow(false)
     val signOutLoading: StateFlow<Boolean> = _signOutLoading.asStateFlow()
 
+    private val _isUploadingPhoto = MutableStateFlow(false)
+    val isUploadingPhoto: StateFlow<Boolean> = _isUploadingPhoto.asStateFlow()
+
     val uiState: StateFlow<ProfileUiState> =
         combine(
             dinnerEventService.allDinnerEvents,
@@ -55,6 +59,14 @@ class ProfileViewModel @Inject constructor(
                 },
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
+
+    fun updateProfilePhoto(uri: Uri) {
+        launchCatching {
+            _isUploadingPhoto.value = true
+            accountService.updateProfilePhoto(uri)
+            _isUploadingPhoto.value = false
+        }
+    }
 
     fun signOut() {
         launchCatching {

@@ -39,6 +39,11 @@
             android:resource="@color/purple_500" />
 
         <activity
+            android:name=".util.CropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.UCrop" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"

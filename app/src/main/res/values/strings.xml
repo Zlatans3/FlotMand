@@ -271,6 +271,7 @@
     <string name="profile_section_settings">Indstillinger</string>
     <string name="profile_section_user">Bruger</string>
     <string name="profile_section_other">Andet</string>
+    <string name="change_profile_photo">Skift profilbillede</string>
     <string name="privacy_policy">Privatlivspolitik</string>
     <string name="theme_settings_title">Tema</string>
     <string name="theme_system">System</string>

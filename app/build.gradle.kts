@@ -119,6 +119,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.github.yalantis:ucrop:2.2.9")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.aboutlibraries.compose.m3)

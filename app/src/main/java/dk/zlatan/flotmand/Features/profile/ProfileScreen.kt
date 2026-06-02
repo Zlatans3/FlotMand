@@ -1,11 +1,25 @@
 package dk.zlatan.flotmand.Features.profile
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import dk.zlatan.flotmand.util.UCropContract
+import android.net.Uri
+import java.io.File
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -15,7 +29,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,8 +66,26 @@ fun ProfileScreenRoute(
 ) {
     val user by viewModel.user.collectAsState(initial = User())
     val isLoading by viewModel.signOutLoading.collectAsState()
+    val isUploadingPhoto by viewModel.isUploadingPhoto.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
     var sinOutDialogState by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // Photo picker → uCrop → upload. Launchers are declared in reverse order because
+    // each one references the next, so the upload step must be registered first.
+    val uCropLauncher = rememberLauncherForActivityResult(UCropContract()) { uri ->
+        uri?.let { viewModel.updateProfilePhoto(it) }
+    }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            val destination = Uri.fromFile(File(context.cacheDir, "profile_photo_crop.jpg"))
+            uCropLauncher.launch(Pair(it, destination))
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -66,9 +100,15 @@ fun ProfileScreenRoute(
                     .fillMaxSize(),
             userName = user.displayName,
             userImage = user.photoUrl,
+            isUploadingPhoto = isUploadingPhoto,
             eventsHosted = uiState.eventsHosted,
             eventsAttended = uiState.eventsAttended,
             upcomingEvents = uiState.upcomingEvents,
+            onProfileImageClick = {
+                photoPickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            },
             onLogoutClicked = {
                 sinOutDialogState = true
             },
@@ -100,9 +140,11 @@ internal fun ProfileScreen(
     modifier: Modifier = Modifier,
     userImage: String? = null,
     userName: String,
+    isUploadingPhoto: Boolean = false,
     eventsHosted: Int = 0,
     eventsAttended: Int = 0,
     upcomingEvents: Int = 0,
+    onProfileImageClick: () -> Unit = {},
     onLogoutClicked: () -> Unit = {},
     onAccountInformationClick: () -> Unit = {},
     onLanguageClick: () -> Unit,
@@ -121,12 +163,34 @@ internal fun ProfileScreen(
                 color = MaterialTheme.colorScheme.secondaryContainer,
             ) {
                 VSpacer(60.dp)
-                ProfileImage(
-                    modifier = Modifier,
-                    profilePic = userImage,
-                    profileSize = 80.dp,
-                    userName = userName,
-                )
+                Box(contentAlignment = Alignment.BottomEnd) {
+                    ProfileImage(
+                        profilePic = userImage,
+                        profileSize = 80.dp,
+                        userName = userName,
+                        onClick = onProfileImageClick,
+                    )
+                    if (isUploadingPhoto) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(80.dp),
+                            strokeWidth = 3.dp,
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(26.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CameraAlt,
+                            contentDescription = stringResource(R.string.change_profile_photo),
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                }
                 VSpacer(8.dp)
                 DisplayName(displayName = userName)
                 VSpacer(16.dp)
