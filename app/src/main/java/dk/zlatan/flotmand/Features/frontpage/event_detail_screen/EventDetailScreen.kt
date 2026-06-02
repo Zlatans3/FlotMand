@@ -84,6 +84,7 @@ internal fun EventDetailScreenRoute(
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     onEditEvent: (String) -> Unit,
+    onNavigateToAccountInformation: () -> Unit = {},
     viewModel: EventDetailViewModel =
         hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
             key = eventId,
@@ -147,6 +148,7 @@ internal fun EventDetailScreenRoute(
                             priceError = uiState.priceError,
                             onTotalPriceChanged = viewModel::onTotalPriceChanged,
                             onSaveTotalPrice = viewModel::saveTotalPrice,
+                            onNavigateToAccountInformation = onNavigateToAccountInformation,
                         )
                     }
                 }
@@ -255,6 +257,7 @@ private fun EventDetailScreenContent(
     priceError: String? = null,
     onTotalPriceChanged: (String) -> Unit = {},
     onSaveTotalPrice: () -> Unit = {},
+    onNavigateToAccountInformation: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     var showFab by remember { mutableStateOf(true) }
@@ -322,6 +325,7 @@ private fun EventDetailScreenContent(
                 hostPhoneNumber = publisher?.phoneNumber,
                 onTotalPriceChanged = onTotalPriceChanged,
                 onSave = onSaveTotalPrice,
+                onNavigateToAccountInformation = onNavigateToAccountInformation,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
 

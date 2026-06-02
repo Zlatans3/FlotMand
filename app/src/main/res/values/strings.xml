@@ -86,6 +86,10 @@
     <string name="price_total_suffix">i alt</string>
     <string name="mobilepay_open_content_description">Betal med MobilePay</string>
     <string name="mobilepay_not_found">MobilePay kunne ikke findes på denne enhed</string>
+    <string name="price_add_phone_prompt_title">Tilføj telefonnummer</string>
+    <string name="price_add_phone_prompt_message">Tilføj dit telefonnummer til din profil, så deltagerne nemt kan betale dig via MobilePay.</string>
+    <string name="price_add_phone_prompt_confirm">Tilføj nummer</string>
+    <string name="price_add_phone_prompt_dismiss">Nej tak</string>
     <string name="participants_label">FLOTTE MÆND</string>
     <string name="participants_answered">%1$d har svaret</string>
     <string name="participants_content_description">Deltagere</string>

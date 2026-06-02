@@ -32,6 +32,7 @@ import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
 @Composable
 fun FrontPageNavigation(
     onEventCreated: (String) -> Unit = {},
+    onNavigateToAccountInformation: () -> Unit = {},
     viewModel: FrontPageNavigationViewModel = hiltViewModel(),
 ) {
     val navigationStack: List<FrontPageDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
@@ -70,6 +71,7 @@ fun FrontPageNavigation(
                             onEditEvent = { eventId ->
                                 viewModel.navigate(FrontPageDestination.EditEvent(eventId))
                             },
+                            onNavigateToAccountInformation = onNavigateToAccountInformation,
                         )
                     }
                 }

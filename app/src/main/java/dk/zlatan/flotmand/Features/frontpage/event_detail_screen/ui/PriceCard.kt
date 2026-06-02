@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -72,9 +73,15 @@ internal fun PriceCard(
     hostPhoneNumber: String?,
     onTotalPriceChanged: (String) -> Unit,
     onSave: () -> Unit,
+    onNavigateToAccountInformation: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("price_prefs", Context.MODE_PRIVATE) }
+    var hasShownPhonePrompt by remember { mutableStateOf(prefs.getBoolean("phone_prompt_shown", false)) }
+
     var isEditing by remember { mutableStateOf(false) }
+    var showPhonePromptDialog by remember { mutableStateOf(false) }
 
     // Detect the isSavingPrice true→false transition. Because the price update and the
     // isSaving=false happen in the same coroutine, they land in the same frame, so comparing
@@ -99,7 +106,15 @@ internal fun PriceCard(
     ) { state ->
         when (state) {
             PriceCardState.HostEmpty -> HostEmptyCard(
-                onClick = { isEditing = true },
+                onClick = {
+                    if (hostPhoneNumber.isNullOrBlank() && !hasShownPhonePrompt) {
+                        prefs.edit().putBoolean("phone_prompt_shown", true).apply()
+                        hasShownPhonePrompt = true
+                        showPhonePromptDialog = true
+                    } else {
+                        isEditing = true
+                    }
+                },
             )
 
             PriceCardState.HostEdit -> HostEditCard(
@@ -128,6 +143,44 @@ internal fun PriceCard(
 
             PriceCardState.Hidden -> Unit
         }
+    }
+
+    if (showPhonePromptDialog) {
+        AlertDialog(
+            onDismissRequest = { showPhonePromptDialog = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.price_add_phone_prompt_title),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.price_add_phone_prompt_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showPhonePromptDialog = false
+                        onNavigateToAccountInformation()
+                    },
+                ) {
+                    Text(stringResource(R.string.price_add_phone_prompt_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showPhonePromptDialog = false
+                        isEditing = true
+                    },
+                ) {
+                    Text(stringResource(R.string.price_add_phone_prompt_dismiss))
+                }
+            },
+        )
     }
 }
 

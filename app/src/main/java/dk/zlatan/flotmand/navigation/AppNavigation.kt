@@ -45,6 +45,7 @@ import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigation
 import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigationViewModel
 import dk.zlatan.flotmand.Features.polls.navigation.PollsNavigation
 import dk.zlatan.flotmand.Features.polls.navigation.PollsNavigationViewModel
+import dk.zlatan.flotmand.Features.profile.navigation.ProfileDestination
 import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigation
 import dk.zlatan.flotmand.Features.profile.navigation.ProfileNavigationViewModel
 import dk.zlatan.flotmand.design_system.componenets.NotificationPermissionHandler
@@ -183,11 +184,21 @@ private fun MainAppContent(modifier: Modifier = Modifier) {
                             currentTab = TopLevelDestination.MY_EVENTS
                             myEventsViewModel.navigate(MyEventsDestination.EventDetail(eventId))
                         },
+                        onNavigateToAccountInformation = {
+                            currentTab = TopLevelDestination.PROFILE
+                            profileViewModel.navigate(ProfileDestination.AccountInformation)
+                        },
                     )
                 }
 
                 TopLevelDestination.MY_EVENTS -> {
-                    MyEventsNavigation(viewModel = myEventsViewModel)
+                    MyEventsNavigation(
+                        viewModel = myEventsViewModel,
+                        onNavigateToAccountInformation = {
+                            currentTab = TopLevelDestination.PROFILE
+                            profileViewModel.navigate(ProfileDestination.AccountInformation)
+                        },
+                    )
                 }
 
                 TopLevelDestination.PROFILE -> {

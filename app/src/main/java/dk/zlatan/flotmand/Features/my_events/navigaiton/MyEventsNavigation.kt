@@ -23,7 +23,10 @@ import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
-fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel()) {
+fun MyEventsNavigation(
+    onNavigateToAccountInformation: () -> Unit = {},
+    viewModel: MyEventsNavigationViewModel = hiltViewModel(),
+) {
     val navigationStack: List<MyEventsDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
 
     // Navigation overlay for sub-screens
@@ -87,6 +90,7 @@ fun MyEventsNavigation(viewModel: MyEventsNavigationViewModel = hiltViewModel())
                             onEditEvent = { eventId ->
                                 viewModel.navigate(MyEventsDestination.EditEvent(eventId))
                             },
+                            onNavigateToAccountInformation = onNavigateToAccountInformation,
                         )
                     }
                 }
