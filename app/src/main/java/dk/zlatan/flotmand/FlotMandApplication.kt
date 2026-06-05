@@ -9,6 +9,7 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
+import dk.zlatan.flotmand.util.NetworkOnlyCrossfadeFactory
 import com.google.android.libraries.places.api.Places
 import dagger.hilt.android.HiltAndroidApp
 import dk.zlatan.flotmand.impl.FlotMandFirebaseMessagingService
@@ -20,7 +21,7 @@ class FlotMandApplication : Application(), ImageLoaderFactory {
 
     override fun newImageLoader(): ImageLoader =
         ImageLoader.Builder(this)
-            .crossfade(300)
+            .transitionFactory(NetworkOnlyCrossfadeFactory)
             .memoryCache {
                 MemoryCache.Builder(this)
                     .maxSizePercent(0.25)

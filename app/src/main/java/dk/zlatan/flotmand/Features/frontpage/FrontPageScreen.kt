@@ -52,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.BuildConfig
 import dk.zlatan.flotmand.Features.frontpage.debug.DebugFlagsBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.debug.DebugFlagsViewModel
+import dk.zlatan.flotmand.Features.frontpage.host_rotation.HostRotationSheet
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationImagesAndNames
@@ -83,7 +84,6 @@ internal fun FrontPageRoute(
     onDinnerEventClick: (String) -> Unit,
     onDateVotingClick: () -> Unit,
     onNotificationsClick: () -> Unit = {},
-    onHostRotationClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState,
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
@@ -92,6 +92,7 @@ internal fun FrontPageRoute(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var showDebugSheet by remember { mutableStateOf(false) }
+    var showHostRotationSheet by remember { mutableStateOf(false) }
     var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
     val scrollOffset by remember {
         derivedStateOf {
@@ -225,7 +226,7 @@ internal fun FrontPageRoute(
                     onVacantCardClick = viewModel::onVacantCardClick,
                     showAddSelf = !uiState.isCurrentUserInRotation,
                     onAddSelf = viewModel::onAddSelfToRotation,
-                    onHostRotationClick = onHostRotationClick,
+                    onHostRotationClick = { showHostRotationSheet = true },
                 )
                 RotationBottomSheet(
                     state = bottomSheetState,
@@ -242,6 +243,13 @@ internal fun FrontPageRoute(
 
     if (BuildConfig.DEBUG && showDebugSheet) {
         DebugFlagsSheetHost(onDismiss = { showDebugSheet = false })
+    }
+
+    if (showHostRotationSheet) {
+        HostRotationSheet(
+            onDismiss = { showHostRotationSheet = false },
+            snackbarHostState = snackbarHostState,
+        )
     }
 }
 

@@ -144,11 +144,10 @@ class RotationServiceImpl @Inject constructor() : RotationService {
                     "anchorIndex" to newAnchorIndex,
                 ),
             )
-            if (userSnap.toObject<User>()?.isAnonymous == true) {
+            if (userSnap.toObject<User>()?.isGhostUser == true) {
                 tx.delete(userRef)
             }
         }.await()
-        resetTimelineOverrides(groupId)
     }
 
     override suspend fun assignMonthHost(groupId: String, monthId: String, newHostId: String) {
@@ -176,7 +175,7 @@ class RotationServiceImpl @Inject constructor() : RotationService {
         Firebase.firestore
             .collection(USERS)
             .document(ghostId)
-            .set(User(displayName = displayName.trim(), isAnonymous = true))
+            .set(User(displayName = displayName.trim(), isAnonymous = true, isGhostUser = true))
             .await()
         addUserToRotation(groupId, ghostId)
     }
@@ -198,15 +197,17 @@ class RotationServiceImpl @Inject constructor() : RotationService {
     }
 
     override suspend fun resetTimelineOverrides(groupId: String) {
-        val docs = Firebase.firestore
+        val existingDocs = Firebase.firestore
             .collection(GROUPS)
             .document(groupId)
             .collection(TIMELINE)
             .get()
             .await()
-        if (docs.isEmpty) return
+
+        if (existingDocs.isEmpty) return
+
         Firebase.firestore.runBatch { batch ->
-            docs.documents.forEach { batch.delete(it.reference) }
+            existingDocs.documents.forEach { batch.delete(it.reference) }
         }.await()
     }
 

@@ -20,7 +20,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.frontpage.FrontPageRoute
 import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
-import dk.zlatan.flotmand.Features.frontpage.host_rotation.HostRotationRoute
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.DateVotingDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
 import dk.zlatan.flotmand.Features.frontpage.notifications.NotificationsScreen
@@ -53,9 +52,6 @@ fun FrontPageNavigation(
                             onDateVotingClick = onNavigateToPolls,
                             onNotificationsClick = {
                                 viewModel.navigate(FrontPageDestination.Notifications)
-                            },
-                            onHostRotationClick = {
-                                viewModel.navigate(FrontPageDestination.HostRotation)
                             },
                             snackbarHostState = snackbarHostState,
                         )
@@ -132,13 +128,6 @@ fun FrontPageNavigation(
                     }
                 }
 
-                FrontPageDestination.HostRotation -> {
-                    NavEntry(key) {
-                        PredictiveBackScaleContainer {
-                            HostRotationRoute(onDismiss = { viewModel.pop() })
-                        }
-                    }
-                }
             }
         },
         transitionSpec = {

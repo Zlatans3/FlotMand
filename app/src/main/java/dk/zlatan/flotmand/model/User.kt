@@ -1,6 +1,7 @@
 package dk.zlatan.flotmand.model
 
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.PropertyName
 
 data class User(
     @DocumentId
@@ -11,6 +12,9 @@ data class User(
     val displayName: String = "",
     val photoUrl: String = "",
     val isAnonymous: Boolean = true,
+    @field:PropertyName("isGhostUser")
+    @get:PropertyName("isGhostUser")
+    val isGhostUser: Boolean = false,
     val fcmToken: String = "",
 ) {
     fun getFirstName(): String = displayName.split(" ").firstOrNull() ?: displayName
