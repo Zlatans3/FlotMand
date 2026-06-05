@@ -12,14 +12,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +33,6 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 fun RotationReminderBanner(
     visible: Boolean,
     hostingMonthLabel: String,
-    onDismiss: () -> Unit,
     onCreateClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -100,14 +95,6 @@ fun RotationReminderBanner(
                         )
                     }
                 }
-
-                IconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Luk påmindelse",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                    )
-                }
             }
         }
     }
@@ -122,7 +109,6 @@ private fun RotationReminderBannerVisiblePreview() {
         RotationReminderBanner(
             visible = true,
             hostingMonthLabel = "Juli",
-            onDismiss = {},
             onCreateClick = {},
             modifier = Modifier.padding(12.dp),
         )

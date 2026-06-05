@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 interface RotationService {
     fun observeGroup(groupId: String): Flow<Group?>
     fun observeTimelineOverrides(groupId: String): Flow<List<RotationMonth>>
-    suspend fun dismissBanner(userId: String, monthId: String)
     suspend fun releaseMonth(groupId: String, monthId: String, releasedByUserId: String)
     suspend fun claimMonth(groupId: String, monthId: String, claimedByUserId: String)
     suspend fun addUserToRotation(groupId: String, userId: String)

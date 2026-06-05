@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -71,15 +72,13 @@ internal fun PriceCard(
     isSavingPrice: Boolean,
     priceError: String?,
     hostPhoneNumber: String?,
+    shouldPromptPhone: Boolean,
     onTotalPriceChanged: (String) -> Unit,
     onSave: () -> Unit,
+    onPhoneDialogDismissed: () -> Unit,
     onNavigateToAccountInformation: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("price_prefs", Context.MODE_PRIVATE) }
-    var hasShownPhonePrompt by remember { mutableStateOf(prefs.getBoolean("phone_prompt_shown", false)) }
-
     var isEditing by remember { mutableStateOf(false) }
     var showPhonePromptDialog by remember { mutableStateOf(false) }
 
@@ -94,54 +93,63 @@ internal fun PriceCard(
     }
 
     AnimatedContent(
-        targetState = when {
-            isPublisher && totalPrice == null && !isEditing -> PriceCardState.HostEmpty
-            isPublisher && isEditing                        -> PriceCardState.HostEdit
-            isPublisher                                     -> PriceCardState.HostDisplay
-            totalPrice != null                              -> PriceCardState.ParticipantDisplay
-            else                                            -> PriceCardState.Hidden
-        },
+        targetState =
+            when {
+                isPublisher && totalPrice == null && !isEditing -> PriceCardState.HostEmpty
+                isPublisher && isEditing -> PriceCardState.HostEdit
+                isPublisher -> PriceCardState.HostDisplay
+                totalPrice != null -> PriceCardState.ParticipantDisplay
+                else -> PriceCardState.Hidden
+            },
         transitionSpec = { fadeIn() togetherWith fadeOut() },
         modifier = modifier,
     ) { state ->
         when (state) {
-            PriceCardState.HostEmpty -> HostEmptyCard(
-                onClick = {
-                    if (hostPhoneNumber.isNullOrBlank() && !hasShownPhonePrompt) {
-                        prefs.edit().putBoolean("phone_prompt_shown", true).apply()
-                        hasShownPhonePrompt = true
-                        showPhonePromptDialog = true
-                    } else {
-                        isEditing = true
-                    }
-                },
-            )
+            PriceCardState.HostEmpty -> {
+                HostNoPriceAddedCard(
+                    onClick = {
+                        if (hostPhoneNumber.isNullOrBlank() && shouldPromptPhone) {
+                            showPhonePromptDialog = true
+                        } else {
+                            isEditing = true
+                        }
+                    },
+                )
+            }
 
-            PriceCardState.HostEdit -> HostEditCard(
-                totalPriceInput = totalPriceInput,
-                pricePerPerson = pricePerPerson,
-                isSaving = isSavingPrice,
-                error = priceError,
-                onTotalPriceChanged = onTotalPriceChanged,
-                onSave = onSave,
-                onCancel = {
-                    onTotalPriceChanged(totalPrice?.formatKr(withSuffix = false).orEmpty())
-                    isEditing = false
-                },
-            )
+            PriceCardState.HostEdit -> {
+                HostEditCard(
+                    totalPriceInput = totalPriceInput,
+                    pricePerPerson = pricePerPerson,
+                    isSaving = isSavingPrice,
+                    error = priceError,
+                    onTotalPriceChanged = onTotalPriceChanged,
+                    onSave = onSave,
+                    onCancel = {
+                        onTotalPriceChanged(totalPrice?.formatKr(withSuffix = false).orEmpty())
+                        isEditing = false
+                    },
+                )
+            }
 
-            PriceCardState.HostDisplay -> HostDisplayCard(
-                totalPrice = totalPrice,
-                pricePerPerson = pricePerPerson,
-                onEditClick = { isEditing = true },
-            )
+            PriceCardState.HostDisplay -> {
+                HostDisplayCard(
+                    totalPrice = totalPrice,
+                    pricePerPerson = pricePerPerson,
+                    onEditClick = { isEditing = true },
+                )
+            }
 
-            PriceCardState.ParticipantDisplay -> ParticipantPriceCard(
-                pricePerPerson = pricePerPerson,
-                hostPhoneNumber = hostPhoneNumber,
-            )
+            PriceCardState.ParticipantDisplay -> {
+                ParticipantPriceCard(
+                    pricePerPerson = pricePerPerson,
+                    hostPhoneNumber = hostPhoneNumber,
+                )
+            }
 
-            PriceCardState.Hidden -> Unit
+            PriceCardState.Hidden -> {
+                Unit
+            }
         }
     }
 
@@ -174,6 +182,7 @@ internal fun PriceCard(
                 TextButton(
                     onClick = {
                         showPhonePromptDialog = false
+                        onPhoneDialogDismissed()
                         isEditing = true
                     },
                 ) {
@@ -193,27 +202,28 @@ private enum class PriceCardState {
 }
 
 @Composable
-private fun HostEmptyCard(
+private fun HostNoPriceAddedCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val outlineColor = MaterialTheme.colorScheme.outlineVariant
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .drawBehind {
-                drawRoundRect(
-                    color = outlineColor,
-                    size = size,
-                    cornerRadius = CornerRadius(12.dp.toPx()),
-                    style = Stroke(
-                        width = 1.5.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f),
-                    ),
-                )
-            }
-            .clickable(onClick = onClick)
-            .padding(16.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .drawBehind {
+                    drawRoundRect(
+                        color = outlineColor,
+                        size = size,
+                        cornerRadius = CornerRadius(12.dp.toPx()),
+                        style =
+                            Stroke(
+                                width = 1.5.dp.toPx(),
+                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f),
+                            ),
+                    )
+                }.clickable(onClick = onClick)
+                .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
@@ -246,13 +256,13 @@ private fun HostEditCard(
     val focusManager = LocalFocusManager.current
 
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(12.dp),
-            )
-            .padding(16.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                ).padding(16.dp),
     ) {
         Text(
             text = stringResource(R.string.price_label_upper),
@@ -274,13 +284,15 @@ private fun HostEditCard(
             singleLine = true,
             enabled = !isSaving,
             isError = error != null,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal,
-                imeAction = ImeAction.Done,
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = { focusManager.clearFocus() },
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal,
+                    imeAction = ImeAction.Done,
+                ),
+            keyboardActions =
+                KeyboardActions(
+                    onDone = { focusManager.clearFocus() },
+                ),
             shape = RoundedCornerShape(8.dp),
         )
         VSpacer(6.dp)
@@ -290,17 +302,29 @@ private fun HostEditCard(
             transitionSpec = { fadeIn() togetherWith fadeOut() },
         ) { (err, perPerson) ->
             when {
-                err != null -> Text(
-                    text = err,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                )
-                perPerson != null -> Text(
-                    text = "${stringResource(R.string.price_becomes_prefix)} ${perPerson.formatKr(withSuffix = false)} ${stringResource(R.string.price_per_person_suffix)}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                else -> Text(text = "", style = MaterialTheme.typography.bodySmall)
+                err != null -> {
+                    Text(
+                        text = err,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+
+                perPerson != null -> {
+                    Text(
+                        text = "${stringResource(R.string.price_becomes_prefix)} ${
+                            perPerson.formatKr(
+                                withSuffix = false,
+                            )
+                        } ${stringResource(R.string.price_per_person_suffix)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+
+                else -> {
+                    Text(text = "", style = MaterialTheme.typography.bodySmall)
+                }
             }
         }
         VSpacer(14.dp)
@@ -347,14 +371,14 @@ private fun HostDisplayCard(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(12.dp),
-            )
-            .clickable(onClick = onEditClick)
-            .padding(16.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                ).clickable(onClick = onEditClick)
+                .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -404,13 +428,13 @@ private fun ParticipantPriceCard(
     val context = LocalContext.current
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(12.dp),
-            )
-            .padding(16.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                ).padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -435,15 +459,17 @@ private fun ParticipantPriceCard(
         FilledIconButton(
             onClick = {
                 if (!hostPhoneNumber.isNullOrBlank()) {
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clipboard =
+                        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     clipboard.setPrimaryClip(ClipData.newPlainText("phone", hostPhoneNumber))
                 }
                 launchMobilePay(context)
             },
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            ),
+            colors =
+                IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
         ) {
             Icon(
                 imageVector = Icons.Filled.AccountBalanceWallet,
@@ -456,16 +482,18 @@ private fun ParticipantPriceCard(
 
 private fun launchMobilePay(context: Context) {
     try {
-        val intent = context.packageManager
-            .getLaunchIntentForPackage(MOBILEPAY_PACKAGE)
-            ?: throw ActivityNotFoundException()
+        val intent =
+            context.packageManager
+                .getLaunchIntentForPackage(MOBILEPAY_PACKAGE)
+                ?: throw ActivityNotFoundException()
         context.startActivity(intent)
     } catch (_: ActivityNotFoundException) {
-        Toast.makeText(
-            context,
-            context.getString(R.string.mobilepay_not_found),
-            Toast.LENGTH_SHORT,
-        ).show()
+        Toast
+            .makeText(
+                context,
+                context.getString(R.string.mobilepay_not_found),
+                Toast.LENGTH_SHORT,
+            ).show()
     }
 }
 
@@ -480,9 +508,9 @@ private fun Double.formatKr(withSuffix: Boolean = true): String {
 
 @Preview(showBackground = true)
 @Composable
-private fun HostEmptyPreview() {
+private fun HostNoPriceAddedPreview() {
     FlotMandTheme {
-        HostEmptyCard(onClick = {}, modifier = Modifier.padding(16.dp))
+        HostNoPriceAddedCard(onClick = {}, modifier = Modifier.padding(16.dp))
     }
 }
 

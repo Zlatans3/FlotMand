@@ -154,6 +154,7 @@ dependencies {
 
 
     implementation(libs.reorderable)
+    implementation(libs.androidx.datastore.preferences)
     implementation("com.airbnb.android:lottie-compose:6.6.6")
     implementation(libs.androidx.browser)
 }

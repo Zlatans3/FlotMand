@@ -53,14 +53,6 @@ class RotationServiceImpl @Inject constructor() : RotationService {
             awaitClose { reg.remove() }
         }
 
-    override suspend fun dismissBanner(userId: String, monthId: String) {
-        Firebase.firestore
-            .collection(USERS)
-            .document(userId)
-            .update("dismissedBannerMonth", monthId)
-            .await()
-    }
-
     override suspend fun releaseMonth(groupId: String, monthId: String, releasedByUserId: String) {
         Firebase.firestore
             .collection(GROUPS)
@@ -126,9 +118,14 @@ class RotationServiceImpl @Inject constructor() : RotationService {
     }
 
     override suspend fun removeUserFromRotation(groupId: String, userId: String) {
-        val docRef = Firebase.firestore.collection(GROUPS).document(groupId)
+        val groupRef = Firebase.firestore.collection(GROUPS).document(groupId)
+        val userRef = Firebase.firestore.collection(USERS).document(userId)
         Firebase.firestore.runTransaction { tx ->
-            val group = tx.get(docRef).toObject<Group>() ?: return@runTransaction
+            // All reads must precede writes in a Firestore transaction
+            val groupSnap = tx.get(groupRef)
+            val userSnap = tx.get(userRef)
+
+            val group = groupSnap.toObject<Group>() ?: return@runTransaction
             val removedIndex = group.rotationOrder.indexOf(userId)
             if (removedIndex == -1) return@runTransaction
             val newOrder = group.rotationOrder.filter { it != userId }
@@ -140,13 +137,16 @@ class RotationServiceImpl @Inject constructor() : RotationService {
                 adjusted % newOrder.size
             }
             tx.update(
-                docRef,
+                groupRef,
                 mapOf(
                     "rotationOrder" to newOrder,
                     "members" to newMembers,
                     "anchorIndex" to newAnchorIndex,
                 ),
             )
+            if (userSnap.toObject<User>()?.isAnonymous == true) {
+                tx.delete(userRef)
+            }
         }.await()
         resetTimelineOverrides(groupId)
     }
@@ -176,7 +176,7 @@ class RotationServiceImpl @Inject constructor() : RotationService {
         Firebase.firestore
             .collection(USERS)
             .document(ghostId)
-            .set(User(displayName = displayName.trim(), isGhost = true, isAnonymous = false))
+            .set(User(displayName = displayName.trim(), isAnonymous = true))
             .await()
         addUserToRotation(groupId, ghostId)
     }

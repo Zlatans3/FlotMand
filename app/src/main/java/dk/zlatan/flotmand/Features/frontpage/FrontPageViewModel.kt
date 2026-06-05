@@ -5,15 +5,19 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationBottomSheetState
 import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationTimelineItem
+import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.Group
 import dk.zlatan.flotmand.model.RotationMonth
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
+import dk.zlatan.flotmand.model.service.DateVotingService
 import dk.zlatan.flotmand.model.service.DinnerEventService
 import dk.zlatan.flotmand.model.service.NotificationService
 import dk.zlatan.flotmand.model.service.RotationService
 import dk.zlatan.flotmand.util.RotationCalculator
+import dk.zlatan.flotmand.util.feature_flags.FeatureKey
+import dk.zlatan.flotmand.util.feature_flags.FeatureFlagManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -70,6 +74,8 @@ class FrontPageViewModel
         private val accountService: AccountService,
         private val notificationService: NotificationService,
         private val rotationService: RotationService,
+        private val dateVotingService: DateVotingService,
+        private val featureFlagManager: FeatureFlagManager,
     ) : ViewModel() {
 
         private val _bottomSheetState = MutableStateFlow<RotationBottomSheetState>(RotationBottomSheetState.Hidden)
@@ -102,7 +108,12 @@ class FrontPageViewModel
                 )
             }
 
-        // Reads the Firestore user document (includes dismissedBannerMonth).
+        private val rotationDataWithPollsFlow: Flow<Pair<RotationData, List<DateVotingItem>>> =
+            combine(
+                rotationDataFlow,
+                dateVotingService.allDateVotingsItem,
+            ) { data, polls -> data to polls }
+
         private val currentUserDocFlow: Flow<User> =
             accountService.currentUser
                 .filterNotNull()
@@ -119,8 +130,9 @@ class FrontPageViewModel
                 dinnerEventService.allDinnerEvents,
                 currentUserDocFlow,
                 notificationService.unreadCount,
-                rotationDataFlow,
-            ) { events, currentUser, unreadCount, rotationData ->
+                rotationDataWithPollsFlow,
+                featureFlagManager.isEnabled(FeatureKey.SHOW_NEXT_HOST_BANNER),
+            ) { events, currentUser, unreadCount, (rotationData, polls), featureFlagShowBanner ->
                 val today = LocalDate.now()
                 val sortedEvents = events.sortedWith(compareBy { it.eventDate ?: LocalDate.MAX })
                 val upcomingEvents = sortedEvents.filter { it.eventDate == null || it.eventDate!! >= today }
@@ -151,7 +163,7 @@ class FrontPageViewModel
 
                 val nextEventPublisher = nextEvent?.publisherId?.let { publishersMap[it] }
 
-                val (timeline, showBanner, bannerLabel) = buildRotationState(rotationData, currentUser)
+                val (timeline, showBanner, bannerLabel) = buildRotationState(rotationData, currentUser.id, events, polls)
                 val groupMembers = rotationData.members.values.toList()
                 val isCurrentUserInRotation = currentUser.id in (rotationData.group?.rotationOrder ?: emptyList())
 
@@ -167,7 +179,7 @@ class FrontPageViewModel
                     errorMessage = null,
                     unreadNotificationCount = unreadCount,
                     rotationTimeline = timeline,
-                    showRotationBanner = showBanner,
+                    showRotationBanner = showBanner || featureFlagShowBanner,
                     rotationBannerMonthLabel = bannerLabel,
                     groupMembers = groupMembers,
                     isCurrentUserInRotation = isCurrentUserInRotation,
@@ -190,7 +202,9 @@ class FrontPageViewModel
 
         private fun buildRotationState(
             data: RotationData,
-            currentUser: User,
+            currentUserId: String,
+            events: List<Event>,
+            polls: List<DateVotingItem>,
         ): Triple<List<RotationTimelineItem>, Boolean, String> {
             val group = data.group ?: return Triple(emptyList(), false, "")
             val currentMonthId = RotationCalculator.currentMonthId(group.timezone)
@@ -200,34 +214,35 @@ class FrontPageViewModel
                 val label = formatMonthLabel(monthId)
                 val override = data.overrides[monthId]
                 val hostId = RotationCalculator.resolveHostId(group, monthId, override)
-                if (hostId == null) {
+                val host = hostId?.let { data.members[it] }
+                if (hostId == null || host == null) {
                     RotationTimelineItem.Vacant(monthId, label, isCurrent = offset == 0)
                 } else {
-                    val host = data.members[hostId]
                     RotationTimelineItem.Normal(
                         monthId = monthId,
                         monthLabel = label,
                         isCurrent = offset == 0,
                         hostId = hostId,
-                        hostName = host?.displayName ?: hostId,
-                        hostPhotoUrl = host?.photoUrl,
+                        hostName = host.displayName,
+                        hostPhotoUrl = host.photoUrl,
                     )
                 }
             }
 
             val nextMonthId = RotationCalculator.nextMonthId(group.timezone)
+            val nextMonth = YearMonth.parse(nextMonthId)
             val nextHostId = RotationCalculator.resolveHostId(group, nextMonthId, data.overrides[nextMonthId])
-            val showBanner = nextHostId == currentUser.id && currentUser.dismissedBannerMonth != nextMonthId
+
+            val hasEventForNextMonth = events.any { event ->
+                event.publisherId == currentUserId &&
+                    event.eventDate?.let { YearMonth.from(it) == nextMonth } == true
+            }
+            val hasOpenPoll = polls.any { it.creatorId == currentUserId && it.isOpen }
+
+            val showBanner = nextHostId == currentUserId && !hasEventForNextMonth && !hasOpenPoll
             val bannerLabel = formatMonthLabel(nextMonthId)
 
             return Triple(timeline, showBanner, bannerLabel)
-        }
-
-        fun onDismissBanner() {
-            viewModelScope.launch {
-                val nextMonthId = RotationCalculator.nextMonthId()
-                rotationService.dismissBanner(accountService.currentUserId, nextMonthId)
-            }
         }
 
         fun onHostCardClick(monthId: String, hostId: String, hostName: String) {

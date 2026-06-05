@@ -49,6 +49,9 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.BuildConfig
+import dk.zlatan.flotmand.Features.frontpage.debug.DebugFlagsBottomSheet
+import dk.zlatan.flotmand.Features.frontpage.debug.DebugFlagsViewModel
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationImagesAndNames
@@ -88,6 +91,7 @@ internal fun FrontPageRoute(
     val bottomSheetState by viewModel.bottomSheetState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    var showDebugSheet by remember { mutableStateOf(false) }
     var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
     val scrollOffset by remember {
         derivedStateOf {
@@ -112,8 +116,10 @@ internal fun FrontPageRoute(
                 unreadNotificationCount = uiState.unreadNotificationCount,
                 onNotificationsClick = onNotificationsClick,
                 onUserClicked = {
-                    scope.launch {
-                        snackbarHostState.showSnackbar(snackBarText)
+                    if (BuildConfig.DEBUG) {
+                        showDebugSheet = true
+                    } else {
+                        scope.launch { snackbarHostState.showSnackbar(snackBarText) }
                     }
                 },
             )
@@ -214,7 +220,6 @@ internal fun FrontPageRoute(
                     rotationTimeline = uiState.rotationTimeline,
                     showRotationBanner = uiState.showRotationBanner,
                     rotationBannerMonthLabel = uiState.rotationBannerMonthLabel,
-                    onDismissBanner = viewModel::onDismissBanner,
                     onBannerCreateClick = onDateVotingClick,
                     onNormalCardClick = viewModel::onHostCardClick,
                     onVacantCardClick = viewModel::onVacantCardClick,
@@ -234,6 +239,23 @@ internal fun FrontPageRoute(
             }
         }
     }
+
+    if (BuildConfig.DEBUG && showDebugSheet) {
+        DebugFlagsSheetHost(onDismiss = { showDebugSheet = false })
+    }
+}
+
+@Composable
+private fun DebugFlagsSheetHost(
+    onDismiss: () -> Unit,
+    viewModel: DebugFlagsViewModel = hiltViewModel(),
+) {
+    val flags by viewModel.flags.collectAsStateWithLifecycle()
+    DebugFlagsBottomSheet(
+        flags = flags,
+        onToggle = viewModel::toggle,
+        onDismiss = onDismiss,
+    )
 }
 
 @Composable
@@ -255,7 +277,6 @@ internal fun FrontpageContent(
     rotationTimeline: List<RotationTimelineItem> = emptyList(),
     showRotationBanner: Boolean = false,
     rotationBannerMonthLabel: String = "",
-    onDismissBanner: () -> Unit = {},
     onBannerCreateClick: () -> Unit = {},
     onNormalCardClick: (monthId: String, hostId: String, hostName: String) -> Unit = { _, _, _ -> },
     onVacantCardClick: (monthId: String) -> Unit = {},
@@ -311,7 +332,6 @@ internal fun FrontpageContent(
                 RotationReminderBanner(
                     visible = showRotationBanner,
                     hostingMonthLabel = rotationBannerMonthLabel,
-                    onDismiss = onDismissBanner,
                     onCreateClick = onBannerCreateClick,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 )

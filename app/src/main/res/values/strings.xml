@@ -90,7 +90,11 @@
     <string name="price_add_phone_prompt_message">Tilføj dit telefonnummer til din profil, så deltagerne nemt kan betale dig via MobilePay.</string>
     <string name="price_add_phone_prompt_confirm">Tilføj nummer</string>
     <string name="price_add_phone_prompt_dismiss">Nej tak</string>
-    <string name="participants_label">FLOTTE MÆND</string>
+    <string name="price_phone_dialog_title">Tilføj mobilnummer</string>
+    <string name="price_phone_dialog_message">Deltagerne bruger dit nummer til at betale via MobilePay. Vil du tilføje det nu?</string>
+    <string name="price_phone_dialog_add">Tilføj nummer</string>
+    <string name="price_phone_dialog_skip">Gem alligevel</string>
+<string name="participants_label">FLOTTE MÆND</string>
     <string name="participants_answered">%1$d har svaret</string>
     <string name="participants_content_description">Deltagere</string>
     <string name="time_content_description">Tidspunkt</string>

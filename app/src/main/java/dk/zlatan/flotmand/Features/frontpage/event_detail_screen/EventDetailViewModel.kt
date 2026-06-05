@@ -12,13 +12,17 @@ import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
 import dk.zlatan.flotmand.model.service.NotificationService
+import dk.zlatan.flotmand.util.PhoneDialogRepository
 import dk.zlatan.flotmand.util.combine
+import dk.zlatan.flotmand.util.feature_flags.FeatureKey
+import dk.zlatan.flotmand.util.feature_flags.FeatureFlagManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -75,10 +79,23 @@ internal class EventDetailViewModel
         private val dinnerEventService: DinnerEventService,
         private val accountService: AccountService,
         private val notificationService: NotificationService,
+        private val featureFlagManager: FeatureFlagManager,
+        private val phoneDialogRepository: PhoneDialogRepository,
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
             fun create(eventId: String): EventDetailViewModel
+        }
+
+        val shouldPromptPhone: StateFlow<Boolean> =
+            combine(
+                featureFlagManager.isEnabled(FeatureKey.SHOW_PHONE_DIALOG_ON_PRICE_ADDED),
+                phoneDialogRepository.isDismissed,
+            ) { featureFlag, dismissed -> featureFlag || !dismissed }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
+        fun onPhoneDialogDismissed() {
+            viewModelScope.launch { phoneDialogRepository.dismiss() }
         }
 
         // Internal state flows

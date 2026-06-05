@@ -199,7 +199,7 @@ private fun RotationMemberRow(
 
         HSpacer(8.dp)
 
-        if (user.isGhost) {
+        if (user.isAnonymous) {
             Box(
                 modifier = Modifier.size(40.dp),
                 contentAlignment = Alignment.Center,
@@ -228,7 +228,7 @@ private fun RotationMemberRow(
             modifier = Modifier.weight(1f),
         )
 
-        if (user.isGhost) {
+        if (user.isAnonymous) {
             Text(
                 text = stringResource(R.string.guest_label),
                 style = MaterialTheme.typography.labelSmall,
@@ -237,12 +237,14 @@ private fun RotationMemberRow(
             )
         }
 
-        IconButton(onClick = onRemove) {
-            Icon(
-                imageVector = Icons.Filled.RemoveCircleOutline,
-                contentDescription = stringResource(R.string.remove_content_description),
-                tint = MaterialTheme.colorScheme.error,
-            )
+        if (user.isAnonymous) {
+            IconButton(onClick = onRemove) {
+                Icon(
+                    imageVector = Icons.Filled.RemoveCircleOutline,
+                    contentDescription = stringResource(R.string.remove_content_description),
+                    tint = MaterialTheme.colorScheme.error,
+                )
+            }
         }
     }
 }
