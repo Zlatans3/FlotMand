@@ -33,6 +33,7 @@ import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
 fun FrontPageNavigation(
     onEventCreated: (String) -> Unit = {},
     onNavigateToAccountInformation: () -> Unit = {},
+    onNavigateToPolls: () -> Unit = {},
     viewModel: FrontPageNavigationViewModel = hiltViewModel(),
 ) {
     val navigationStack: List<FrontPageDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
@@ -49,9 +50,7 @@ fun FrontPageNavigation(
                             onDinnerEventClick = { eventId ->
                                 viewModel.navigate(FrontPageDestination.EventDetail(eventId))
                             },
-                            onDateVotingClick = {
-                                viewModel.navigate(FrontPageDestination.DateVoting)
-                            },
+                            onDateVotingClick = onNavigateToPolls,
                             onNotificationsClick = {
                                 viewModel.navigate(FrontPageDestination.Notifications)
                             },
@@ -73,20 +72,6 @@ fun FrontPageNavigation(
                             },
                             onNavigateToAccountInformation = onNavigateToAccountInformation,
                         )
-                    }
-                }
-
-                FrontPageDestination.DateVoting -> {
-                    NavEntry(key) {
-                        PredictiveBackScaleContainer {
-                            DateVotingRoute(
-                                modifier = Modifier,
-                                onDismiss = { viewModel.pop() },
-                                onVotingClick = {
-                                    viewModel.navigate(FrontPageDestination.VotingDetail(it))
-                                },
-                            )
-                        }
                     }
                 }
 

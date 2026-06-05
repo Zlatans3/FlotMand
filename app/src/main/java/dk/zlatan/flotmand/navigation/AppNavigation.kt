@@ -188,6 +188,9 @@ private fun MainAppContent(modifier: Modifier = Modifier) {
                             currentTab = TopLevelDestination.PROFILE
                             profileViewModel.navigate(ProfileDestination.AccountInformation)
                         },
+                        onNavigateToPolls = {
+                            currentTab = TopLevelDestination.POLLS
+                        },
                     )
                 }
 
