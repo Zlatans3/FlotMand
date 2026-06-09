@@ -46,6 +46,12 @@ class NotificationsViewModel
                 notificationService.notifications
                     .catch { _isLoading.update { false } }
                     .collect { serverNotifications ->
+                        serverNotifications.forEach { n ->
+                            android.util.Log.d(
+                                "NotificationsVM",
+                                "id=${n.id} senderPhotoUrl='${n.senderPhotoUrl}' senderDisplayName='${n.senderDisplayName}'",
+                            )
+                        }
                         _notifications.update { current ->
                             // Preserve optimistic reads: once marked read locally,
                             // don't let a stale snapshot revert it back to unread.

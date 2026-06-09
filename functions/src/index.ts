@@ -29,6 +29,8 @@ async function fanOut(
   title: string,
   body: string,
   referenceId: string,
+  senderPhotoUrl: string = "",
+  senderDisplayName: string = "",
 ): Promise<void> {
   // ── 1. FCM push ────────────────────────────────────────────────────────────
   const tokens = users.map((u) => u.fcmToken ?? "").filter(Boolean);
@@ -54,20 +56,24 @@ async function fanOut(
   // ── 2. In-app notification documents ───────────────────────────────────────
   const batch = db.batch();
   const now = Date.now();
+  const payload = {
+    type,
+    referenceId,
+    title,
+    body,
+    isRead: false,
+    createdAtMillis: now,
+    senderPhotoUrl,
+    senderDisplayName,
+  };
+  functions.logger.info("Notification payload", payload);
   users.forEach(({ uid }) => {
     const ref = db
       .collection("notifications")
       .doc(uid)
       .collection("items")
       .doc();
-    batch.set(ref, {
-      type,
-      referenceId,
-      title,
-      body,
-      isRead: false,
-      createdAtMillis: now,
-    });
+    batch.set(ref, payload);
   });
   await batch.commit();
   functions.logger.info(`Wrote ${users.length} notification docs`);
@@ -87,12 +93,15 @@ export const onEventCreated = functions.firestore
       getUsersExcluding(publisherId),
     ]);
     const publisherName: string = publisherDoc.data()?.displayName || "En bruger";
+    const publisherPhotoUrl: string = publisherDoc.data()?.photoUrl || "";
     await fanOut(
       users,
       "event",
       `🍽️ ${publisherName} har oprettet et nyt event`,
       eventName,
       snapshot.id,
+      publisherPhotoUrl,
+      publisherName,
     );
   });
 
@@ -124,10 +133,13 @@ export const onEventPriceSet = functions.firestore
         ? `${Math.round(pricePerPerson)}`
         : pricePerPerson.toFixed(2);
 
-    const userDocs = await Promise.all(
-      recipientIds.map((uid) => db.collection("users").doc(uid).get()),
-    );
-    const users: UserRow[] = userDocs
+    const [publisherDoc, ...recipientDocs] = await Promise.all([
+      db.collection("users").doc(publisherId).get(),
+      ...recipientIds.map((uid) => db.collection("users").doc(uid).get()),
+    ]);
+    const publisherName: string = publisherDoc.data()?.displayName || "En bruger";
+    const publisherPhotoUrl: string = publisherDoc.data()?.photoUrl || "";
+    const users: UserRow[] = recipientDocs
       .filter((doc) => doc.exists)
       .map((doc) => ({ uid: doc.id, fcmToken: doc.data()?.fcmToken }));
 
@@ -137,6 +149,8 @@ export const onEventPriceSet = functions.firestore
       eventName,
       `Prisen er sat til ${formatted} kr. pr. person`,
       context.params.eventId,
+      publisherPhotoUrl,
+      publisherName,
     );
   });
 
@@ -154,11 +168,14 @@ export const onPollCreated = functions.firestore
       getUsersExcluding(creatorId),
     ]);
     const creatorName: string = creatorDoc.data()?.displayName || "En bruger";
+    const creatorPhotoUrl: string = creatorDoc.data()?.photoUrl || "";
     await fanOut(
       users,
       "poll",
       `🗳️ ${creatorName} har oprettet en ny afstemning`,
       title,
       snapshot.id,
+      creatorPhotoUrl,
+      creatorName,
     );
   });

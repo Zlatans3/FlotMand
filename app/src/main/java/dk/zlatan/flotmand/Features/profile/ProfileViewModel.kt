@@ -20,7 +20,7 @@ import javax.inject.Inject
 data class ProfileUiState(
     val eventsHosted: Int = 0,
     val eventsAttended: Int = 0,
-    val upcomingEvents: Int = 0,
+    val totalEvents: Int = 0,
 )
 
 @HiltViewModel
@@ -53,10 +53,7 @@ class ProfileViewModel @Inject constructor(
                         it.publisherId != uid &&
                         it.participantIds?.contains(uid) == true
                 },
-                upcomingEvents = allEvents.count { event ->
-                    event.status == EventStatus.UPCOMING || event.status == EventStatus.ONGOING &&
-                        (event.publisherId == uid || event.participantIds?.contains(uid) == true)
-                },
+                totalEvents = allEvents.size,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
 

@@ -22,7 +22,7 @@ import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 fun ProfileStatsRow(
     eventsHosted: Int,
     eventsAttended: Int,
-    upcomingEvents: Int,
+    totalEvents: Int,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -48,7 +48,7 @@ fun ProfileStatsRow(
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
         )
-        StatItem(count = upcomingEvents, label = "Kommende\nevents")
+        StatItem(count = totalEvents, label = "Events\ni alt")
     }
 }
 
@@ -77,6 +77,6 @@ private fun StatItem(count: Int, label: String) {
 @Composable
 private fun ProfileStatsRowPreview() {
     FlotMandTheme {
-        ProfileStatsRow(eventsHosted = 12, eventsAttended = 8, upcomingEvents = 3)
+        ProfileStatsRow(eventsHosted = 12, eventsAttended = 8, totalEvents = 3)
     }
 }

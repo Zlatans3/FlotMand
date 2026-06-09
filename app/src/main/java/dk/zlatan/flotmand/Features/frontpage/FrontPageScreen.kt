@@ -345,14 +345,6 @@ internal fun FrontpageContent(
                 )
             }
 
-            // Date Voting Card
-            item {
-                DateVotingCard(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    onClick = onDateVotingClick,
-                )
-            }
-
             // Next Event section
             item {
                 if (nextEvent != null) {
@@ -556,63 +548,6 @@ private fun SectionHeader(
                     },
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun DateVotingCard(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    Card(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-            ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-    ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.CalendarToday,
-                    contentDescription = stringResource(R.string.calendar_content_description),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(8.dp),
-                )
-                Column {
-                    Text(
-                        text = stringResource(R.string.vote_on_date),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                    Text(
-                        text = stringResource(R.string.choose_best_date),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                    )
-                }
-            }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = stringResource(R.string.go_to_voting),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
         }
     }
 }

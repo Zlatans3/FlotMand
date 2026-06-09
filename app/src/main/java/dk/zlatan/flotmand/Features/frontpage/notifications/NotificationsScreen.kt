@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.frontpage.notifications
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.animateColorAsState
@@ -7,7 +8,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +60,9 @@ import dk.zlatan.flotmand.model.AppNotification
 import dk.zlatan.flotmand.model.NotificationType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +81,8 @@ fun NotificationsScreen(
         viewModel.markAllAsRead()
         onDismiss()
     }
+
+    BackHandler(onBack = onBack)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -174,24 +182,24 @@ private fun NotificationItem(
 ) {
     val type = notification.notificationType
 
-    val bgColor by animateColorAsState(
+    val cardColor by animateColorAsState(
         targetValue =
             if (notification.isRead) {
                 MaterialTheme.colorScheme.surface
             } else {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
             },
         animationSpec = tween(durationMillis = 300),
         label = "notificationBg",
     )
 
-    val iconBgColor =
+    val badgeBgColor =
         when (type) {
             NotificationType.EVENT -> MaterialTheme.colorScheme.tertiaryContainer
             NotificationType.POLL -> MaterialTheme.colorScheme.secondaryContainer
             NotificationType.UNKNOWN -> MaterialTheme.colorScheme.surfaceVariant
         }
-    val iconTint =
+    val badgeTint =
         when (type) {
             NotificationType.EVENT -> MaterialTheme.colorScheme.onTertiaryContainer
             NotificationType.POLL -> MaterialTheme.colorScheme.onSecondaryContainer
@@ -204,71 +212,100 @@ private fun NotificationItem(
             NotificationType.UNKNOWN -> FmIcons.Bell
         }
 
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .background(bgColor)
-                .clickable(onClick = onClick)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        onClick = onClick,
     ) {
-        // Type icon in a coloured circle
-        Box(
-            modifier =
-                Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .background(iconBgColor),
-            contentAlignment = Alignment.Center,
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                imageVector = typeIcon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(22.dp),
-            )
-        }
+            Box(modifier = Modifier.size(44.dp)) {
+                ProfileImage(
+                    profilePic = notification.senderPhotoUrl.ifBlank { null },
+                    profileSize = 44.dp,
+                    userName = notification.senderDisplayName.ifBlank { "?" },
+                )
+                Box(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clip(CircleShape)
+                        .background(badgeBgColor)
+                        .align(Alignment.BottomEnd),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = typeIcon,
+                        contentDescription = null,
+                        tint = badgeTint,
+                        modifier = Modifier.size(11.dp),
+                    )
+                }
+            }
 
-        Spacer(Modifier.width(14.dp))
+            Spacer(Modifier.width(12.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = notification.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            if (!notification.body.isNullOrBlank()) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = notification.body.orEmpty(),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
+                    text = notification.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                if (!notification.body.isNullOrBlank()) {
+                    Text(
+                        text = notification.body,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                    )
+                }
+                Text(
+                    text = formatRelativeTime(notification.createdAtMillis),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(top = 2.dp),
                 )
             }
-        }
 
-        // Unread dot
-        if (!notification.isRead) {
-            Box(
-                modifier =
-                    Modifier
-                        .padding(horizontal = 8.dp)
+            if (!notification.isRead) {
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 6.dp)
                         .size(8.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary),
-            )
-        }
+                )
+            }
 
-        IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
-            Icon(
-                imageVector = FmIcons.Close,
-                contentDescription = stringResource(R.string.notifications_dismiss),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(16.dp),
-            )
+            IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
+                Icon(
+                    imageVector = FmIcons.Close,
+                    contentDescription = stringResource(R.string.notifications_dismiss),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
         }
+    }
+}
+
+private fun formatRelativeTime(createdAtMillis: Long): String {
+    if (createdAtMillis == 0L) return ""
+    val diff = System.currentTimeMillis() - createdAtMillis
+    val minutes = diff / 60_000
+    val hours = diff / 3_600_000
+    val days = diff / 86_400_000
+    return when {
+        minutes < 1 -> "Lige nu"
+        minutes < 60 -> "For $minutes min siden"
+        hours < 24 -> "For $hours time${if (hours > 1L) "r" else ""} siden"
+        days == 1L -> "I går"
+        days < 7 -> "For $days dage siden"
+        else -> SimpleDateFormat("d. MMM", Locale.forLanguageTag("da-DK")).format(Date(createdAtMillis))
     }
 }
 

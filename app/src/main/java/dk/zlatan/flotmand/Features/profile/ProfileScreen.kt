@@ -103,7 +103,7 @@ fun ProfileScreenRoute(
             isUploadingPhoto = isUploadingPhoto,
             eventsHosted = uiState.eventsHosted,
             eventsAttended = uiState.eventsAttended,
-            upcomingEvents = uiState.upcomingEvents,
+            totalEvents = uiState.totalEvents,
             onProfileImageClick = {
                 photoPickerLauncher.launch(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -143,7 +143,7 @@ internal fun ProfileScreen(
     isUploadingPhoto: Boolean = false,
     eventsHosted: Int = 0,
     eventsAttended: Int = 0,
-    upcomingEvents: Int = 0,
+    totalEvents: Int = 0,
     onProfileImageClick: () -> Unit = {},
     onLogoutClicked: () -> Unit = {},
     onAccountInformationClick: () -> Unit = {},
@@ -197,7 +197,7 @@ internal fun ProfileScreen(
                 ProfileStatsRow(
                     eventsHosted = eventsHosted,
                     eventsAttended = eventsAttended,
-                    upcomingEvents = upcomingEvents,
+                    totalEvents = totalEvents,
                 )
                 VSpacer(20.dp)
             }
@@ -286,7 +286,7 @@ private fun ProfileScreenPreview() {
             userName = "Oliver Payne",
             eventsHosted = 12,
             eventsAttended = 8,
-            upcomingEvents = 3,
+            totalEvents = 3,
             onLanguageClick = {},
         )
     }

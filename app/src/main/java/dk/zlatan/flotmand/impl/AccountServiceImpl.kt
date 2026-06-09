@@ -145,13 +145,14 @@ class AccountServiceImpl
             val currentUser = Firebase.auth.currentUser ?: return
             Log.d(TAG, "Saving user to Firestore: ${currentUser.uid}")
             try {
-                val updates = mapOf(
+                val updates = mutableMapOf(
                     "email" to (currentUser.email.orEmpty()),
                     "displayName" to (currentUser.displayName.orEmpty()),
-                    "photoUrl" to (currentUser.photoUrl?.toString().orEmpty()),
                     "provider" to currentUser.providerId,
                     "isAnonymous" to currentUser.isAnonymous,
                 )
+                val photoUrl = currentUser.photoUrl?.toString().orEmpty()
+                if (photoUrl.isNotBlank()) updates["photoUrl"] = photoUrl
                 Firebase.firestore
                     .collection(USERS_COLLECTION)
                     .document(currentUser.uid)

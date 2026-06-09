@@ -15,7 +15,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import androidx.compose.foundation.layout.fillMaxSize
+import coil.compose.SubcomposeAsyncImage
 
 @Composable
 fun ProfileImage(
@@ -38,10 +39,25 @@ fun ProfileImage(
             .size(profileSize)
 
     if (!profilePic.isNullOrBlank()) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = profilePic,
             contentDescription = "Profile Image",
             modifier = baseModifier,
+            error = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.inversePrimary),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = getInitials(userName),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        fontSize = (profileSize.value / 2).sp,
+                    )
+                }
+            },
         )
     } else {
         Box(

@@ -11,6 +11,8 @@ data class AppNotification(
     val body: String? = null,
     @get:PropertyName("isRead") @set:PropertyName("isRead") var isRead: Boolean = false,
     val createdAtMillis: Long = 0L,
+    val senderPhotoUrl: String = "",
+    val senderDisplayName: String = "",
 ) {
     val notificationType: NotificationType get() = NotificationType.fromValue(type)
 }

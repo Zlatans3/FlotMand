@@ -14,16 +14,19 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -52,7 +55,7 @@ class NotificationServiceImpl
         // flatMapLatest restarts the listener on real auth changes (login / logout).
         // Eagerly + replay=1 keeps the listener permanently active and ensures new
         // subscribers never block waiting for the first emission.
-        override val notifications: Flow<List<AppNotification>> =
+        private val _notifications: SharedFlow<List<AppNotification>> =
             accountService.currentUser
                 // Firebase Auth re-emits the same user on token refresh — skip restarts
                 // unless the actual uid changes (i.e. a real login / logout).
@@ -93,9 +96,14 @@ class NotificationServiceImpl
                     replay = 1,
                 )
 
+        override val notifications: Flow<List<AppNotification>> = _notifications
+
+        private val locallyReadIds = MutableStateFlow<Set<String>>(emptySet())
+
         override val unreadCount: StateFlow<Int> =
-            notifications
-                .map { list -> list.count { !it.isRead } }
+            combine(notifications, locallyReadIds) { list, readIds ->
+                list.count { !it.isRead && it.id !in readIds }
+            }
                 .catch { e ->
                     Log.w(TAG, "unreadCount error: ${e.message}")
                     emit(0)
@@ -103,6 +111,7 @@ class NotificationServiceImpl
                 .stateIn(scope, SharingStarted.WhileSubscribed(5_000), 0)
 
         override fun markAsRead(notificationId: String) {
+            locallyReadIds.update { it + notificationId }
             val uid = accountService.currentUserId
             if (uid.isBlank()) {
                 Log.w(TAG, "markAsRead: skipped — uid is blank")
@@ -194,6 +203,8 @@ class NotificationServiceImpl
         }
 
         override fun markAllAsRead() {
+            val currentIds = _notifications.replayCache.firstOrNull()?.map { it.id }?.toSet().orEmpty()
+            locallyReadIds.update { it + currentIds }
             val uid = accountService.currentUserId
             if (uid.isBlank()) return
             scope.launch {
