@@ -10,22 +10,27 @@ import coil.request.ImageResult
 // the same image. We normalise the cache keys to the stable base URL so the same file
 // always hits the same memory/disk cache entry.
 object FirebaseStorageInterceptor : Interceptor {
-    override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
-        val data = chain.request.data
 
-        // Pass non-Firebase URLs straight through — no key rewriting needed.
-        if (data !is String || "firebasestorage.googleapis.com" !in data) {
-            return chain.proceed(chain.request)
-        }
-
-        // Build a stable key from the URL with all query params stripped except
-        // `alt=media`, which tells Firebase to return the file bytes rather than metadata.
-        val uri = Uri.parse(data)
-        val stableKey = uri.buildUpon()
+    /**
+     * Strips the rotating ?token= from a Firebase Storage download URL, returning a stable
+     * string suitable for use as a Coil memory/disk cache key. Returns null for non-Firebase URLs.
+     */
+    fun stableKey(url: String): String? {
+        if ("firebasestorage.googleapis.com" !in url) return null
+        val uri = Uri.parse(url)
+        return uri.buildUpon()
             .clearQuery()
             .appendQueryParameter("alt", uri.getQueryParameter("alt") ?: "media")
             .build()
             .toString()
+    }
+
+    override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
+        val data = chain.request.data
+
+        // Pass non-Firebase URLs straight through — no key rewriting needed.
+        if (data !is String) return chain.proceed(chain.request)
+        val stableKey = stableKey(data) ?: return chain.proceed(chain.request)
 
         // Override both caches so neither leaks token-suffixed duplicates.
         val request = chain.request.newBuilder()
