@@ -543,29 +543,20 @@ private fun buildDirectionsChooserIntent(
     longitude: Double?,
     address: String?,
 ): Intent {
-    val primaryUri: Uri =
+    // this is some very flacky code to make sure that users can open the map and avoid it starting navigation right away
+    // todo - there must be a better way to do this
+    val uri: Uri =
         if (latitude != null && longitude != null) {
-            Uri.parse("google.navigation:q=$latitude,$longitude")
+            val label = Uri.encode(address ?: "Event")
+            Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude($label)")
         } else {
-            val encoded = Uri.encode(address.orEmpty())
-            Uri.parse("google.navigation:q=$encoded")
+            Uri.parse("geo:0,0?q=${Uri.encode(address.orEmpty())}")
         }
 
-    val mapIntent = Intent(Intent.ACTION_VIEW, primaryUri)
+    val mapIntent = Intent(Intent.ACTION_VIEW, uri)
     mapIntent.setPackage("com.google.android.apps.maps")
 
-    val chooser = Intent.createChooser(mapIntent, "Åbn navigation med")
-
-    val geoQuery =
-        if (latitude != null && longitude != null) {
-            "geo:0,0?q=$latitude,$longitude"
-        } else {
-            "geo:0,0?q=" + Uri.encode(address.orEmpty())
-        }
-    val geoIntent = Intent(Intent.ACTION_VIEW, Uri.parse(geoQuery))
-    chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(geoIntent))
-
-    return chooser
+    return Intent.createChooser(mapIntent, "Åbn lokation i kort")
 }
 
 @Preview(showBackground = true)
