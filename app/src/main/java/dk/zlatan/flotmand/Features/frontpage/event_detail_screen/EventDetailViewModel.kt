@@ -91,7 +91,7 @@ internal class EventDetailViewModel
             combine(
                 featureFlagManager.isEnabled(FeatureKey.SHOW_PHONE_DIALOG_ON_PRICE_ADDED),
                 phoneDialogRepository.isDismissed,
-            ) { featureFlag, dismissed -> featureFlag || !dismissed }
+            ) { featureFlag, dismissed -> featureFlag && !dismissed }
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
 
         fun onPhoneDialogDismissed() {
