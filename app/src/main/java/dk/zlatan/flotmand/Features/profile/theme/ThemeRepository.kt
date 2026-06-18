@@ -34,7 +34,7 @@ class ThemeRepository
         private fun getSavedThemeMode(): ThemeMode =
             runCatching {
                 ThemeMode.valueOf(
-                    prefs.getString(KEY_THEME_MODE, ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name,
+                    prefs.getString(KEY_THEME_MODE, ThemeMode.FLOTMAND.name) ?: ThemeMode.FLOTMAND.name,
                 )
-            }.getOrDefault(ThemeMode.SYSTEM)
+            }.getOrDefault(ThemeMode.FLOTMAND)
     }

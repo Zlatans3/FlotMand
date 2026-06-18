@@ -52,7 +52,6 @@ fun ThemeSettingsScreen(
 
     val themeItems = listOf(
         ThemeItem(ThemeMode.SYSTEM, stringResource(R.string.theme_system), stringResource(R.string.theme_system_description)),
-        ThemeItem(ThemeMode.FLOTMAND, stringResource(R.string.theme_flotmand), stringResource(R.string.theme_flotmand_description)),
         ThemeItem(ThemeMode.LIGHT, stringResource(R.string.theme_light), stringResource(R.string.theme_light_description)),
         ThemeItem(ThemeMode.DARK, stringResource(R.string.theme_dark), stringResource(R.string.theme_dark_description)),
     )
@@ -155,7 +154,6 @@ private fun ThemeSettingsPreview() {
         ThemeSettingsContent(
             themeItems = listOf(
                 ThemeItem(ThemeMode.SYSTEM, "System", "Følger enhedens indstilling"),
-                ThemeItem(ThemeMode.FLOTMAND, "Flotmand", "Flotmands egne farver"),
                 ThemeItem(ThemeMode.LIGHT, "Lys", "Altid lys tilstand"),
                 ThemeItem(ThemeMode.DARK, "Mørk", "Altid mørk tilstand"),
             ),
