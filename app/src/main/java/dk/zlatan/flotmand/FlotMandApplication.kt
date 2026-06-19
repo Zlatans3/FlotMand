@@ -5,13 +5,39 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import coil.ImageLoader
+import coil.ImageLoaderFactory
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
+import dk.zlatan.flotmand.util.NetworkOnlyCrossfadeFactory
 import com.google.android.libraries.places.api.Places
 import dagger.hilt.android.HiltAndroidApp
 import dk.zlatan.flotmand.impl.FlotMandFirebaseMessagingService
+import dk.zlatan.flotmand.util.FirebaseStorageInterceptor
 import java.util.Locale
 
 @HiltAndroidApp
-class FlotMandApplication : Application() {
+class FlotMandApplication : Application(), ImageLoaderFactory {
+
+    override fun newImageLoader(): ImageLoader =
+        ImageLoader.Builder(this)
+            .transitionFactory(NetworkOnlyCrossfadeFactory)
+            .memoryCache {
+                MemoryCache.Builder(this)
+                    .maxSizePercent(0.25)
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir.resolve("image_cache"))
+                    .maxSizeBytes(50L * 1024 * 1024)
+                    .build()
+            }
+            .components {
+                add(FirebaseStorageInterceptor)
+            }
+            .build()
+
     override fun onCreate() {
         super.onCreate()
 

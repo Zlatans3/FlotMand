@@ -83,6 +83,10 @@ import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.Event
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.rememberLottieComposition
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -112,13 +116,13 @@ internal fun AddEventScreen(
     val isKeyboardOpen = imeHeight > 0
     val focusManager = LocalFocusManager.current
 
-    // Navigate to event detail when event is created, then reset state
+    // Navigate to event detail when event is created, then reset state.
+    // Delay gives the confetti overlay time to play before the screen transitions.
     LaunchedEffect(uiState.isEventCreated) {
-        if(uiState.isEventCreated != null){
-            uiState.isEventCreated?.let { eventId ->
-                onEventCreated(eventId)
-                viewModel.resetState() // Restore state reset after navigation trigger
-            }
+        uiState.isEventCreated?.let { eventId ->
+            delay(1_500)
+            onEventCreated(eventId)
+            viewModel.resetState()
         }
     }
 
@@ -130,8 +134,13 @@ internal fun AddEventScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
+    val confettiComposition by rememberLottieComposition(
+        LottieCompositionSpec.RawRes(R.raw.confetti),
+    )
+
+    Box(modifier = modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
@@ -254,6 +263,17 @@ internal fun AddEventScreen(
             focusManager = focusManager,
             isEditMode = false,
         )
+        }
+
+        if (uiState.isEventCreated != null) {
+            LottieAnimation(
+                composition = confettiComposition,
+                iterations = 1,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(1f),
+            )
+        }
     }
 }
 
@@ -526,7 +546,7 @@ private fun EventScreenContent(
         Row(modifier = Modifier.fillMaxWidth()) {
             EventTextField(
                 label = stringResource(R.string.date_label),
-                value = event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) ?: "",
+                value = event.eventDate?.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")).orEmpty(),
                 onValueChange = { }, // Read-only
                 placeholder = stringResource(R.string.date_placeholder),
                 modifier = Modifier.weight(1f),
@@ -550,7 +570,7 @@ private fun EventScreenContent(
 
             EventTextField(
                 label = stringResource(R.string.time_label),
-                value = event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
+                value = event.eventStartTime?.format(DateTimeFormatter.ofPattern("HH:mm")).orEmpty(),
                 onValueChange = { }, // Read-only
                 placeholder = stringResource(R.string.time_placeholder),
                 modifier = Modifier.weight(1f),

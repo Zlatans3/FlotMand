@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "flotmand-e9edf"
+    "default": "flotmand-e9edf",
+    "production": "flotmand-release"
   }
 }

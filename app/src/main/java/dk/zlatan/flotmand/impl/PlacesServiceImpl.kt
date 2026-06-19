@@ -131,7 +131,7 @@ class PlacesServiceImpl
                             .fetchPlace(request)
                             .addOnSuccessListener { response ->
                                 val place = response.place
-                                val address = place.address ?: place.name ?: ""
+                                val address = place.address ?: place.name.orEmpty()
                                 val latLng = place.latLng
 
                                 if (latLng != null) {

@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -88,7 +89,9 @@ fun votingListItem(
                     }
 
                     Text(
-                        text = stringResource(R.string.date_options_and_users_voted, voting.dateOptions.size, voting.usersVoted),
+                        text = pluralStringResource(R.plurals.date_options_count, voting.dateOptions.size, voting.dateOptions.size) +
+                            " • " +
+                            pluralStringResource(R.plurals.users_voted_count, voting.usersVoted, voting.usersVoted),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )

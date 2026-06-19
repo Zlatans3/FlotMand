@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.Features.profile.navigation
 
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
@@ -8,7 +9,9 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -17,13 +20,19 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.profile.ProfileScreenRoute
 import dk.zlatan.flotmand.Features.profile.account_information.AccountInformationScreenRoute
+import dk.zlatan.flotmand.Features.profile.licenses.LicensesScreen
 import dk.zlatan.flotmand.Features.profile.notificationsettings.NotificationSettingsScreen
 import dk.zlatan.flotmand.Features.profile.switchlanguage.SwitchLanguageScreen
+import dk.zlatan.flotmand.Features.profile.theme.ThemeSettingsScreen
+import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
+
+private const val PRIVACY_POLICY_URL = "https://zlatans3.github.io/privacy-policy/"
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
 fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
     val navigationStack: List<ProfileDestination> by viewModel.navigationStack.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     // Navigation overlay for sub-screens
     NavDisplay(
@@ -43,34 +52,64 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             onNotificationSettingsClick = {
                                 viewModel.navigate(ProfileDestination.NotificationSettings)
                             },
+                            onThemeSettingsClick = {
+                                viewModel.navigate(ProfileDestination.ThemeSettings)
+                            },
+                            onPrivacyPolicyClick = {
+                                CustomTabsIntent.Builder().build()
+                                    .launchUrl(context, PRIVACY_POLICY_URL.toUri())
+                            },
                         )
                     }
                 }
 
                 ProfileDestination.AccountInformation -> {
                     NavEntry(key) {
-                        AccountInformationScreenRoute(
-                            onDismiss = { viewModel.pop() },
-                            onUserDeleted = {
-                                viewModel.resetToRoot()
-                            },
-                        )
+                        PredictiveBackScaleContainer {
+                            AccountInformationScreenRoute(
+                                onDismiss = { viewModel.pop() },
+                                onUserDeleted = { viewModel.resetToRoot() },
+                                onOpenLicenses = { viewModel.navigate(ProfileDestination.Licenses) },
+                            )
+                        }
+                    }
+                }
+
+                ProfileDestination.Licenses -> {
+                    NavEntry(key) {
+                        PredictiveBackScaleContainer {
+                            LicensesScreen(onDismiss = { viewModel.pop() })
+                        }
                     }
                 }
 
                 ProfileDestination.SwitchLanguage -> {
                     NavEntry(key) {
-                        SwitchLanguageScreen(
-                            onDismiss = { viewModel.pop() },
-                        )
+                        PredictiveBackScaleContainer {
+                            SwitchLanguageScreen(
+                                onDismiss = { viewModel.pop() },
+                            )
+                        }
                     }
                 }
 
                 ProfileDestination.NotificationSettings -> {
                     NavEntry(key) {
-                        NotificationSettingsScreen(
-                            onDismiss = { viewModel.pop() },
-                        )
+                        PredictiveBackScaleContainer {
+                            NotificationSettingsScreen(
+                                onDismiss = { viewModel.pop() },
+                            )
+                        }
+                    }
+                }
+
+                ProfileDestination.ThemeSettings -> {
+                    NavEntry(key) {
+                        PredictiveBackScaleContainer {
+                            ThemeSettingsScreen(
+                                onDismiss = { viewModel.pop() },
+                            )
+                        }
                     }
                 }
 
@@ -86,6 +125,13 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             onNotificationSettingsClick = {
                                 viewModel.navigate(ProfileDestination.NotificationSettings)
                             },
+                            onThemeSettingsClick = {
+                                viewModel.navigate(ProfileDestination.ThemeSettings)
+                            },
+                            onPrivacyPolicyClick = {
+                                CustomTabsIntent.Builder().build()
+                                    .launchUrl(context, PRIVACY_POLICY_URL.toUri())
+                            },
                         )
                     }
                 }
@@ -100,25 +146,10 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
             )
         },
         popTransitionSpec = {
-            ContentTransform(
-                EnterTransition.None,
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                ),
-            )
+            ContentTransform(EnterTransition.None, ExitTransition.None)
         },
-        predictivePopTransitionSpec = { progress: Int ->
-            ContentTransform(
-                EnterTransition.None,
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec =
-                        tween<IntOffset>(
-                            durationMillis = (400 * (100 - progress) / 100).coerceAtLeast(1),
-                            easing = FastOutSlowInEasing,
-                        ),
-                ),
-            )
+        predictivePopTransitionSpec = { _: Int ->
+            ContentTransform(EnterTransition.None, ExitTransition.None)
         },
         entryDecorators =
             listOf(

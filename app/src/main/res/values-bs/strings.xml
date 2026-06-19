@@ -193,4 +193,86 @@
     <string name="delete_user_message">Da li ste sigurni da želite obrisati svog korisnika i podatke? Ova radnja se ne može poništiti.</string>
     <string name="delete_user_success">Korisnik obrisan.</string>
     <string name="error_delete_user">Nije moguće obrisati korisnika: %1$s</string>
+
+    <string name="polls_title">Glasanja</string>
+    <string name="retry">Pokušaj ponovo</string>
+    <string name="error_no_google_account">Nije pronađen Google račun na ovom uređaju. Dodajte račun u Postavkama i pokušajte ponovo.</string>
+    <string name="no_current_event">Nema nadolazećeg eventa trenutno</string>
+
+    <string name="profile_section_other">Ostalo</string>
+    <string name="privacy_policy">Politika privatnosti</string>
+    <string name="theme_settings_title">Tema</string>
+    <string name="theme_system">Sistem</string>
+    <string name="theme_system_description">Prati postavku svjetla/tamnog uređaja</string>
+    <string name="theme_flotmand">Flotmand</string>
+    <string name="theme_flotmand_description">Flotmandove vlastite boje, prate postavke uređaja</string>
+    <string name="theme_light">Svijetlo</string>
+    <string name="theme_light_description">Uvijek svjetli način</string>
+    <string name="theme_dark">Tamno</string>
+    <string name="theme_dark_description">Uvijek tamni način</string>
+
+    <string name="error_loading_event">Nešto je pošlo po krivu</string>
+    <string name="my_events_loading">Učitavanje vaših eventa...</string>
+    <string name="my_events_empty_create_prompt">Kreirajte svoj prvi event!</string>
+    <string name="add_event_content_description">Dodaj event</string>
+    <string name="tab_upcoming">Nadolazeći</string>
+    <string name="tab_past">Prethodni</string>
+    <string name="no_upcoming_events_title">Nema nadolazećih eventa</string>
+    <string name="no_upcoming_events_subtitle">Kreirajte event i sretnite svoje prijatelje!</string>
+    <string name="no_past_events_title">Nema prošlih eventa</string>
+    <string name="no_past_events_subtitle">Evente koje ste organizirali prikazuju se ovdje</string>
+
+    <string name="notification_permission_title">Ostanite u toku 🔔</string>
+    <string name="notification_permission_rationale">Šaljemo vam poruku kada se kreiraju novi eventi ili glasanja, tako da nikada ne propustite ništa.</string>
+    <string name="notification_permission_allow">Dopusti</string>
+    <string name="notification_permission_not_now">Ne sada</string>
+    <string name="notification_permission_blocked_title">Obavijesti su blokirane</string>
+    <string name="notification_permission_blocked_message">Uključite obavijesti u Postavkama da biste primali obavijesti o novim eventima i glasanjima.</string>
+    <string name="notification_permission_open_settings">Otvori postavke</string>
+    <string name="notifications_title">Obavijesti</string>
+    <string name="notifications_mark_all_read">Označi sve kao pročitano</string>
+    <string name="notifications_clear_all">Obriši sve</string>
+    <string name="notifications_dismiss">Odbaci obavijest</string>
+    <string name="notifications_empty_title">Nema obavijesti</string>
+    <string name="notifications_empty_subtitle">Novi eventi i glasanja prikazuju se ovdje</string>
+    <string name="notification_status_label">Status:</string>
+    <string name="notification_settings_title">Obavijesti</string>
+    <string name="notification_settings_description">Primajte obavijesti kada se kreiraju novi eventi ili glasanja, tako da uvijek budete u toku.</string>
+    <string name="notification_status_active">Aktivno</string>
+    <string name="notification_status_inactive">Isključeno</string>
+    <string name="notification_action_allow">Dopusti obavijesti</string>
+    <string name="notification_action_manage">Upravljaj u postavkama</string>
+
+    <string name="open_source_licenses_title">Open Source licence</string>
+    <string name="filter">Sortiraj</string>
+    <string name="sort_date_asc">Datum (Najraniji)</string>
+    <string name="sort_date_desc">Datum (Najnoviji)</string>
+    <string name="sort_name_az">Ime (A-Ž)</string>
+    <string name="sort_name_za">Ime (Ž-A)</string>
+    <string name="press_back_again_to_exit">Pritisnite nazad ponovo da zatvorite aplikaciju</string>
+
+    <string name="selection_count">%1$d odabrano</string>
+    <string name="select_all_content_description">Odaberi sve</string>
+    <string name="delete_selected_content_description">Obriši odabrano</string>
+    <string name="rotation_order_title">Redoslijed</string>
+    <string name="add_user_title">Dodaj korisnika</string>
+    <string name="add_user_content_description">Dodaj korisnika</string>
+    <string name="drag_handle_content_description">Premjesti</string>
+    <string name="guest_label">Gost</string>
+    <string name="remove_content_description">Ukloni</string>
+    <string name="reset_placements">Resetuj plasmane</string>
+    <string name="name_label">Ime</string>
+    <string name="name_placeholder">Npr. Petar</string>
+    <string name="add">Dodaj</string>
+
+    <plurals name="date_options_count">
+        <item quantity="one">%d datum</item>
+        <item quantity="few">%d datuma</item>
+        <item quantity="other">%d datuma</item>
+    </plurals>
+    <plurals name="users_voted_count">
+        <item quantity="one">%d glasao</item>
+        <item quantity="few">%d glasala</item>
+        <item quantity="other">%d glasalo</item>
+    </plurals>
 </resources>

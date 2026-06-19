@@ -84,7 +84,7 @@ internal class DateVotingViewModel
                             errorMessage =
                                 stringProvider.getString(
                                     R.string.error_loading_voting,
-                                    e.message ?: "",
+                                    e.message.orEmpty(),
                                 ),
                             isLoading = false,
                         )
@@ -147,7 +147,7 @@ internal class DateVotingViewModel
                 } catch (e: Exception) {
                     _uiState.update {
                         it.copy(
-                            snackbarMessage = stringProvider.getString(R.string.error_vote, e.message ?: ""),
+                            snackbarMessage = stringProvider.getString(R.string.error_vote, e.message.orEmpty()),
                         )
                     }
                 }
@@ -165,7 +165,7 @@ internal class DateVotingViewModel
                             snackbarMessage =
                                 stringProvider.getString(
                                     R.string.error_delete_voting,
-                                    e.message ?: "",
+                                    e.message.orEmpty(),
                                 ),
                         )
                     }
@@ -184,7 +184,7 @@ internal class DateVotingViewModel
                             snackbarMessage =
                                 stringProvider.getString(
                                     R.string.error_delete_date,
-                                    e.message ?: "",
+                                    e.message.orEmpty(),
                                 ),
                         )
                     }
@@ -204,7 +204,7 @@ internal class DateVotingViewModel
                             snackbarMessage =
                                 stringProvider.getString(
                                     R.string.error_remove_vote,
-                                    e.message ?: "",
+                                    e.message.orEmpty(),
                                 ),
                         )
                     }
@@ -229,7 +229,7 @@ internal class DateVotingViewModel
                             snackbarMessage =
                                 stringProvider.getString(
                                     R.string.error_add_date,
-                                    e.message ?: "",
+                                    e.message.orEmpty(),
                                 ),
                         )
                     }

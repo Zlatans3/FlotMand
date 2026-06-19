@@ -7,7 +7,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     id("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.google.gms.google.services)
-    id("com.google.android.gms.oss-licenses-plugin")
+    alias(libs.plugins.aboutlibraries.plugin)
 }
 
 val localProperties =
@@ -17,8 +17,14 @@ val localProperties =
             localPropertiesFile.inputStream().use { load(it) }
         }
     }
-val googleServerClientId = localProperties["GOOGLE_SERVER_CLIENT_ID"] as String? ?: ""
+val googleServerClientIdDebug = localProperties["GOOGLE_SERVER_CLIENT_ID_DEBUG"] as String? ?: ""
+val googleServerClientIdRelease = localProperties["GOOGLE_SERVER_CLIENT_ID_RELEASE"] as String? ?: ""
 val googleMapsApiKey = localProperties["GOOGLE_MAPS_API_KEY"] as String? ?: ""
+
+val commitCount = "git rev-list --count HEAD".trimIndent().let {
+    Runtime.getRuntime().exec(it.split(" ").toTypedArray())
+        .inputStream.bufferedReader().readText().trim().toIntOrNull() ?: 1
+}
 
 android {
     namespace = "dk.zlatan.flotmand"
@@ -42,11 +48,10 @@ android {
         applicationId = "dk.zlatan.flotmand"
         minSdk = 30
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.2"
+        versionCode = commitCount
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"$googleServerClientId\"")
         buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"$googleMapsApiKey\"")
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
         resValue("string", "google_maps_key", googleMapsApiKey)
@@ -54,8 +59,10 @@ android {
 
     buildTypes {
         debug {
+            applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             resValue("string", "app_name", "Flotmand - debug")
+            buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"$googleServerClientIdDebug\"")
         }
         release {
             isMinifyEnabled = true
@@ -64,6 +71,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"$googleServerClientIdRelease\"")
             signingConfig = signingConfigs.getByName("release")
         }
     }
@@ -73,6 +81,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
     buildFeatures {
         compose = true
@@ -111,9 +120,12 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.github.yalantis:ucrop:2.2.9")
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.play.services.oss.licenses)
+    implementation(libs.aboutlibraries.compose.m3)
+    implementation(libs.aboutlibraries.core)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation3.runtime)
@@ -141,6 +153,9 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.7.1")
 
-    // OSS Licenses dependency
-    implementation("com.google.android.gms:play-services-oss-licenses:17.1.0")
+
+    implementation(libs.reorderable)
+    implementation(libs.androidx.datastore.preferences)
+    implementation("com.airbnb.android:lottie-compose:6.6.6")
+    implementation(libs.androidx.browser)
 }

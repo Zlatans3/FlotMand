@@ -76,7 +76,7 @@ class EditEventViewModel @AssistedInject constructor(
                 if (event != null) {
                     Log.d(TAG, "Loaded event: $event")
                     _event.value = event
-                    _locationTextFieldValue.value = TextFieldValue(event.location ?: "")
+                    _locationTextFieldValue.value = TextFieldValue(event.location.orEmpty())
                 } else {
                     Log.w(TAG, "No event found for eventId: $eventId")
                 }

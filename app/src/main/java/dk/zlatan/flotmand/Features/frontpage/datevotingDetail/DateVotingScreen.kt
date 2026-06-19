@@ -10,11 +10,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -207,56 +208,90 @@ private fun DateVotingDetailScreen(
 ) {
     val haptic = LocalHapticFeedback.current
 
-    Column(
-        modifier =
-            modifier
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+    val sortedDateOptions = remember(dateVotingItem) {
+        dateVotingItem?.dateOptions?.sortedWith(
+            compareByDescending<DateOption> { it.voteCount }.thenBy { it.localDate },
+        ) ?: emptyList()
+    }
+
+    LazyColumn(
+        modifier = modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        // Header Section
-        VotingDetailsHeader(
-            isCreator = isCreator,
-            user = publisher,
-        )
-
-        // Error message if present
-        if (errorMessage != null) {
-            Text(
-                text = errorMessage,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error,
-            )
+        item(key = "header") {
+            VotingDetailsHeader(isCreator = isCreator, user = publisher)
         }
 
-        // Voting Stats Section
-        if (dateVotingItem != null) {
-            VotingStatsSection(dateVotingItem = dateVotingItem)
-
-            // Date Options Section
-            VotingDatesSection(
-                dateVotingItem = dateVotingItem,
-                currentUserId = currentUserId,
-                votersByUserId = votersByUserId,
-                onVoteForDate = { date ->
-                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                    onVoteForDate(date)
-                },
-                onRemoveVote = { date ->
-                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
-                    onRemoveVote(date)
-                },
-                onDeleteVoteOption = onDeleteVoteOption,
-            )
-
-            AddDateButton(onAddDate = onAddDate)
-
-            // Creator Actions Section (only for creator)
-            if (isCreator && dateVotingItem.dateOptions.isNotEmpty()) {
-                CreatorActionsSection(
-                    onCreateEvent = onCreateEvent,
-                    onShowDeleteDialog = onShowDeleteDialog,
+        if (errorMessage != null) {
+            item(key = "error") {
+                Text(
+                    text = errorMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
                 )
+            }
+        }
+
+        if (dateVotingItem != null) {
+            item(key = "stats") {
+                VotingStatsSection(dateVotingItem = dateVotingItem)
+            }
+
+            item(key = "dates_title") {
+                Text(
+                    text = stringResource(R.string.available_dates),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
+                )
+            }
+
+            items(
+                items = sortedDateOptions,
+                key = { it.localDate?.toString() ?: it.hashCode().toString() },
+            ) { dateOption ->
+                val participants = dateOption.votersId.map { voterId ->
+                    votersByUserId[voterId] ?: User(id = voterId, displayName = "Loading...")
+                }
+                val dateString = dateOption.localDate?.let {
+                    DanishDateFormatter.formatDateDanishWithWeekday(it)
+                } ?: stringResource(R.string.unknown_date)
+                val votingCount = dateOption.voteCount
+                val subtitle = when (votingCount) {
+                    0 -> stringResource(R.string.no_votes_yet)
+                    1 -> stringResource(R.string.one_person_voted)
+                    else -> stringResource(R.string.n_persons_voted, votingCount)
+                }
+                val isSelected = dateOption.votersId.contains(currentUserId)
+
+                DateCard(
+                    modifier = Modifier.animateItem(),
+                    date = dateString,
+                    subtitle = subtitle,
+                    voters = participants,
+                    votePercentage = dateVotingItem.getVotePercentage(dateOption),
+                    isSelected = isSelected,
+                    onDeleteVoteOption = { onDeleteVoteOption(dateOption) },
+                    onClick = {
+                        dateOption.localDate?.let { date ->
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            if (isSelected) onRemoveVote(date) else onVoteForDate(date)
+                        }
+                    },
+                )
+            }
+
+            item(key = "add_date") {
+                AddDateButton(onAddDate = onAddDate)
+            }
+
+            if (isCreator) {
+                item(key = "creator_actions") {
+                    CreatorActionsSection(
+                        hasDateOptions = dateVotingItem.dateOptions.isNotEmpty(),
+                        onCreateEvent = onCreateEvent,
+                        onShowDeleteDialog = onShowDeleteDialog,
+                    )
+                }
             }
         }
     }
@@ -364,91 +399,6 @@ private fun VotingStat(
     }
 }
 
-@Composable
-private fun VotingDatesSection(
-    dateVotingItem: DateVotingItem,
-    currentUserId: String,
-    votersByUserId: Map<String, User> = emptyMap(),
-    onVoteForDate: (LocalDate) -> Unit,
-    onRemoveVote: (LocalDate) -> Unit,
-    onDeleteVoteOption: (DateOption) -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(
-            text = stringResource(R.string.available_dates),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-
-        // Sort date options by vote count (descending), then by date (ascending)
-        val sortedDateOptions =
-            dateVotingItem.dateOptions.sortedWith(
-                compareByDescending<DateOption> { it.voteCount }
-                    .thenBy { it.localDate },
-            )
-
-        sortedDateOptions.forEach { dateOption ->
-            // Animate with smooth slide in/out movements
-            val dateKey = dateOption.localDate?.toString() ?: "unknown"
-            AnimatedVisibility(
-                visible = true,
-                enter =
-                    slideInVertically(
-                        animationSpec = tween(durationMillis = 400),
-                        initialOffsetY = { -it },
-                    ),
-                exit =
-                    slideOutVertically(
-                        animationSpec = tween(durationMillis = 400),
-                        targetOffsetY = { it },
-                    ),
-                label = "dateCardSlide_$dateKey",
-            ) {
-                // Get actual user objects for voters, with fallback display names if data not loaded yet
-                val participants =
-                    dateOption.votersId.map { voterId ->
-                        votersByUserId[voterId] ?: User(id = voterId, displayName = "Loading...")
-                    }
-
-                val dateString =
-                    dateOption.localDate?.let {
-                        DanishDateFormatter.formatDateDanishWithWeekday(it)
-                    } ?: stringResource(R.string.unknown_date)
-
-                val votingCount = dateOption.voteCount
-                val subtitle =
-                    when (votingCount) {
-                        0 -> stringResource(R.string.no_votes_yet)
-                        1 -> stringResource(R.string.one_person_voted)
-                        else -> stringResource(R.string.n_persons_voted, votingCount)
-                    }
-
-                val isSelected = dateOption.votersId.contains(currentUserId)
-
-                DateCard(
-                    date = dateString,
-                    subtitle = subtitle,
-                    voters = participants,
-                    votePercentage = dateVotingItem.getVotePercentage(dateOption),
-                    isSelected = isSelected,
-                    onDeleteVoteOption = {
-                        onDeleteVoteOption(dateOption)
-                    },
-                    onClick = {
-                        dateOption.localDate?.let { date ->
-                            // Allow voting on multiple dates: toggle vote for each date independently
-                            if (isSelected) {
-                                onRemoveVote(date)
-                            } else {
-                                onVoteForDate(date)
-                            }
-                        }
-                    },
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun AddDateButton(onAddDate: () -> Unit) {
@@ -475,6 +425,7 @@ private fun AddDateButton(onAddDate: () -> Unit) {
 
 @Composable
 private fun CreatorActionsSection(
+    hasDateOptions: Boolean,
     onCreateEvent: () -> Unit,
     onShowDeleteDialog: () -> Unit,
 ) {
@@ -485,33 +436,39 @@ private fun CreatorActionsSection(
             color = MaterialTheme.colorScheme.onBackground,
         )
 
-        // Create Event Button
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onCreateEvent)
-                    .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        // Create Event Button — slides in when there are date options
+        AnimatedVisibility(
+            visible = hasDateOptions,
+            enter = slideInVertically(animationSpec = tween(300)) { -it },
+            exit = slideOutVertically(animationSpec = tween(300)) { -it },
         ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = stringResource(R.string.create_event_content_description),
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(8.dp),
-            )
-            Column {
-                Text(
-                    text = stringResource(R.string.create_event),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onCreateEvent)
+                        .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Event,
+                    contentDescription = stringResource(R.string.create_event_content_description),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(8.dp),
                 )
-                Text(
-                    text = stringResource(R.string.convert_to_event),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Column {
+                    Text(
+                        text = stringResource(R.string.create_event),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = stringResource(R.string.convert_to_event),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
 

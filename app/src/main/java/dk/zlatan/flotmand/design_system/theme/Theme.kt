@@ -10,89 +10,76 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    // Primary colors
-    primary = PrimaryBlueLight,
-    onPrimary = White,
-    primaryContainer = PrimaryBlueDark,
-    onPrimaryContainer = PrimaryBlueLight,
+private val MidnightHarvestColorScheme = darkColorScheme(
+    primary = HarvestPrimary,
+    onPrimary = HarvestOnPrimary,
+    primaryContainer = HarvestPrimaryContainer,
+    onPrimaryContainer = HarvestOnPrimaryContainer,
 
-    // Secondary colors
-    secondary = SecondaryBlue,
-    onSecondary = BackgroundDark,
-    secondaryContainer = SecondaryBlueDark,
-    onSecondaryContainer = SecondaryBlueLight,
+    secondary = MidnightSecondary,
+    onSecondary = MidnightOnSecondary,
+    secondaryContainer = MidnightSecondaryContainer,
+    onSecondaryContainer = MidnightOnSecondaryContainer,
 
-    // Tertiary (optional, using secondary variants)
-    tertiary = InfoBlue,
-    onTertiary = White,
+    tertiary = MidnightTertiary,
+    onTertiary = MidnightOnTertiary,
+    tertiaryContainer = MidnightTertiaryContainer,
+    onTertiaryContainer = MidnightOnTertiaryContainer,
 
-    // Background & Surface
-    background = BackgroundDark,
-    onBackground = TextLight,
-    surface = SurfaceDark,
-    onSurface = TextLight,
-    surfaceVariant = SurfaceDarkVariant,
-    onSurfaceVariant = TextLightSecondary,
+    background = MidnightBackground,
+    onBackground = MidnightOnBackground,
+    surface = MidnightSurface,
+    onSurface = MidnightOnSurface,
+    surfaceVariant = MidnightSurfaceVariant,
+    onSurfaceVariant = MidnightOnSurfaceVariant,
 
-    // Error colors
-    error = ErrorRed,
-    onError = White,
-    errorContainer = ErrorRedLight,
-    onErrorContainer = ErrorRed,
+    error = HarvestErrorDark,
+    onError = HarvestOnErrorDark,
+    errorContainer = HarvestErrorContainerDark,
+    onErrorContainer = HarvestOnErrorContainerDark,
 
-    // Outline (for borders, dividers)
-    outline = DividerDark,
-    outlineVariant = SurfaceDarkVariant,
-
-    // Scrim (for overlays)
-    scrim = BackgroundDark
+    outline = MidnightOutline,
+    outlineVariant = MidnightOutlineVariant,
+    scrim = Black,
 )
 
-private val LightColorScheme = lightColorScheme(
-    // Primary colors
-    primary = PrimaryBlue,
-    onPrimary = White,
-    primaryContainer = PrimaryBlueLight,
-    onPrimaryContainer = White,
+private val HarvestLightColorScheme = lightColorScheme(
+    primary = HarvestLightPrimary,
+    onPrimary = HarvestLightOnPrimary,
+    primaryContainer = HarvestLightPrimaryContainer,
+    onPrimaryContainer = HarvestLightOnPrimaryContainer,
 
-    // Secondary colors
-    secondary = SecondaryBlue,
-    onSecondary = White,
-    secondaryContainer = SecondaryBlueLight,
-    onSecondaryContainer = SecondaryBlueDark,
+    secondary = HarvestLightSecondary,
+    onSecondary = HarvestLightOnSecondary,
+    secondaryContainer = HarvestLightSecondaryContainer,
+    onSecondaryContainer = HarvestLightOnSecondaryContainer,
 
-    // Tertiary (optional, using secondary variants)
-    tertiary = InfoBlue,
-    onTertiary = White,
+    tertiary = HarvestLightTertiary,
+    onTertiary = HarvestLightOnTertiary,
+    tertiaryContainer = HarvestLightTertiaryContainer,
+    onTertiaryContainer = HarvestLightOnTertiaryContainer,
 
-    // Background & Surface
-    background = BackgroundLightBlue,
-    onBackground = TextDark,
-    surface = SurfaceLight,
-    onSurface = TextDark,
-    surfaceVariant = SurfaceLightVariant,
-    onSurfaceVariant = TextDarkSecondary,
+    background = HarvestLightBackground,
+    onBackground = HarvestLightOnBackground,
+    surface = HarvestLightSurface,
+    onSurface = HarvestLightOnSurface,
+    surfaceVariant = HarvestLightSurfaceVariant,
+    onSurfaceVariant = HarvestLightOnSurfaceVariant,
 
-    // Error colors
-    error = ErrorRed,
-    onError = White,
-    errorContainer = ErrorRedLight,
-    onErrorContainer = ErrorRed,
+    error = HarvestError,
+    onError = HarvestOnError,
+    errorContainer = HarvestErrorContainer,
+    onErrorContainer = HarvestOnErrorContainer,
 
-    // Outline (for borders, dividers)
-    outline = Divider,
-    outlineVariant = SurfaceLightVariant,
-
-    // Scrim (for overlays)
-    scrim = BackgroundDark
+    outline = HarvestLightOutline,
+    outlineVariant = HarvestLightOutlineVariant,
+    scrim = Black,
 )
 
 @Composable
 fun FlotMandTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -100,9 +87,8 @@ fun FlotMandTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> MidnightHarvestColorScheme
+        else -> HarvestLightColorScheme
     }
 
     MaterialTheme(

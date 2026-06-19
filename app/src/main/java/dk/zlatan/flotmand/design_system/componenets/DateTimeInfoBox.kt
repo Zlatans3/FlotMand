@@ -1,5 +1,11 @@
 package dk.zlatan.flotmand.design_system.componenets
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -126,6 +132,7 @@ fun DateTimeInfoBox(
 fun ParticipantsInfoBox(
     participants: List<User>,
     modifier: Modifier = Modifier,
+    declinedCount: Int = 0,
     onClick: () -> Unit = {},
 ) {
     Box(
@@ -159,11 +166,23 @@ fun ParticipantsInfoBox(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(
-                    text = stringResource(R.string.participants_answered, participants.size),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                AnimatedContent(
+                    targetState = if (declinedCount > 0) {
+                        "${participants.size} deltager – $declinedCount afbud"
+                    } else {
+                        "${participants.size} deltager"
+                    },
+                    transitionSpec = {
+                        (fadeIn() + slideInVertically { -it / 2 }) togetherWith
+                            (fadeOut() + slideOutVertically { it / 2 })
+                    },
+                ) { text ->
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
             }
 
             // Overlapping Avatars

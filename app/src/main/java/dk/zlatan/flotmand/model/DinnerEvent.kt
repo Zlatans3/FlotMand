@@ -17,10 +17,12 @@ data class Event(
     val eventId: String? = null,
     val publisherId: String? = null,
     val participantIds: List<String>? = null,
+    val declinedIds: List<String>? = null,
     val eventName: String? = null,
     val location: String? = null,
     val geoLocation: GeoLocation? = null,
     val description: String? = null,
+    val totalPrice: Double? = null,
     // Firestore-compatible fields (stored as Strings)
     var eventDateString: String? = null,
     var eventStartTimeString: String? = null,
@@ -45,10 +47,12 @@ data class Event(
         eventId: String? = this.eventId,
         publisherId: String? = this.publisherId,
         participantIds: List<String>? = this.participantIds,
+        declinedIds: List<String>? = this.declinedIds,
         eventName: String? = this.eventName,
         location: String? = this.location,
         geoLocation: GeoLocation? = this.geoLocation,
         description: String? = this.description,
+        totalPrice: Double? = this.totalPrice,
         eventDate: LocalDate? = this.eventDate,
         eventStartTime: LocalTime? = this.eventStartTime,
     ): Event =
@@ -56,10 +60,12 @@ data class Event(
             eventId = eventId,
             publisherId = publisherId,
             participantIds = participantIds,
+            declinedIds = declinedIds,
             eventName = eventName,
             location = location,
             geoLocation = geoLocation,
             description = description,
+            totalPrice = totalPrice,
             eventDateString = eventDate?.toString() ?: this.eventDateString,
             eventStartTimeString = eventStartTime?.toString() ?: this.eventStartTimeString,
         )
@@ -94,11 +100,11 @@ data class Event(
 
     @get:Exclude
     val streetAddress: String
-        get() = location?.substringBeforeLast(',', location)?.trim() ?: ""
+        get() = location?.substringBeforeLast(',', location)?.trim().orEmpty()
 
     @get:Exclude
     val city: String
-        get() = location?.substringAfterLast(',', "")?.trim() ?: ""
+        get() = location?.substringAfterLast(',', "")?.trim().orEmpty()
 
     companion object {
         // Factory method for creating Event with LocalDate/LocalTime
@@ -106,10 +112,12 @@ data class Event(
             eventId: String? = null,
             publisherId: String? = null,
             participantIds: List<String>? = null,
+            declinedIds: List<String>? = null,
             eventName: String? = null,
             location: String? = null,
             geoLocation: GeoLocation? = null,
             description: String? = null,
+            totalPrice: Double? = null,
             eventDate: LocalDate? = null,
             eventStartTime: LocalTime? = null,
         ): Event =
@@ -117,10 +125,12 @@ data class Event(
                 eventId = eventId,
                 publisherId = publisherId,
                 participantIds = participantIds,
+                declinedIds = declinedIds,
                 eventName = eventName,
                 location = location,
                 geoLocation = geoLocation,
                 description = description,
+                totalPrice = totalPrice,
                 eventDateString = eventDate?.toString(),
                 eventStartTimeString = eventStartTime?.toString(),
             )

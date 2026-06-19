@@ -54,7 +54,7 @@ fun SegmentedControl(
     require(options.isNotEmpty()) { "SegmentedControl requires at least one option." }
 
     val trackColor = MaterialTheme.colorScheme.inverseOnSurface
-    val pillColor = MaterialTheme.colorScheme.primaryContainer
+    val pillColor = MaterialTheme.colorScheme.primary
     val activeTextColor = MaterialTheme.colorScheme.onPrimary
     val inactiveTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.50f)
 

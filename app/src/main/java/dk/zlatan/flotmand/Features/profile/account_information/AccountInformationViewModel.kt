@@ -7,6 +7,7 @@ import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
+import dk.zlatan.flotmand.util.PhoneDialogRepository
 import dk.zlatan.flotmand.util.StringProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,6 +30,7 @@ class AccountInformationViewModel
         private val accountService: AccountService,
         private val stringProvider: StringProvider,
         private val dinnerEventService: DinnerEventService,
+        private val phoneDialogRepository: PhoneDialogRepository,
     ) : ViewModel() {
         private val _isLoading = MutableStateFlow(false)
         private val _errorMessage = MutableStateFlow<String?>(null)
@@ -65,7 +67,7 @@ class AccountInformationViewModel
                     accountService.reloadUser()
                 } catch (e: Exception) {
                     _errorMessage.value =
-                        stringProvider.getString(R.string.error_update_display_name, e.message ?: "")
+                        stringProvider.getString(R.string.error_update_display_name, e.message.orEmpty())
                 } finally {
                     _isLoading.value = false
                 }
@@ -73,8 +75,8 @@ class AccountInformationViewModel
         }
 
         fun updatePhoneNumber(newPhoneNumber: String) {
-            // Basic validation
-            if (newPhoneNumber.isNotBlank() && !isValidPhoneNumber(newPhoneNumber)) {
+            val digits = newPhoneNumber.filter { it.isDigit() }
+            if (digits.isNotEmpty() && digits.length != 8) {
                 _errorMessage.value = stringProvider.getString(R.string.error_invalid_phone_number)
                 return
             }
@@ -83,24 +85,15 @@ class AccountInformationViewModel
                 try {
                     _isLoading.value = true
                     _errorMessage.value = null
-                    accountService.updatePhoneNumber(newPhoneNumber)
-                    // Reload user to trigger AuthStateListener and update UI
-                    accountService.reloadUser()
-                } catch (e: UnsupportedOperationException) {
-                    _errorMessage.value = e.message
+                    accountService.updatePhoneNumber(digits)
+                    if (digits.isEmpty()) phoneDialogRepository.reset()
                 } catch (e: Exception) {
                     _errorMessage.value =
-                        stringProvider.getString(R.string.error_update_phone_number, e.message ?: "")
+                        stringProvider.getString(R.string.error_update_phone_number, e.message.orEmpty())
                 } finally {
                     _isLoading.value = false
                 }
             }
-        }
-
-        private fun isValidPhoneNumber(phoneNumber: String): Boolean {
-            // Basic validation: should start with + and contain only digits, spaces, and +
-            val cleaned = phoneNumber.replace(" ", "").replace("-", "")
-            return cleaned.matches(Regex("^\\+?[0-9]{8,15}$"))
         }
 
         fun clearError() {
@@ -116,7 +109,7 @@ class AccountInformationViewModel
                     dinnerEventService.deleteDinnerEventsByUser(userId)
                     accountService.deleteAccount()
                 } catch (e: Exception) {
-                    _errorMessage.value = stringProvider.getString(R.string.error_delete_user, e.message ?: "")
+                    _errorMessage.value = stringProvider.getString(R.string.error_delete_user, e.message.orEmpty())
                 } finally {
                     _isLoading.value = false
                 }

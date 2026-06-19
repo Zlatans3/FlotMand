@@ -13,6 +13,10 @@ enum class TopLevelDestination(
         unselectedIcon = FmIcons.Home,
         iconTextId = R.string.home_title,
     ),
+    POLLS(
+        unselectedIcon = FmIcons.BarChart,
+        iconTextId = R.string.polls_title,
+    ),
     MY_EVENTS(
         unselectedIcon = FmIcons.Calendar,
         iconTextId = R.string.my_event_title,

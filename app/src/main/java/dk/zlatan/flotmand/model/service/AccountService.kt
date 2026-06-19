@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.model.service
 
+import android.net.Uri
 import dk.zlatan.flotmand.model.User
 import kotlinx.coroutines.flow.Flow
 
@@ -13,6 +14,8 @@ interface AccountService {
 
     suspend fun getUserById(userId: String): User?
 
+    fun observeUserById(userId: String): Flow<User?>
+
     suspend fun getUsersByIds(userIds: List<String>): List<User>
 
     suspend fun createAnonymousAccount()
@@ -20,6 +23,8 @@ interface AccountService {
     suspend fun updateDisplayName(newDisplayName: String)
 
     suspend fun updatePhoneNumber(newPhoneNumber: String)
+
+    suspend fun updateProfilePhoto(imageUri: Uri)
 
     suspend fun linkAccount(
         email: String,

@@ -1,7 +1,12 @@
 package dk.zlatan.flotmand.design_system.componenets
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -74,11 +81,11 @@ fun ClosestEventCard(
 
     // Format date
     val monthFormatter = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH)
-    val month = event.eventDate?.format(monthFormatter)?.uppercase() ?: ""
-    val day = event.eventDate?.dayOfMonth?.toString() ?: ""
+    val month = event.eventDate?.format(monthFormatter)?.uppercase().orEmpty()
+    val day = event.eventDate?.dayOfMonth?.toString().orEmpty()
     // Format time
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    val eventTime = event.eventStartTime?.format(timeFormatter) ?: ""
+    val eventTime = event.eventStartTime?.format(timeFormatter).orEmpty()
     val participantsCount = event.participantIds?.size ?: 0
 
     Card(
@@ -125,7 +132,7 @@ fun ClosestEventCard(
                         text = event.eventName ?: stringResource(R.string.untitled_event),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
 
@@ -282,29 +289,54 @@ fun EventCard(
     eventName: String,
     eventDate: String,
     eventTime: String,
+    isSelectionMode: Boolean = false,
+    isSelected: Boolean = false,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
 ) {
+    val borderColor = MaterialTheme.colorScheme.primary
+
     Card(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.inverseOnSurface,
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (isSelected) Modifier.border(2.dp, borderColor, RoundedCornerShape(12.dp))
+                else Modifier,
+            )
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
             ),
-        // find nogle farver der passer bedre
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.inverseOnSurface,
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         VSpacer(height = 20.dp)
 
         Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            AnimatedVisibility(
+                visible = isSelectionMode,
+                enter = expandHorizontally(),
+                exit = shrinkHorizontally(),
+            ) {
+                Row {
+                    Icon(
+                        imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked,
+                        contentDescription = null,
+                        tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    HSpacer(12.dp)
+                }
+            }
+
             ProfileImage(
                 modifier = Modifier.align(Alignment.CenterVertically),
                 profilePic = userProfilePic,
@@ -362,15 +394,20 @@ fun EventCard(
                         )
                     }
                 }
-                Icon(
-                    imageVector = Icons.Filled.ArrowForwardIos,
-                    contentDescription = stringResource(R.string.location_icon_content_description),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier =
-                        Modifier
+                AnimatedVisibility(
+                    visible = !isSelectionMode,
+                    enter = expandHorizontally(),
+                    exit = shrinkHorizontally(),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowForwardIos,
+                        contentDescription = stringResource(R.string.location_icon_content_description),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
                             .size(16.dp)
                             .align(Alignment.CenterVertically),
-                )
+                    )
+                }
             }
         }
 

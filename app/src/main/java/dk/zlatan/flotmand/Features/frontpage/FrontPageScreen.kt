@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -18,10 +19,12 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -46,8 +49,16 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.BuildConfig
+import dk.zlatan.flotmand.Features.frontpage.debug.DebugFlagsBottomSheet
+import dk.zlatan.flotmand.Features.frontpage.debug.DebugFlagsViewModel
+import dk.zlatan.flotmand.Features.frontpage.host_rotation.HostRotationSheet
 import dk.zlatan.flotmand.R
+import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationBottomSheet
 import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationImagesAndNames
+import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationReminderBanner
+import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationTimeline
+import dk.zlatan.flotmand.Features.frontpage.event_rotation.RotationTimelineItem
 import dk.zlatan.flotmand.Features.frontpage.ui.FrontPageNewHeader
 import dk.zlatan.flotmand.Features.frontpage.ui.NextEventSection
 import dk.zlatan.flotmand.Features.frontpage.ui.newFmTopAppBar
@@ -62,6 +73,10 @@ import java.util.Locale
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 
 @Composable
 internal fun FrontPageRoute(
@@ -73,8 +88,11 @@ internal fun FrontPageRoute(
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val bottomSheetState by viewModel.bottomSheetState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    var showDebugSheet by remember { mutableStateOf(false) }
+    var showHostRotationSheet by remember { mutableStateOf(false) }
     var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
     val scrollOffset by remember {
         derivedStateOf {
@@ -99,8 +117,10 @@ internal fun FrontPageRoute(
                 unreadNotificationCount = uiState.unreadNotificationCount,
                 onNotificationsClick = onNotificationsClick,
                 onUserClicked = {
-                    scope.launch {
-                        snackbarHostState.showSnackbar(snackBarText)
+                    if (BuildConfig.DEBUG) {
+                        showDebugSheet = true
+                    } else {
+                        scope.launch { snackbarHostState.showSnackbar(snackBarText) }
                     }
                 },
             )
@@ -117,17 +137,14 @@ internal fun FrontPageRoute(
                             .fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        CircularProgressIndicator()
-                        Text(
-                            text = stringResource(R.string.loading_events),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
+                    val loadingComposition by rememberLottieComposition(
+                        LottieCompositionSpec.RawRes(R.raw.pot_loading),
+                    )
+                    LottieAnimation(
+                        composition = loadingComposition,
+                        iterations = LottieConstants.IterateForever,
+                        modifier = Modifier.size(100.dp),
+                    )
                 }
             }
 
@@ -201,10 +218,52 @@ internal fun FrontPageRoute(
                     listState = listState,
                     scrollProgress = scrollProgress,
                     onHeaderMeasured = { headerHeightPx = it },
+                    rotationTimeline = uiState.rotationTimeline,
+                    showRotationBanner = uiState.showRotationBanner,
+                    rotationBannerMonthLabel = uiState.rotationBannerMonthLabel,
+                    onBannerCreateClick = onDateVotingClick,
+                    onNormalCardClick = viewModel::onHostCardClick,
+                    onVacantCardClick = viewModel::onVacantCardClick,
+                    showAddSelf = !uiState.isCurrentUserInRotation,
+                    onAddSelf = viewModel::onAddSelfToRotation,
+                    onHostRotationClick = { showHostRotationSheet = true },
+                )
+                RotationBottomSheet(
+                    state = bottomSheetState,
+                    members = uiState.groupMembers,
+                    onDismiss = viewModel::onDismissBottomSheet,
+                    onGiveUpSpot = viewModel::onGiveUpSpot,
+                    onShowUserPicker = viewModel::onShowUserPicker,
+                    onRemoveFromRotation = viewModel::onRemoveFromRotation,
+                    onAssignUser = viewModel::onAssignUserToMonth,
                 )
             }
         }
     }
+
+    if (BuildConfig.DEBUG && showDebugSheet) {
+        DebugFlagsSheetHost(onDismiss = { showDebugSheet = false })
+    }
+
+    if (showHostRotationSheet) {
+        HostRotationSheet(
+            onDismiss = { showHostRotationSheet = false },
+            snackbarHostState = snackbarHostState,
+        )
+    }
+}
+
+@Composable
+private fun DebugFlagsSheetHost(
+    onDismiss: () -> Unit,
+    viewModel: DebugFlagsViewModel = hiltViewModel(),
+) {
+    val flags by viewModel.flags.collectAsStateWithLifecycle()
+    DebugFlagsBottomSheet(
+        flags = flags,
+        onToggle = viewModel::toggle,
+        onDismiss = onDismiss,
+    )
 }
 
 @Composable
@@ -223,6 +282,15 @@ internal fun FrontpageContent(
     listState: androidx.compose.foundation.lazy.LazyListState,
     scrollProgress: Float,
     onHeaderMeasured: (Int) -> Unit = {},
+    rotationTimeline: List<RotationTimelineItem> = emptyList(),
+    showRotationBanner: Boolean = false,
+    rotationBannerMonthLabel: String = "",
+    onBannerCreateClick: () -> Unit = {},
+    onNormalCardClick: (monthId: String, hostId: String, hostName: String) -> Unit = { _, _, _ -> },
+    onVacantCardClick: (monthId: String) -> Unit = {},
+    showAddSelf: Boolean = false,
+    onAddSelf: () -> Unit = {},
+    onHostRotationClick: () -> Unit = {},
 ) {
     // State for showing all events
     var showAllEvents by remember { mutableStateOf(false) }
@@ -267,11 +335,13 @@ internal fun FrontpageContent(
                 VSpacer(8.dp)
             }
 
-            // Date Voting Card
+            // Rotation reminder banner — only rendered when visible
             item {
-                DateVotingCard(
+                RotationReminderBanner(
+                    visible = showRotationBanner,
+                    hostingMonthLabel = rotationBannerMonthLabel,
+                    onCreateClick = onBannerCreateClick,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                    onClick = onDateVotingClick,
                 )
             }
 
@@ -280,7 +350,7 @@ internal fun FrontpageContent(
                 if (nextEvent != null) {
                     val publisher =
                         nextEventPublisher ?: User(
-                            id = nextEvent.publisherId ?: "",
+                            id = nextEvent.publisherId.orEmpty(),
                             displayName = "Ukendt bruger",
                         )
                     NextEventSection(
@@ -302,12 +372,26 @@ internal fun FrontpageContent(
                     SectionHeader(
                         title = stringResource(R.string.next_event_section_title),
                     )
-                    Text(
-                        text = stringResource(R.string.no_current_event),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    val composition by rememberLottieComposition(
+                        LottieCompositionSpec.RawRes(R.raw.empty),
                     )
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        LottieAnimation(
+                            composition = composition,
+                            iterations = 1,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 48.dp),
+                        )
+                        Text(
+                            text = stringResource(R.string.no_current_event),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
 
@@ -333,7 +417,7 @@ internal fun FrontpageContent(
 
                 items(eventsToShow) { eventDetails ->
                     val publisher = publishers[eventDetails.publisherId]
-                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() } ?: ""
+                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() }.orEmpty()
                     EventCard(
                         modifier =
                             Modifier
@@ -341,7 +425,7 @@ internal fun FrontpageContent(
                         userName = publisher?.displayName ?: "Ukendt bruger",
                         eventName = eventDetails.eventName.orEmpty(),
                         eventDate = formattedDate,
-                        eventTime = eventDetails.eventStartTime?.toString() ?: "",
+                        eventTime = eventDetails.eventStartTime?.toString().orEmpty(),
                         userProfilePic = publisher?.photoUrl,
                         onClick = {
                             onClickEvent(eventDetails.eventId.orEmpty())
@@ -354,13 +438,24 @@ internal fun FrontpageContent(
                 VSpacer(20.dp)
                 SectionHeader(
                     title = stringResource(R.string.next_flotte_mand),
-//                    actionText = "Se mere",
-                    onActionClick = {
-                    },
+                    actionIcon = Icons.Filled.Settings,
+                    onActionClick = onHostRotationClick,
                 )
                 VSpacer(20.dp)
 
-                RotationImagesAndNames()
+                if (rotationTimeline.isNotEmpty()) {
+                    RotationTimeline(
+                        items = rotationTimeline,
+                        onNormalCardClick = onNormalCardClick,
+                        onVacantCardClick = onVacantCardClick,
+                        showAddSelf = showAddSelf,
+                        onAddSelf = onAddSelf,
+                    )
+                } else {
+                    RotationImagesAndNames(
+                        onAddSelf = onAddSelf,
+                    )
+                }
             }
             // Previous events section
             if (previousEvents.isNotEmpty()) {
@@ -383,7 +478,7 @@ internal fun FrontpageContent(
 
                 items(previousEventsToShow) { eventDetails ->
                     val publisher = publishers[eventDetails.publisherId]
-                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() } ?: ""
+                    val formattedDate = eventDetails.eventDate?.format(danishFormatter)?.replaceFirstChar { it.uppercase() }.orEmpty()
                     EventCard(
                         modifier =
                             Modifier
@@ -392,7 +487,7 @@ internal fun FrontpageContent(
                         userName = publisher?.displayName ?: "Ukendt bruger",
                         eventName = eventDetails.eventName.orEmpty(),
                         eventDate = formattedDate,
-                        eventTime = eventDetails.eventStartTime?.toString() ?: "",
+                        eventTime = eventDetails.eventStartTime?.toString().orEmpty(),
                         userProfilePic = publisher?.photoUrl,
                         onClick = {
                             onClickEvent(eventDetails.eventId.orEmpty())
@@ -413,6 +508,7 @@ private fun SectionHeader(
     modifier: Modifier = Modifier,
     title: String,
     actionText: String? = null,
+    actionIcon: ImageVector? = null,
     onActionClick: (() -> Unit)? = null,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -429,75 +525,29 @@ private fun SectionHeader(
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        if (actionText != null) {
-            ClickableText(
-                text = AnnotatedString(actionText),
-                style =
-                    MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                    ),
-                onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onActionClick?.invoke()
-                },
-            )
-        }
-    }
-}
-
-@Composable
-private fun DateVotingCard(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    Card(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-            ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-    ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.CalendarToday,
-                    contentDescription = stringResource(R.string.calendar_content_description),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(8.dp),
-                )
-                Column {
-                    Text(
-                        text = stringResource(R.string.vote_on_date),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                    Text(
-                        text = stringResource(R.string.choose_best_date),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+        when {
+            actionIcon != null -> {
+                IconButton(onClick = { onActionClick?.invoke() }) {
+                    Icon(
+                        imageVector = actionIcon,
+                        contentDescription = title,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = stringResource(R.string.go_to_voting),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
+            actionText != null -> {
+                ClickableText(
+                    text = AnnotatedString(actionText),
+                    style =
+                        MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.primary,
+                        ),
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onActionClick?.invoke()
+                    },
+                )
+            }
         }
     }
 }

@@ -9,6 +9,7 @@ import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -82,6 +83,14 @@ class MyEventViewModel
                     started = SharingStarted.WhileSubscribed(500),
                     initialValue = MyEventUiState(isLoading = true),
                 )
+
+        fun deleteEvents(eventIds: Set<String>) {
+            viewModelScope.launch {
+                eventIds.forEach { id ->
+                    try { dinnerEventService.deleteDinnerEvent(id) } catch (_: Exception) {}
+                }
+            }
+        }
 
         companion object {
             private const val TAG = "MyEventViewModel"

@@ -1,5 +1,7 @@
 package dk.zlatan.flotmand.impl
 
+import android.net.Uri
+import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -7,10 +9,11 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
-import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.storage.storage
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +47,19 @@ class AccountServiceImpl
                     callbackFlow {
                         val listener =
                             FirebaseAuth.AuthStateListener { auth ->
-                                this.trySend(auth.currentUser.toNotesUser())
+                                val firebaseUser = auth.currentUser
+                                if (firebaseUser == null) {
+                                    trySend(null)
+                                } else {
+                                    launch(Dispatchers.IO) {
+                                        val firestoreUser = getUserById(firebaseUser.uid)
+                                        trySend(
+                                            firebaseUser.toNotesUser().copy(
+                                                phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         Firebase.auth.addAuthStateListener(listener)
                         awaitClose { Firebase.auth.removeAuthStateListener(listener) }
@@ -61,6 +76,18 @@ class AccountServiceImpl
         override fun hasUser(): Boolean = Firebase.auth.currentUser != null
 
         override fun getUserProfile(): User = Firebase.auth.currentUser.toNotesUser()
+
+        override fun observeUserById(userId: String): Flow<User?> =
+            callbackFlow {
+                val reg = Firebase.firestore
+                    .collection(USERS_COLLECTION)
+                    .document(userId)
+                    .addSnapshotListener { snap, err ->
+                        if (err != null) { close(err); return@addSnapshotListener }
+                        trySend(snap?.toObject<User>())
+                    }
+                awaitClose { reg.remove() }
+            }
 
         override suspend fun getUserById(userId: String): User? =
             try {
@@ -118,10 +145,18 @@ class AccountServiceImpl
             val currentUser = Firebase.auth.currentUser ?: return
             Log.d(TAG, "Saving user to Firestore: ${currentUser.uid}")
             try {
+                val updates = mutableMapOf(
+                    "email" to (currentUser.email.orEmpty()),
+                    "displayName" to (currentUser.displayName.orEmpty()),
+                    "provider" to currentUser.providerId,
+                    "isAnonymous" to currentUser.isAnonymous,
+                )
+                val photoUrl = currentUser.photoUrl?.toString().orEmpty()
+                if (photoUrl.isNotBlank()) updates["photoUrl"] = photoUrl
                 Firebase.firestore
                     .collection(USERS_COLLECTION)
                     .document(currentUser.uid)
-                    .set(currentUser.toNotesUser())
+                    .set(updates, SetOptions.merge())
                     .await()
                 Log.d(TAG, "User saved successfully to Firestore")
             } catch (e: Exception) {
@@ -142,11 +177,38 @@ class AccountServiceImpl
         }
 
         override suspend fun updatePhoneNumber(newPhoneNumber: String) {
-            // Phone number updates require SMS verification via PhoneAuthProvider,
-            // which is not yet implemented.
-            throw UnsupportedOperationException(
-                "Opdatering af telefonnummer kræver SMS-verifikation. " +
-                    "Denne funktion er endnu ikke implementeret.",
+            val uid = currentUserId
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(uid)
+                .update("phoneNumber", newPhoneNumber)
+                .await()
+            val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
+            _manualUserUpdates.emit(authUser.copy(phoneNumber = newPhoneNumber))
+        }
+
+        override suspend fun updateProfilePhoto(imageUri: Uri) {
+            val uid = currentUserId
+            val storageRef = Firebase.storage.reference.child("profile_images/$uid/photo.jpg")
+            storageRef.putFile(imageUri).await()
+            val downloadUrl = storageRef.downloadUrl.await().toString()
+
+            val profileUpdates = userProfileChangeRequest { photoUri = Uri.parse(downloadUrl) }
+            Firebase.auth.currentUser!!.updateProfile(profileUpdates).await()
+
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(uid)
+                .update("photoUrl", downloadUrl)
+                .await()
+
+            val firestoreUser = getUserById(uid)
+            val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
+            _manualUserUpdates.emit(
+                authUser.copy(
+                    photoUrl = downloadUrl,
+                    phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
+                )
             )
         }
 
@@ -207,11 +269,12 @@ class AccountServiceImpl
         }
 
         override suspend fun reloadUser() {
-            Firebase.auth.currentUser
-                ?.reload()
-                ?.await()
-            // Manually emit the updated user to trigger UI update
-            _manualUserUpdates.emit(Firebase.auth.currentUser.toNotesUser())
+            Firebase.auth.currentUser?.reload()?.await()
+            val uid = currentUserId
+            if (uid.isBlank()) return
+            val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
+            val firestoreUser = getUserById(uid)
+            _manualUserUpdates.emit(authUser.copy(phoneNumber = firestoreUser?.phoneNumber.orEmpty()))
         }
 
         private fun FirebaseUser?.toNotesUser(): User =
@@ -228,11 +291,11 @@ class AccountServiceImpl
             } else {
                 User(
                     id = this.uid,
-                    email = this.email ?: "",
+                    email = this.email.orEmpty(),
                     provider = this.providerId,
-                    phoneNumber = this.phoneNumber ?: "",
-                    displayName = this.displayName ?: "",
-                    photoUrl = this.photoUrl?.toString() ?: "",
+                    phoneNumber = this.phoneNumber.orEmpty(),
+                    displayName = this.displayName.orEmpty(),
+                    photoUrl = this.photoUrl?.toString().orEmpty(),
                     isAnonymous = this.isAnonymous,
                 )
             }
