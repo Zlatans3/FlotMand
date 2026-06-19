@@ -1,102 +1,84 @@
 package dk.zlatan.flotmand
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import dagger.hilt.android.AndroidEntryPoint
+import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageDestination
+import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigationCoordinator
+import dk.zlatan.flotmand.Features.profile.theme.ThemeRepository
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
+import dk.zlatan.flotmand.design_system.theme.ThemeMode
+import dk.zlatan.flotmand.impl.FlotMandFirebaseMessagingService
+import dk.zlatan.flotmand.navigation.AppNavigation
+import dk.zlatan.flotmand.util.LocaleContextWrapper
+import dk.zlatan.flotmand.util.NetworkMonitor
+import java.util.Locale
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var networkMonitor: NetworkMonitor
+
+    @Inject
+    lateinit var frontPageNavigationCoordinator: FrontPageNavigationCoordinator
+
+    @Inject
+    lateinit var themeRepository: ThemeRepository
+
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = newBase.getSharedPreferences("language_prefs", MODE_PRIVATE)
+        val lang = prefs.getString("selected_language", "da") ?: "da"
+        val locale = Locale.forLanguageTag(lang)
+        val context = LocaleContextWrapper.wrap(newBase, locale)
+        super.attachBaseContext(context)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle =
+                SystemBarStyle.auto(
+                    lightScrim = android.graphics.Color.TRANSPARENT,
+                    darkScrim = android.graphics.Color.TRANSPARENT,
+                ),
+        )
+        // Only handle on a true cold start — savedInstanceState is non-null on rotation.
+        if (savedInstanceState == null) {
+            handleNotificationIntent(intent)
+        }
         setContent {
-            FlotMandTheme {
-                FlotMandApp()
+            val themeMode by themeRepository.themeMode.collectAsState()
+            val systemDark = isSystemInDarkTheme()
+            val darkTheme = when (themeMode) {
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+                ThemeMode.SYSTEM, ThemeMode.FLOTMAND -> systemDark
+            }
+            val dynamicColor = themeMode == ThemeMode.SYSTEM
+            FlotMandTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {
+                AppNavigation(modifier = Modifier)
             }
         }
     }
-}
 
-@PreviewScreenSizes
-@Composable
-fun FlotMandApp() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
-
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            AppDestinations.entries.forEach {
-                item(
-                    icon = {
-                        Icon(
-                            it.icon,
-                            contentDescription = it.label
-                        )
-                    },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it }
-                )
-            }
-        }
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            topBar = {
-
-            }
-
-        ) { innerPadding ->
-            Greeting(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding)
-            )
-        }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleNotificationIntent(intent)
     }
-}
 
-enum class AppDestinations(
-    val label: String,
-    val icon: ImageVector,
-) {
-    HOME("Home", Icons.Filled.Home),
-    FAVORITES("Favorites", Icons.Filled.Favorite),
-    PROFILE("Profile", Icons.Filled.AccountBox),
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FlotMandTheme {
-        Greeting("Android")
+    private fun handleNotificationIntent(intent: Intent?) {
+        if (intent?.getBooleanExtra(FlotMandFirebaseMessagingService.EXTRA_OPEN_NOTIFICATIONS, false) == true) {
+            frontPageNavigationCoordinator.navigate(FrontPageDestination.Notifications)
+        }
     }
 }
