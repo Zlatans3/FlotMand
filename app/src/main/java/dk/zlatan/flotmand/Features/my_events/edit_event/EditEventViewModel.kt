@@ -133,7 +133,8 @@ class EditEventViewModel @AssistedInject constructor(
     fun onLocationChange(textFieldValue: TextFieldValue) {
         Log.d(TAG, "onLocationChange: ${textFieldValue.text}")
         _locationTextFieldValue.value = textFieldValue
-        _event.value = _event.value.copy(location = textFieldValue.text)
+        _event.value = _event.value.copy(location = textFieldValue.text, geoLocation = null)
+        _selectedGeoLocation.value = null
         _errorMessage.value = null
         searchAddressPredictions(textFieldValue.text)
     }

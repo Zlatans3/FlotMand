@@ -33,12 +33,22 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,6 +88,7 @@ fun ClosestEventCard(
         )
 
     val geoLocation = event.geoLocation ?: GeoLocation(0.0, 0.0)
+    val hasGeo = event.geoLocation?.isValid() == true
 
     // Format date
     val monthFormatter = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH)
@@ -97,7 +108,10 @@ fun ClosestEventCard(
         colors = CardDefaults.cardColors(containerColor = containerColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
-        // Map with badges
+        // Hero image / map / placeholder
+        var imageError by remember { mutableStateOf(false) }
+        val showImage = !event.eventImageUrl.isNullOrBlank() && !imageError
+
         Box(
             modifier =
                 Modifier
@@ -106,13 +120,39 @@ fun ClosestEventCard(
                     .height(170.dp)
                     .clip(cardShape.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp))),
         ) {
-            AddressMapCard(
-                modifier = Modifier.matchParentSize(),
-                geoLocation = geoLocation,
-                eventDate = event.eventDate,
-                backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                onClick = onMapClick,
-            )
+            when {
+                showImage -> {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(event.eventImageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize(),
+                        onError = { imageError = true },
+                    )
+                }
+                hasGeo -> {
+                    AddressMapCard(
+                        modifier = Modifier.matchParentSize(),
+                        geoLocation = geoLocation,
+                        eventDate = event.eventDate,
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        onClick = onMapClick,
+                    )
+                }
+                else -> {
+                    Image(
+                        painter = painterResource(R.drawable.flot_image_empty_state),
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .matchParentSize()
+                            .padding(24.dp),
+                    )
+                }
+            }
 
             // Full overlay to catch taps
             Box(
@@ -439,6 +479,42 @@ private fun ClosestEventCardPreview() {
             eventName = "The Italian Feast",
             location = "Amager Boul. 101, 2300 København",
             geoLocation = GeoLocation(55.6674, 12.5919),
+            eventDate = java.time.LocalDate.of(2026, 1, 28),
+            eventStartTime = java.time.LocalTime.of(18, 0),
+            publisherId = "publisher1",
+            participantIds = listOf("user1", "user2", "user3", "user4", "user5"),
+        )
+
+    val mockPublisher =
+        User(
+            id = "publisher1",
+            displayName = "Flotmand",
+            email = "flotmand@example.com",
+        )
+
+    ClosestEventCard(
+        modifier = Modifier,
+        event = mockEvent,
+        publisher = mockPublisher,
+        participants = User.mockUserWithCounter(5),
+        onParticipateClick = {},
+        onCardClick = {},
+        isParticipating = false,
+        isLoading = false,
+        onMapClick = {},
+        isPublisher = false,
+    )
+}
+
+@Preview(name = "ClosestEventCard — Empty state")
+@Composable
+private fun ClosestEventCardEmptyStatePreview() {
+    val mockEvent =
+        Event.create(
+            eventId = "event1",
+            eventName = "The Italian Feast",
+            location = "Amager Boul. 101, 2300 København",
+            geoLocation = null,
             eventDate = java.time.LocalDate.of(2026, 1, 28),
             eventStartTime = java.time.LocalTime.of(18, 0),
             publisherId = "publisher1",

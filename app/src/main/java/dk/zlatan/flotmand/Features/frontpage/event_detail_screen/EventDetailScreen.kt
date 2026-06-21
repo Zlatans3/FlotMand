@@ -330,10 +330,9 @@ private fun EventDetailScreenContent(
                             .height(340.dp),
                         onError = { heroError = true },
                     )
-                    Spacer(Modifier.height(topBarPaddingForHero))
+                    VSpacer(20.dp)
                 }
             }
-            VSpacer(20.dp)
             DetailHeader(
                 eventDate = event.eventDate,
                 eventTitle = event.eventName.orEmpty(),

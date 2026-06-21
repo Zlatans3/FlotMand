@@ -140,7 +140,8 @@ class AddEventViewModel
 
         fun onLocationChange(textFieldValue: TextFieldValue) {
             _locationTextFieldValue.value = textFieldValue
-            _event.value = _event.value.copy(location = textFieldValue.text)
+            _event.value = _event.value.copy(location = textFieldValue.text, geoLocation = null)
+            _selectedGeoLocation.value = null
             _errorMessage.value = null
 
             // Trigger address predictions with debounce
