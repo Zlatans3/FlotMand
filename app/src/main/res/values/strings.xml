@@ -373,4 +373,17 @@
     <string name="name_label">Navn</string>
     <string name="name_placeholder">F.eks. Peter</string>
     <string name="add">Tilføj</string>
+
+    <!-- Event image via Pexels -->
+    <string name="image_url_label">Billede URL</string>
+    <string name="image_url_placeholder">https://images.pexels.com/…</string>
+    <string name="image_url_info_content_description">Info om billedelink</string>
+    <string name="open_pexels_content_description">Åbn Pexels billedesøgning</string>
+    <string name="image_load_error">Kunne ikke indlæse billede</string>
+    <string name="image_url_info_title">Sådan finder du et billede</string>
+    <string name="image_url_info_step_1">Tryk på web-ikonet for at åbne Pexels</string>
+    <string name="image_url_info_step_2">Find et billede der passer til dit event</string>
+    <string name="image_url_info_step_3">Hold fingeren nede på billedet → tryk "Copy image link"</string>
+    <string name="image_url_info_step_4">Vend tilbage til appen — URL\'en udfyldes automatisk</string>
+    <string name="image_url_info_step_5">Tjek at forhåndsvisningen ser rigtig ud inden du gemmer</string>
 </resources>

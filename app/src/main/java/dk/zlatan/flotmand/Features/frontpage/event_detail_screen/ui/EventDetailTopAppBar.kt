@@ -10,6 +10,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import dk.zlatan.flotmand.R
@@ -20,17 +22,22 @@ import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 @Composable
 internal fun EventDetailTopAppBar(
     modifier: Modifier = Modifier,
+    containerAlpha: Float = 1f,
     onBackClick: () -> Unit,
     isPublisher: Boolean,
     canEdit: Boolean = true,
     onDeleteClick: () -> Unit,
     onEditClick: () -> Unit,
 ) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val iconTint = lerp(Color.White, onSurface, containerAlpha)
+
     FmTopAppBar(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = containerAlpha),
         leadingIcon = {
             FmBackButton(
+                tint = iconTint,
                 onBackClick = onBackClick,
             )
         },
@@ -44,7 +51,7 @@ internal fun EventDetailTopAppBar(
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = stringResource(R.string.edit_event_content_description),
-                                tint = MaterialTheme.colorScheme.onSurface,
+                                tint = iconTint,
                             )
                         }
                     }
@@ -52,7 +59,7 @@ internal fun EventDetailTopAppBar(
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = stringResource(R.string.delete_event_content_description),
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            tint = iconTint,
                         )
                     }
                 }

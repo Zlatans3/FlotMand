@@ -7,6 +7,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import dk.zlatan.flotmand.R
@@ -14,6 +15,7 @@ import dk.zlatan.flotmand.R
 @Composable
 internal fun FmBackButton(
     modifier: Modifier = Modifier,
+    tint: Color = MaterialTheme.colorScheme.onSurface,
     onBackClick: () -> Unit,
 ) {
     IconButton(
@@ -23,7 +25,7 @@ internal fun FmBackButton(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
             contentDescription = stringResource(R.string.back_content_description),
-            tint = MaterialTheme.colorScheme.onSurface,
+            tint = tint,
         )
     }
 }

@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventViewModel
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.Event
@@ -153,6 +154,16 @@ class EditEventViewModel @AssistedInject constructor(
         Log.d(TAG, "onDescriptionChange: $description")
         _event.value = _event.value.copy(description = description)
         _errorMessage.value = null
+    }
+
+    fun onEventImageUrlChange(url: String) {
+        _event.value = _event.value.copy(eventImageUrl = url.ifBlank { null })
+    }
+
+    fun onImageUrlFromClipboard(url: String) {
+        if (AddEventViewModel.isValidImageUrl(url)) {
+            _event.value = _event.value.copy(eventImageUrl = url)
+        }
     }
 
     private fun searchAddressPredictions(query: String) {

@@ -23,6 +23,7 @@ data class Event(
     val geoLocation: GeoLocation? = null,
     val description: String? = null,
     val totalPrice: Double? = null,
+    val eventImageUrl: String? = null,
     // Firestore-compatible fields (stored as Strings)
     var eventDateString: String? = null,
     var eventStartTimeString: String? = null,
@@ -53,6 +54,7 @@ data class Event(
         geoLocation: GeoLocation? = this.geoLocation,
         description: String? = this.description,
         totalPrice: Double? = this.totalPrice,
+        eventImageUrl: String? = this.eventImageUrl,
         eventDate: LocalDate? = this.eventDate,
         eventStartTime: LocalTime? = this.eventStartTime,
     ): Event =
@@ -66,6 +68,7 @@ data class Event(
             geoLocation = geoLocation,
             description = description,
             totalPrice = totalPrice,
+            eventImageUrl = eventImageUrl,
             eventDateString = eventDate?.toString() ?: this.eventDateString,
             eventStartTimeString = eventStartTime?.toString() ?: this.eventStartTimeString,
         )
@@ -118,6 +121,7 @@ data class Event(
             geoLocation: GeoLocation? = null,
             description: String? = null,
             totalPrice: Double? = null,
+            eventImageUrl: String? = null,
             eventDate: LocalDate? = null,
             eventStartTime: LocalTime? = null,
         ): Event =
@@ -131,6 +135,7 @@ data class Event(
                 geoLocation = geoLocation,
                 description = description,
                 totalPrice = totalPrice,
+                eventImageUrl = eventImageUrl,
                 eventDateString = eventDate?.toString(),
                 eventStartTimeString = eventStartTime?.toString(),
             )

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -43,6 +44,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,8 +52,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.res.stringResource
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -100,6 +108,17 @@ internal fun EventDetailScreenRoute(
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    val density = LocalDensity.current
+    val heroHeightPx = remember(density) { with(density) { 340.dp.toPx() } }
+    val scrollState = rememberScrollState()
+    val hasHero by remember { derivedStateOf { !uiState.event?.eventImageUrl.isNullOrBlank() } }
+    val topBarAlpha by remember {
+        derivedStateOf {
+            if (!hasHero) 1f
+            else (scrollState.value.toFloat() / heroHeightPx).coerceIn(0f, 1f)
+        }
+    }
+
     LaunchedEffect(uiState.isDeleted) {
         if (uiState.isDeleted) onDismiss()
     }
@@ -109,6 +128,7 @@ internal fun EventDetailScreenRoute(
             modifier = Modifier,
             topBar = {
                 EventDetailTopAppBar(
+                    containerAlpha = topBarAlpha,
                     onBackClick = onDismiss,
                     isPublisher = uiState.isPublisher,
                     canEdit = uiState.event?.status != EventStatus.COMPLETED,
@@ -123,7 +143,9 @@ internal fun EventDetailScreenRoute(
                     val event = uiState.event
                     if (event != null) {
                         EventDetailScreenContent(
-                            modifier = Modifier.padding(top = topBarPadding),
+                            modifier = Modifier.padding(top = if (hasHero) 0.dp else topBarPadding),
+                            scrollState = scrollState,
+                            topBarPaddingForHero = if (hasHero) topBarPadding else 0.dp,
                             event = event,
                             rsvpStatus = uiState.rsvpStatus,
                             publisher = uiState.publisher,
@@ -247,6 +269,8 @@ internal fun EventDetailScreenRoute(
 @Composable
 private fun EventDetailScreenContent(
     modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState(),
+    topBarPaddingForHero: Dp = 0.dp,
     event: Event,
     geoLocation: GeoLocation?,
     rsvpStatus: RsvpStatus = RsvpStatus.NONE,
@@ -267,7 +291,6 @@ private fun EventDetailScreenContent(
     onPhoneDialogDismissed: () -> Unit = {},
     onNavigateToAccountInformation: () -> Unit = {},
 ) {
-    val scrollState = rememberScrollState()
     var showFab by remember { mutableStateOf(true) }
 
     LaunchedEffect(scrollState) {
@@ -290,6 +313,26 @@ private fun EventDetailScreenContent(
                 .verticalScroll(scrollState)
                 .background(MaterialTheme.colorScheme.background),
         ) {
+            val heroUrl = event.eventImageUrl
+            if (!heroUrl.isNullOrBlank()) {
+                var heroError by remember { mutableStateOf(false) }
+                if (!heroError) {
+                    val context = LocalContext.current
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(heroUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(340.dp),
+                        onError = { heroError = true },
+                    )
+                    Spacer(Modifier.height(topBarPaddingForHero))
+                }
+            }
             VSpacer(20.dp)
             DetailHeader(
                 eventDate = event.eventDate,
