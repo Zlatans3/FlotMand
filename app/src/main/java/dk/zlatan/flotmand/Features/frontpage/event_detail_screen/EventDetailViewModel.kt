@@ -12,6 +12,7 @@ import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import dk.zlatan.flotmand.model.service.DinnerEventService
 import dk.zlatan.flotmand.model.service.NotificationService
+import dk.zlatan.flotmand.model.service.RotationService
 import dk.zlatan.flotmand.util.PhoneDialogRepository
 import dk.zlatan.flotmand.util.combine
 import dk.zlatan.flotmand.util.feature_flags.FeatureKey
@@ -50,6 +51,8 @@ data class EventDetailUiState(
     val pricePerPerson: Double? = null,
     val isSavingPrice: Boolean = false,
     val priceError: String? = null,
+    val availableGhosts: List<User> = emptyList(),
+    val showAddGhostDialog: Boolean = false,
 ) {
     val isParticipated: Boolean? get() = when (rsvpStatus) {
         RsvpStatus.LOADING -> null
@@ -65,10 +68,12 @@ private data class PriceInputState(
     val error: String? = null,
 )
 
-/** Bundles both user lists into a single flow to stay within the 10-flow combine limit. */
+/** Bundles participant lists and ghost-add dialog state into a single flow to stay within the 10-flow combine limit. */
 private data class ParticipantsData(
     val joined: List<User> = emptyList(),
     val declined: List<User> = emptyList(),
+    val allGhosts: List<User> = emptyList(),
+    val showAddGhostDialog: Boolean = false,
 )
 
 @HiltViewModel(assistedFactory = EventDetailViewModel.Factory::class)
@@ -81,6 +86,7 @@ internal class EventDetailViewModel
         private val notificationService: NotificationService,
         private val featureFlagManager: FeatureFlagManager,
         private val phoneDialogRepository: PhoneDialogRepository,
+        private val rotationService: RotationService,
     ) : ViewModel() {
         @AssistedFactory
         interface Factory {
@@ -144,6 +150,8 @@ internal class EventDetailViewModel
                         val count = participantsData.joined.size
                         if (count > 0) total / count else null
                     }
+                val joinedIds = participantsData.joined.map { it.id }.toSet()
+                val declinedIds = participantsData.declined.map { it.id }.toSet()
                 EventDetailUiState(
                     event = event,
                     publisher = publisher,
@@ -159,6 +167,8 @@ internal class EventDetailViewModel
                     pricePerPerson = pricePerPerson,
                     isSavingPrice = priceInputState.isSaving,
                     priceError = priceInputState.error,
+                    availableGhosts = participantsData.allGhosts.filter { it.id !in joinedIds && it.id !in declinedIds },
+                    showAddGhostDialog = participantsData.showAddGhostDialog,
                 )
             }.stateIn(
                 viewModelScope,
@@ -169,6 +179,7 @@ internal class EventDetailViewModel
         init {
             Log.d(TAG, "ViewModel init: eventId=$eventId")
             observeEvent()
+            loadGhostUsers()
             notificationService.markAsReadByReferenceId(eventId)
         }
 
@@ -221,7 +232,7 @@ internal class EventDetailViewModel
                             _publisher.value = loadPublisherSync(event.publisherId)
                             val joined = loadParticipantsSync(event.participantIds)
                             val declined = loadParticipantsSync(event.declinedIds)
-                            _participantsData.value = ParticipantsData(joined = joined, declined = declined)
+                            _participantsData.update { it.copy(joined = joined, declined = declined) }
                         }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error observing event: ${e.message}", e)
@@ -303,7 +314,7 @@ internal class EventDetailViewModel
 
                     val joined = loadParticipantsSync(newParticipantIds)
                     val declined = loadParticipantsSync(newDeclinedIds)
-                    _participantsData.value = ParticipantsData(joined = joined, declined = declined)
+                    _participantsData.update { it.copy(joined = joined, declined = declined) }
                     _showParticipationBottomSheet.value = false
 
                     Log.d(TAG, "RSVP updated: accepted=$accepted for event ${updatedEvent.eventId}")
@@ -345,6 +356,82 @@ internal class EventDetailViewModel
             _showParticipationBottomSheet.value = true
         }
 
+        fun onShowAddGhostDialog() {
+            _participantsData.update { it.copy(showAddGhostDialog = true) }
+        }
+
+        fun onDismissAddGhostDialog() {
+            _participantsData.update { it.copy(showAddGhostDialog = false) }
+        }
+
+        fun onRemoveGhostFromList(userId: String) {
+            viewModelScope.launch {
+                val currentEvent = _event.value ?: return@launch
+                val newParticipantIds = (currentEvent.participantIds ?: emptyList()).filterNot { it == userId }
+                val newDeclinedIds = (currentEvent.declinedIds ?: emptyList()).filterNot { it == userId }
+                val updatedEvent = currentEvent.copy(
+                    participantIds = newParticipantIds,
+                    declinedIds = newDeclinedIds,
+                )
+                try {
+                    dinnerEventService.updateDinnerEvent(updatedEvent)
+                    _event.value = updatedEvent
+                    val joined = loadParticipantsSync(newParticipantIds)
+                    val declined = loadParticipantsSync(newDeclinedIds)
+                    _participantsData.update { it.copy(joined = joined, declined = declined) }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to remove ghost from list: ${e.message}", e)
+                }
+            }
+        }
+
+        fun onAddGhostToList(userId: String, attending: Boolean) {
+            viewModelScope.launch {
+                val currentEvent = _event.value ?: return@launch
+                _participantsData.update { it.copy(showAddGhostDialog = false) }
+
+                val currentParticipantIds = currentEvent.participantIds ?: emptyList()
+                val currentDeclinedIds = currentEvent.declinedIds ?: emptyList()
+
+                val newParticipantIds: List<String>
+                val newDeclinedIds: List<String>
+
+                if (attending) {
+                    newParticipantIds = if (userId in currentParticipantIds) currentParticipantIds else currentParticipantIds + userId
+                    newDeclinedIds = currentDeclinedIds.filterNot { it == userId }
+                } else {
+                    newDeclinedIds = if (userId in currentDeclinedIds) currentDeclinedIds else currentDeclinedIds + userId
+                    newParticipantIds = currentParticipantIds.filterNot { it == userId }
+                }
+
+                val updatedEvent = currentEvent.copy(
+                    participantIds = newParticipantIds,
+                    declinedIds = newDeclinedIds,
+                )
+                try {
+                    dinnerEventService.updateDinnerEvent(updatedEvent)
+                    _event.value = updatedEvent
+                    val joined = loadParticipantsSync(newParticipantIds)
+                    val declined = loadParticipantsSync(newDeclinedIds)
+                    _participantsData.update { it.copy(joined = joined, declined = declined) }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to add ghost to list: ${e.message}", e)
+                }
+            }
+        }
+
+        private fun loadGhostUsers() {
+            viewModelScope.launch {
+                try {
+                    rotationService.observeGroup(GROUP_ID).collectLatest { group ->
+                        val members = group?.members ?: emptyList()
+                        val users = if (members.isEmpty()) emptyList() else accountService.getUsersByIds(members)
+                        _participantsData.update { it.copy(allGhosts = users.filter { user -> user.isGhostUser }) }
+                    }
+                } catch (_: Exception) { }
+            }
+        }
+
         fun deleteEvent(eventId: String) {
             viewModelScope.launch {
                 try {
@@ -384,5 +471,6 @@ internal class EventDetailViewModel
 
         companion object {
             private const val TAG = "EventDetailViewModel"
+            private const val GROUP_ID = "flotmand"
         }
     }

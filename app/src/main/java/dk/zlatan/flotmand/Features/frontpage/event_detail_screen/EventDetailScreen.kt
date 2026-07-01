@@ -247,6 +247,12 @@ internal fun EventDetailScreenRoute(
                 participants = uiState.participants,
                 declinedUsers = uiState.declinedUsers,
                 publisherId = uiState.publisher?.id,
+                availableGhosts = uiState.availableGhosts,
+                showAddGhostDialog = uiState.showAddGhostDialog,
+                onShowAddGhostDialog = viewModel::onShowAddGhostDialog,
+                onDismissAddGhostDialog = viewModel::onDismissAddGhostDialog,
+                onAddGhostToList = viewModel::onAddGhostToList,
+                onRemoveGhost = if (uiState.isPublisher) viewModel::onRemoveGhostFromList else null,
             )
         }
 
