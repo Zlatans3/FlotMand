@@ -86,6 +86,7 @@ fun newFmTopAppBar(
     unreadNotificationCount: Int,
     onNotificationsClick: () -> Unit = {},
     onUserClicked: (() -> Unit)?,
+    onUserLongClicked: (() -> Unit)? = null,
 ) {
     val insert = TopAppBarDefaults.windowInsets
     Column(modifier = modifier) {
@@ -153,6 +154,7 @@ fun newFmTopAppBar(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onUserClicked?.invoke()
                     },
+                    onLongClick = onUserLongClicked,
                 )
                 HSpacer(20.dp)
             },

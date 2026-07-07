@@ -23,6 +23,7 @@ import dk.zlatan.flotmand.Features.frontpage.datevoting.DateVotingRoute
 import dk.zlatan.flotmand.Features.frontpage.datevotingDetail.DateVotingDetailRoute
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
 import dk.zlatan.flotmand.Features.frontpage.notifications.NotificationsScreen
+import dk.zlatan.flotmand.Features.frontpage.user_details.UserDetailsScreenRoute
 import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreen
 import dk.zlatan.flotmand.Features.my_events.add_new_event.EditEventScreen
 import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
@@ -53,6 +54,9 @@ fun FrontPageNavigation(
                             onNotificationsClick = {
                                 viewModel.navigate(FrontPageDestination.Notifications)
                             },
+                            onProfileClick = { userId ->
+                                viewModel.navigate(FrontPageDestination.UserDetails(userId))
+                            },
                             snackbarHostState = snackbarHostState,
                         )
                     }
@@ -67,6 +71,21 @@ fun FrontPageNavigation(
                                 viewModel.navigate(FrontPageDestination.EditEvent(eventId))
                             },
                             onNavigateToAccountInformation = onNavigateToAccountInformation,
+                            onUserClick = { userId ->
+                                viewModel.navigate(FrontPageDestination.UserDetails(userId))
+                            },
+                        )
+                    }
+                }
+
+                is FrontPageDestination.UserDetails -> {
+                    NavEntry(key) {
+                        UserDetailsScreenRoute(
+                            userId = key.userId,
+                            onDismiss = { viewModel.pop() },
+                            onEventClick = { eventId ->
+                                viewModel.navigate(FrontPageDestination.EventDetail(eventId))
+                            },
                         )
                     }
                 }

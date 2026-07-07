@@ -95,6 +95,7 @@ internal fun EventDetailScreenRoute(
     onDismiss: () -> Unit,
     onEditEvent: (String) -> Unit,
     onNavigateToAccountInformation: () -> Unit = {},
+    onUserClick: (String) -> Unit = {},
     viewModel: EventDetailViewModel =
         hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
             key = eventId,
@@ -253,6 +254,11 @@ internal fun EventDetailScreenRoute(
                 onDismissAddGhostDialog = viewModel::onDismissAddGhostDialog,
                 onAddGhostToList = viewModel::onAddGhostToList,
                 onRemoveGhost = if (uiState.isPublisher) viewModel::onRemoveGhostFromList else null,
+                onUserClick = { userId ->
+                    // The sheet lives in its own window and would cover the pushed screen.
+                    viewModel.onDismissParticipantsSheet()
+                    onUserClick(userId)
+                },
             )
         }
 
@@ -418,7 +424,7 @@ private fun EventDetailScreenContent(
             Spacer(modifier = Modifier.height(80.dp))
         }
 
-        if (!isPublisher && event.status == EventStatus.UPCOMING) {
+        if (!isPublisher && event.status != EventStatus.COMPLETED) {
             AnimatedVisibility(
                 visible = showFab,
                 modifier = Modifier.align(Alignment.BottomEnd),

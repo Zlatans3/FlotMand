@@ -36,7 +36,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,7 +69,6 @@ import dk.zlatan.flotmand.model.Event.Companion.previewEvents
 import dk.zlatan.flotmand.model.User
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.airbnb.lottie.compose.LottieAnimation
@@ -84,13 +82,13 @@ internal fun FrontPageRoute(
     onDinnerEventClick: (String) -> Unit,
     onDateVotingClick: () -> Unit,
     onNotificationsClick: () -> Unit = {},
+    onProfileClick: (String) -> Unit = {},
     snackbarHostState: SnackbarHostState,
     viewModel: FrontPageViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val bottomSheetState by viewModel.bottomSheetState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
     var showDebugSheet by remember { mutableStateOf(false) }
     var showHostRotationSheet by remember { mutableStateOf(false) }
     var headerHeightPx by remember { mutableStateOf(1) } // Avoid division by zero
@@ -109,7 +107,6 @@ internal fun FrontPageRoute(
         }
     }
 
-    val snackBarText = stringResource(R.string.not_ready_yet)
     Scaffold(
         topBar = {
             newFmTopAppBar(
@@ -117,11 +114,12 @@ internal fun FrontPageRoute(
                 unreadNotificationCount = uiState.unreadNotificationCount,
                 onNotificationsClick = onNotificationsClick,
                 onUserClicked = {
-                    if (BuildConfig.DEBUG) {
-                        showDebugSheet = true
-                    } else {
-                        scope.launch { snackbarHostState.showSnackbar(snackBarText) }
-                    }
+                    val userId = uiState.currentUser.id
+                    if (userId.isNotBlank()) onProfileClick(userId)
+                },
+                // Debug flags moved to long-press so a normal tap opens the profile.
+                onUserLongClicked = {
+                    if (BuildConfig.DEBUG) showDebugSheet = true
                 },
             )
         },
@@ -236,6 +234,11 @@ internal fun FrontPageRoute(
                     onShowUserPicker = viewModel::onShowUserPicker,
                     onRemoveFromRotation = viewModel::onRemoveFromRotation,
                     onAssignUser = viewModel::onAssignUserToMonth,
+                    onSeeProfile = { userId ->
+                        // The sheet lives in its own window and would cover the pushed screen.
+                        viewModel.onDismissBottomSheet()
+                        onProfileClick(userId)
+                    },
                 )
             }
         }

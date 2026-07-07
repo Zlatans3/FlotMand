@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -30,7 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.model.User
@@ -51,17 +54,25 @@ fun RotationBottomSheet(
     onShowUserPicker: (monthId: String) -> Unit,
     onRemoveFromRotation: (hostId: String) -> Unit,
     onAssignUser: (monthId: String, userId: String) -> Unit,
+    onSeeProfile: ((userId: String) -> Unit)? = null,
 ) {
     if (state is RotationBottomSheetState.Hidden) return
 
     ModalBottomSheet(onDismissRequest = onDismiss) {
         when (state) {
-            is RotationBottomSheetState.HostOptions -> HostOptionsContent(
-                hostName = state.hostName,
-                onGiveUpSpot = { onGiveUpSpot(state.monthId, state.hostId) },
-                onReplaceUser = { onShowUserPicker(state.monthId) },
-                onRemoveFromRotation = { onRemoveFromRotation(state.hostId) },
-            )
+            is RotationBottomSheetState.HostOptions -> {
+                // Ghost users have no profile to show.
+                val hostIsGhost = members.firstOrNull { it.id == state.hostId }?.isGhostUser != false
+                HostOptionsContent(
+                    hostName = state.hostName,
+                    onGiveUpSpot = { onGiveUpSpot(state.monthId, state.hostId) },
+                    onReplaceUser = { onShowUserPicker(state.monthId) },
+                    onRemoveFromRotation = { onRemoveFromRotation(state.hostId) },
+                    onSeeProfile = if (onSeeProfile != null && !hostIsGhost) {
+                        { onSeeProfile(state.hostId) }
+                    } else null,
+                )
+            }
 
             is RotationBottomSheetState.UserPicker -> UserPickerContent(
                 members = members,
@@ -79,6 +90,7 @@ private fun HostOptionsContent(
     onGiveUpSpot: () -> Unit,
     onReplaceUser: () -> Unit,
     onRemoveFromRotation: () -> Unit,
+    onSeeProfile: (() -> Unit)? = null,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -89,6 +101,13 @@ private fun HostOptionsContent(
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
         VSpacer(8.dp)
+        if (onSeeProfile != null) {
+            ActionRow(
+                icon = Icons.Filled.Person,
+                label = stringResource(R.string.see_profile),
+                onClick = onSeeProfile,
+            )
+        }
         ActionRow(
             icon = Icons.AutoMirrored.Filled.ExitToApp,
             label = "Giv pladsen videre",

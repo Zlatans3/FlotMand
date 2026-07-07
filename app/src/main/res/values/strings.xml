@@ -364,6 +364,7 @@
 
     <!-- Host Rotation screen -->
     <string name="rotation_order_title">Rækkefølge</string>
+    <string name="rotation_reorder_hint">Hold og træk i håndtaget for at ændre rækkefølgen</string>
     <string name="add_user_title">Tilføj bruger</string>
     <string name="add_user_content_description">Tilføj bruger</string>
     <string name="drag_handle_content_description">Flyt</string>
@@ -386,4 +387,17 @@
     <string name="image_url_info_step_3">Hold fingeren nede på billedet → tryk "Copy image link"</string>
     <string name="image_url_info_step_4">Vend tilbage til appen — URL\'en udfyldes automatisk</string>
     <string name="image_url_info_step_5">Tjek at forhåndsvisningen ser rigtig ud inden du gemmer</string>
+
+    <!-- User details screen -->
+    <string name="see_profile">Se profil</string>
+    <string name="user_details_title">Profil</string>
+    <string name="user_details_bio_placeholder">Skriv en kort bio om dig selv…</string>
+    <string name="user_details_no_bio">Ingen bio endnu</string>
+    <string name="user_details_edit_bio">Rediger bio</string>
+    <string name="user_details_bio_char_count">%1$d/%2$d</string>
+    <string name="user_details_hosted_events">Events afholdt</string>
+    <string name="user_details_attended_events">Events deltaget</string>
+    <string name="user_details_previous_events">Tidligere events</string>
+    <string name="user_details_no_previous_events">Ingen tidligere events endnu</string>
+    <string name="user_details_user_not_found">Brugeren blev ikke fundet</string>
 </resources>

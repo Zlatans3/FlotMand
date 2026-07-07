@@ -56,6 +56,7 @@ class AccountServiceImpl
                                         trySend(
                                             firebaseUser.toNotesUser().copy(
                                                 phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
+                                                bio = firestoreUser?.bio.orEmpty(),
                                             )
                                         )
                                     }
@@ -184,7 +185,32 @@ class AccountServiceImpl
                 .update("phoneNumber", newPhoneNumber)
                 .await()
             val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
-            _manualUserUpdates.emit(authUser.copy(phoneNumber = newPhoneNumber))
+            val firestoreUser = getUserById(uid)
+            _manualUserUpdates.emit(
+                authUser.copy(
+                    phoneNumber = newPhoneNumber,
+                    bio = firestoreUser?.bio.orEmpty(),
+                )
+            )
+        }
+
+        override suspend fun updateBio(newBio: String) {
+            val uid = currentUserId
+            if (uid.isBlank()) return
+            val trimmedBio = newBio.trim().take(User.BIO_MAX_LENGTH)
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(uid)
+                .update("bio", trimmedBio)
+                .await()
+            val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
+            val firestoreUser = getUserById(uid)
+            _manualUserUpdates.emit(
+                authUser.copy(
+                    phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
+                    bio = trimmedBio,
+                )
+            )
         }
 
         override suspend fun updateProfilePhoto(imageUri: Uri) {
@@ -208,6 +234,7 @@ class AccountServiceImpl
                 authUser.copy(
                     photoUrl = downloadUrl,
                     phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
+                    bio = firestoreUser?.bio.orEmpty(),
                 )
             )
         }
@@ -274,7 +301,12 @@ class AccountServiceImpl
             if (uid.isBlank()) return
             val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
             val firestoreUser = getUserById(uid)
-            _manualUserUpdates.emit(authUser.copy(phoneNumber = firestoreUser?.phoneNumber.orEmpty()))
+            _manualUserUpdates.emit(
+                authUser.copy(
+                    phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
+                    bio = firestoreUser?.bio.orEmpty(),
+                )
+            )
         }
 
         private fun FirebaseUser?.toNotesUser(): User =

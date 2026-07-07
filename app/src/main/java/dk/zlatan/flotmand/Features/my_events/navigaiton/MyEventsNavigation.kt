@@ -16,6 +16,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
+import dk.zlatan.flotmand.Features.frontpage.user_details.UserDetailsScreenRoute
 import dk.zlatan.flotmand.Features.my_events.MyEventScreenRoute
 import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreen
 import dk.zlatan.flotmand.Features.my_events.add_new_event.EditEventScreen
@@ -91,6 +92,21 @@ fun MyEventsNavigation(
                                 viewModel.navigate(MyEventsDestination.EditEvent(eventId))
                             },
                             onNavigateToAccountInformation = onNavigateToAccountInformation,
+                            onUserClick = { userId ->
+                                viewModel.navigate(MyEventsDestination.UserDetails(userId))
+                            },
+                        )
+                    }
+                }
+
+                is MyEventsDestination.UserDetails -> {
+                    NavEntry(key) {
+                        UserDetailsScreenRoute(
+                            userId = key.userId,
+                            onDismiss = { viewModel.pop() },
+                            onEventClick = { eventId ->
+                                viewModel.navigate(MyEventsDestination.EventDetail(eventId))
+                            },
                         )
                     }
                 }

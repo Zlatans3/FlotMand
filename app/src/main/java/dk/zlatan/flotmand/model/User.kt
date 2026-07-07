@@ -11,6 +11,7 @@ data class User(
     val provider: String = "",
     val displayName: String = "",
     val photoUrl: String = "",
+    val bio: String = "",
     val isAnonymous: Boolean = true,
     @field:PropertyName("isGhostUser")
     @get:PropertyName("isGhostUser")
@@ -20,6 +21,8 @@ data class User(
     fun getFirstName(): String = displayName.split(" ").firstOrNull() ?: displayName
 
     companion object {
+        const val BIO_MAX_LENGTH = 140
+
         fun mockUserWithCounter(counter: Int): List<User> =
             List(counter) { index ->
                 val names =

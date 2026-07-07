@@ -24,6 +24,9 @@ interface AccountService {
 
     suspend fun updatePhoneNumber(newPhoneNumber: String)
 
+    /** Persists the user's bio (trimmed to [User.BIO_MAX_LENGTH] characters). */
+    suspend fun updateBio(newBio: String)
+
     suspend fun updateProfilePhoto(imageUri: Uri)
 
     suspend fun linkAccount(
