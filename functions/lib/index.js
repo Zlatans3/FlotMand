@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onPollCreated = exports.onEventPriceSet = exports.onEventCreated = void 0;
+exports.onPollCreated = exports.onEventRsvp = exports.onEventPriceSet = exports.onEventCreated = void 0;
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 admin.initializeApp();
@@ -110,6 +110,88 @@ exports.onEventPriceSet = functions.firestore
         .filter((doc) => doc.exists)
         .map((doc) => { var _a; return ({ uid: doc.id, fcmToken: (_a = doc.data()) === null || _a === void 0 ? void 0 : _a.fcmToken }); });
     await fanOut(users, "event", eventName, `Prisen er sat til ${formatted} kr. pr. person`, context.params.eventId, publisherPhotoUrl, publisherName);
+});
+// ── Trigger: RSVP changed on an event ────────────────────────────────────────
+/**
+ * Trailing debounce window for RSVP notifications. A user toggling their
+ * answer back and forth produces one Firestore update per tap; only the
+ * invocation that is still the latest after this delay notifies the host,
+ * and it reads the event fresh so the message reflects the final answer.
+ */
+const RSVP_DEBOUNCE_MS = 20000;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+/** IDs present in exactly one of the two arrays (added or removed). */
+function symmetricDiff(before, after) {
+    const beforeSet = new Set(before);
+    const afterSet = new Set(after);
+    const changed = new Set();
+    afterSet.forEach((id) => {
+        if (!beforeSet.has(id))
+            changed.add(id);
+    });
+    beforeSet.forEach((id) => {
+        if (!afterSet.has(id))
+            changed.add(id);
+    });
+    return changed;
+}
+exports.onEventRsvp = functions
+    .runWith({ timeoutSeconds: 60 })
+    .firestore.document("dinnerEvents/{eventId}")
+    .onUpdate(async (change, context) => {
+    var _a, _b, _c, _d, _e, _f;
+    const before = change.before.data();
+    const after = change.after.data();
+    const eventId = context.params.eventId;
+    const changedIds = new Set([
+        ...symmetricDiff((_a = before.participantIds) !== null && _a !== void 0 ? _a : [], (_b = after.participantIds) !== null && _b !== void 0 ? _b : []),
+        ...symmetricDiff((_c = before.declinedIds) !== null && _c !== void 0 ? _c : [], (_d = after.declinedIds) !== null && _d !== void 0 ? _d : []),
+    ]);
+    const publisherId = (_e = after.publisherId) !== null && _e !== void 0 ? _e : "";
+    changedIds.delete(publisherId);
+    if (changedIds.size === 0)
+        return;
+    const hostDoc = await db.collection("users").doc(publisherId).get();
+    const hostToken = (_f = hostDoc.data()) === null || _f === void 0 ? void 0 : _f.fcmToken;
+    if (!hostDoc.exists)
+        return;
+    await Promise.all([...changedIds].map(async (uid) => {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        const userDoc = await db.collection("users").doc(uid).get();
+        if (!userDoc.exists)
+            return;
+        // Ghost users are added/removed by the host themself — no notification.
+        if (((_a = userDoc.data()) === null || _a === void 0 ? void 0 : _a.isGhostUser) === true)
+            return;
+        const userName = ((_b = userDoc.data()) === null || _b === void 0 ? void 0 : _b.displayName) || "En bruger";
+        const userPhotoUrl = ((_c = userDoc.data()) === null || _c === void 0 ? void 0 : _c.photoUrl) || "";
+        // Trailing debounce: claim the (event, user) slot, wait, and bail out
+        // if a newer RSVP change reclaimed it in the meantime.
+        const debounceRef = db
+            .collection("rsvpDebounce")
+            .doc(`${eventId}_${uid}`);
+        const claim = Date.now();
+        await debounceRef.set({ pendingAtMillis: claim });
+        await sleep(RSVP_DEBOUNCE_MS);
+        const latest = await debounceRef.get();
+        if (((_d = latest.data()) === null || _d === void 0 ? void 0 : _d.pendingAtMillis) !== claim)
+            return;
+        await debounceRef.delete();
+        // Read the event fresh so the message matches the user's final answer.
+        const freshDoc = await db.collection("dinnerEvents").doc(eventId).get();
+        if (!freshDoc.exists)
+            return;
+        const fresh = (_e = freshDoc.data()) !== null && _e !== void 0 ? _e : {};
+        const attending = ((_f = fresh.participantIds) !== null && _f !== void 0 ? _f : []).includes(uid);
+        const declined = ((_g = fresh.declinedIds) !== null && _g !== void 0 ? _g : []).includes(uid);
+        if (!attending && !declined)
+            return; // RSVP was withdrawn entirely
+        const eventName = (_h = fresh.eventName) !== null && _h !== void 0 ? _h : "Middag";
+        const body = attending
+            ? `✅ ${userName} deltager`
+            : `❌ ${userName} deltager ikke`;
+        await fanOut([{ uid: publisherId, fcmToken: hostToken }], "event", eventName, body, eventId, userPhotoUrl, userName);
+    }));
 });
 // ── Trigger: new poll ─────────────────────────────────────────────────────────
 exports.onPollCreated = functions.firestore

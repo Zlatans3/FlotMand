@@ -154,6 +154,99 @@ export const onEventPriceSet = functions.firestore
     );
   });
 
+// ── Trigger: RSVP changed on an event ────────────────────────────────────────
+
+/**
+ * Trailing debounce window for RSVP notifications. A user toggling their
+ * answer back and forth produces one Firestore update per tap; only the
+ * invocation that is still the latest after this delay notifies the host,
+ * and it reads the event fresh so the message reflects the final answer.
+ */
+const RSVP_DEBOUNCE_MS = 20_000;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** IDs present in exactly one of the two arrays (added or removed). */
+function symmetricDiff(before: string[], after: string[]): Set<string> {
+  const beforeSet = new Set(before);
+  const afterSet = new Set(after);
+  const changed = new Set<string>();
+  afterSet.forEach((id) => {
+    if (!beforeSet.has(id)) changed.add(id);
+  });
+  beforeSet.forEach((id) => {
+    if (!afterSet.has(id)) changed.add(id);
+  });
+  return changed;
+}
+
+export const onEventRsvp = functions
+  .runWith({ timeoutSeconds: 60 })
+  .firestore.document("dinnerEvents/{eventId}")
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+    const eventId: string = context.params.eventId;
+
+    const changedIds = new Set([
+      ...symmetricDiff(before.participantIds ?? [], after.participantIds ?? []),
+      ...symmetricDiff(before.declinedIds ?? [], after.declinedIds ?? []),
+    ]);
+    const publisherId: string = after.publisherId ?? "";
+    changedIds.delete(publisherId);
+    if (changedIds.size === 0) return;
+
+    const hostDoc = await db.collection("users").doc(publisherId).get();
+    const hostToken: string | undefined = hostDoc.data()?.fcmToken;
+    if (!hostDoc.exists) return;
+
+    await Promise.all(
+      [...changedIds].map(async (uid) => {
+        const userDoc = await db.collection("users").doc(uid).get();
+        if (!userDoc.exists) return;
+        // Ghost users are added/removed by the host themself — no notification.
+        if (userDoc.data()?.isGhostUser === true) return;
+        const userName: string = userDoc.data()?.displayName || "En bruger";
+        const userPhotoUrl: string = userDoc.data()?.photoUrl || "";
+
+        // Trailing debounce: claim the (event, user) slot, wait, and bail out
+        // if a newer RSVP change reclaimed it in the meantime.
+        const debounceRef = db
+          .collection("rsvpDebounce")
+          .doc(`${eventId}_${uid}`);
+        const claim = Date.now();
+        await debounceRef.set({ pendingAtMillis: claim });
+        await sleep(RSVP_DEBOUNCE_MS);
+        const latest = await debounceRef.get();
+        if (latest.data()?.pendingAtMillis !== claim) return;
+        await debounceRef.delete();
+
+        // Read the event fresh so the message matches the user's final answer.
+        const freshDoc = await db.collection("dinnerEvents").doc(eventId).get();
+        if (!freshDoc.exists) return;
+        const fresh = freshDoc.data() ?? {};
+        const attending = (fresh.participantIds ?? []).includes(uid);
+        const declined = (fresh.declinedIds ?? []).includes(uid);
+        if (!attending && !declined) return; // RSVP was withdrawn entirely
+
+        const eventName: string = fresh.eventName ?? "Middag";
+        const body = attending
+          ? `✅ ${userName} deltager`
+          : `❌ ${userName} deltager ikke`;
+
+        await fanOut(
+          [{ uid: publisherId, fcmToken: hostToken }],
+          "event",
+          eventName,
+          body,
+          eventId,
+          userPhotoUrl,
+          userName,
+        );
+      }),
+    );
+  });
+
 // ── Trigger: new poll ─────────────────────────────────────────────────────────
 
 export const onPollCreated = functions.firestore
