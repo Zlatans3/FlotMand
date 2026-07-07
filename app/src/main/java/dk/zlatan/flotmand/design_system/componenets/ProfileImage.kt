@@ -101,7 +101,7 @@ fun ProfileImage(
 private fun InitialsBadge(
     userName: String,
     profileSize: Dp,
-    modifier: Modifier = Modifier.fillMaxSize(),
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier.background(MaterialTheme.colorScheme.inversePrimary),

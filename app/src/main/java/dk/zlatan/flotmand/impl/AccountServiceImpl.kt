@@ -2,6 +2,7 @@ package dk.zlatan.flotmand.impl
 
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import com.google.firebase.Firebase
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
@@ -57,7 +58,7 @@ class AccountServiceImpl
                                             firebaseUser.toNotesUser().copy(
                                                 phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
                                                 bio = firestoreUser?.bio.orEmpty(),
-                                            )
+                                            ),
                                         )
                                     }
                                 }
@@ -80,13 +81,17 @@ class AccountServiceImpl
 
         override fun observeUserById(userId: String): Flow<User?> =
             callbackFlow {
-                val reg = Firebase.firestore
-                    .collection(USERS_COLLECTION)
-                    .document(userId)
-                    .addSnapshotListener { snap, err ->
-                        if (err != null) { close(err); return@addSnapshotListener }
-                        trySend(snap?.toObject<User>())
-                    }
+                val reg =
+                    Firebase.firestore
+                        .collection(USERS_COLLECTION)
+                        .document(userId)
+                        .addSnapshotListener { snap, err ->
+                            if (err != null) {
+                                close(err)
+                                return@addSnapshotListener
+                            }
+                            trySend(snap?.toObject<User>())
+                        }
                 awaitClose { reg.remove() }
             }
 
@@ -120,7 +125,10 @@ class AccountServiceImpl
                             ).get()
                             .await()
 
-                    Log.d(TAG, "Query returned ${querySnapshot.documents.size} documents for chunk: $chunk")
+                    Log.d(
+                        TAG,
+                        "Query returned ${querySnapshot.documents.size} documents for chunk: $chunk",
+                    )
                     querySnapshot.documents.forEach { document ->
                         Log.d(TAG, "Document: ${document.id}, exists: ${document.exists()}")
                         document.toObject<User>()?.let {
@@ -146,12 +154,13 @@ class AccountServiceImpl
             val currentUser = Firebase.auth.currentUser ?: return
             Log.d(TAG, "Saving user to Firestore: ${currentUser.uid}")
             try {
-                val updates = mutableMapOf(
-                    "email" to (currentUser.email.orEmpty()),
-                    "displayName" to (currentUser.displayName.orEmpty()),
-                    "provider" to currentUser.providerId,
-                    "isAnonymous" to currentUser.isAnonymous,
-                )
+                val updates =
+                    mutableMapOf(
+                        "email" to (currentUser.email.orEmpty()),
+                        "displayName" to (currentUser.displayName.orEmpty()),
+                        "provider" to currentUser.providerId,
+                        "isAnonymous" to currentUser.isAnonymous,
+                    )
                 val photoUrl = currentUser.photoUrl?.toString().orEmpty()
                 if (photoUrl.isNotBlank()) updates["photoUrl"] = photoUrl
                 Firebase.firestore
@@ -190,7 +199,7 @@ class AccountServiceImpl
                 authUser.copy(
                     phoneNumber = newPhoneNumber,
                     bio = firestoreUser?.bio.orEmpty(),
-                )
+                ),
             )
         }
 
@@ -209,7 +218,7 @@ class AccountServiceImpl
                 authUser.copy(
                     phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
                     bio = trimmedBio,
-                )
+                ),
             )
         }
 
@@ -219,8 +228,10 @@ class AccountServiceImpl
             storageRef.putFile(imageUri).await()
             val downloadUrl = storageRef.downloadUrl.await().toString()
 
-            val profileUpdates = userProfileChangeRequest { photoUri = Uri.parse(downloadUrl) }
-            Firebase.auth.currentUser!!.updateProfile(profileUpdates).await()
+            val profileUpdates = userProfileChangeRequest { photoUri = downloadUrl.toUri() }
+            Firebase.auth.currentUser!!
+                .updateProfile(profileUpdates)
+                .await()
 
             Firebase.firestore
                 .collection(USERS_COLLECTION)
@@ -235,7 +246,7 @@ class AccountServiceImpl
                     photoUrl = downloadUrl,
                     phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
                     bio = firestoreUser?.bio.orEmpty(),
-                )
+                ),
             )
         }
 
@@ -291,12 +302,14 @@ class AccountServiceImpl
                 val token = FirebaseMessaging.getInstance().token.await()
                 updateFcmToken(token)
             } catch (e: Exception) {
-                android.util.Log.w(TAG, "Could not fetch or save FCM token: ${e.message}")
+                Log.w(TAG, "Could not fetch or save FCM token: ${e.message}")
             }
         }
 
         override suspend fun reloadUser() {
-            Firebase.auth.currentUser?.reload()?.await()
+            Firebase.auth.currentUser
+                ?.reload()
+                ?.await()
             val uid = currentUserId
             if (uid.isBlank()) return
             val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
@@ -305,7 +318,7 @@ class AccountServiceImpl
                 authUser.copy(
                     phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
                     bio = firestoreUser?.bio.orEmpty(),
-                )
+                ),
             )
         }
 

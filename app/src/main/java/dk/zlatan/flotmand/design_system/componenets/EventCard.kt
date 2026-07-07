@@ -41,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -282,14 +283,24 @@ private fun ParticipantsRow(
             containerColor = containerColor,
         )
 
+        // When avatars + button leave too little room, the count text would wrap
+        // letter by letter and stretch the row. It's redundant next to the "+X"
+        // overflow badge, so hide it instead — the weighted slot stays so the
+        // avatars and button keep their positions.
+        var countTextOverflows by remember { mutableStateOf(false) }
         Text(
             text = stringResource(R.string.participants_count, participantsCount),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            onTextLayout = { countTextOverflows = it.hasVisualOverflow },
             modifier =
                 Modifier
                     .weight(1f)
-                    .offset(x = (-8).dp),
+                    .offset(x = (-8).dp)
+                    .alpha(if (countTextOverflows) 0f else 1f),
         )
 
         val participationText =

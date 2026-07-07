@@ -17,7 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -283,13 +283,15 @@ private fun BioSection(
             modifier = Modifier.weight(1f, fill = false),
         )
         if (isOwnProfile) {
-            HSpacer(4.dp)
-            IconButton(onClick = onEditBioClick) {
+            HSpacer(8.dp)
+            FilledTonalIconButton(
+                onClick = onEditBioClick,
+                modifier = Modifier.size(28.dp),
+            ) {
                 Icon(
                     imageVector = Icons.Filled.Edit,
                     contentDescription = stringResource(R.string.user_details_edit_bio),
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp),
                 )
             }
         }
