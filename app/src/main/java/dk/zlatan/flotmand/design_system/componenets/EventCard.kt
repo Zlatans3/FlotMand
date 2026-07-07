@@ -3,6 +3,7 @@ package dk.zlatan.flotmand.design_system.componenets
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,7 +34,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,16 +48,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.buttons.FmAnimatableButton
-import dk.zlatan.flotmand.design_system.componenets.buttons.FmPrimaryButton
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.model.Event

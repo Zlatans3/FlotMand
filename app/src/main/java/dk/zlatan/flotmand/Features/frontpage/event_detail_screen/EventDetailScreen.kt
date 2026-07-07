@@ -1,7 +1,9 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.provider.CalendarContract
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -12,6 +14,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,16 +25,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -52,18 +52,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.res.stringResource
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCard
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.EventDetailTopAppBar
@@ -81,6 +80,9 @@ import dk.zlatan.flotmand.model.Event
 import dk.zlatan.flotmand.model.EventStatus
 import dk.zlatan.flotmand.model.GeoLocation
 import dk.zlatan.flotmand.model.User
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -166,6 +168,15 @@ internal fun EventDetailScreenRoute(
                                     address = event.location,
                                 )
                                 context.startActivity(intent)
+                            },
+                            onDateClick = {
+                                buildAddToCalendarIntent(event)?.let { intent ->
+                                    try {
+                                        context.startActivity(intent)
+                                    } catch (_: ActivityNotFoundException) {
+                                        // No calendar app installed — nothing sensible to do.
+                                    }
+                                }
                             },
                             participants = uiState.participants,
                             totalPriceInput = uiState.totalPriceInput,
@@ -292,6 +303,7 @@ private fun EventDetailScreenContent(
     onAccept: () -> Unit,
     onDecline: () -> Unit,
     onMapClick: () -> Unit,
+    onDateClick: () -> Unit = {},
     participants: List<User>,
     totalPriceInput: String = "",
     pricePerPerson: Double? = null,
@@ -362,6 +374,7 @@ private fun EventDetailScreenContent(
                 date = event.eventDate,
                 time = event.eventStartTime,
                 modifier = Modifier.padding(horizontal = 16.dp),
+                onDateClick = onDateClick,
             )
 
             VSpacer(20.dp)
@@ -588,6 +601,39 @@ private fun RsvpFab(
                     },
                 )
             }
+        }
+    }
+}
+
+/**
+ * Opens the user's calendar app with a prefilled "new event" form.
+ * Duration mirrors the 3-hour assumption in [Event.status]; events without a
+ * start time are inserted as all-day.
+ */
+private fun buildAddToCalendarIntent(event: Event): Intent? {
+    val date = event.eventDate ?: return null
+    val startTime = event.eventStartTime
+
+    return Intent(Intent.ACTION_INSERT).apply {
+        data = CalendarContract.Events.CONTENT_URI
+        putExtra(CalendarContract.Events.TITLE, event.eventName.orEmpty())
+        event.location?.let { putExtra(CalendarContract.Events.EVENT_LOCATION, it) }
+        event.description?.let { putExtra(CalendarContract.Events.DESCRIPTION, it) }
+
+        if (startTime != null) {
+            val startMillis =
+                LocalDateTime.of(date, startTime)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            val endMillis = startMillis + Duration.ofHours(3).toMillis()
+            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
+        } else {
+            val startMillis =
+                date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+            putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true)
         }
     }
 }
