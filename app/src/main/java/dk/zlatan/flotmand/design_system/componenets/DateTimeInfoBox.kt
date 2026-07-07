@@ -90,6 +90,17 @@ fun DateTimeInfoBox(
                         )
                     }
                 }
+                if (onDateClick != null) {
+                    // Overlaid at the edge so it never steals width from the date text.
+                    Icon(
+                        imageVector = Icons.Filled.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(16.dp),
+                    )
+                }
             }
         }
 
@@ -219,6 +230,7 @@ private fun DateTimeInfoBoxPreview() {
         DateTimeInfoBox(
             date = LocalDate.of(2026, 1, 28),
             time = LocalTime.of(19, 0),
+            onDateClick = {},
         )
     }
 }
