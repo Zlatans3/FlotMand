@@ -1,10 +1,10 @@
 package dk.zlatan.flotmand.Features.frontpage.datevoting
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,15 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -33,14 +33,18 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.frontpage.datevoting.ui.votingListItem
 import dk.zlatan.flotmand.design_system.componenets.FmBackButton
+import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
+import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.DateVotingItem
 import dk.zlatan.flotmand.R
@@ -138,11 +142,19 @@ internal fun DateVotingScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        CircularProgressIndicator()
+                        // Same pot animation the front page uses while loading.
+                        val loadingComposition by rememberLottieComposition(
+                            LottieCompositionSpec.RawRes(R.raw.pot_loading),
+                        )
+                        LottieAnimation(
+                            composition = loadingComposition,
+                            iterations = LottieConstants.IterateForever,
+                            modifier = Modifier.size(100.dp),
+                        )
                         Text(
                             text = stringResource(R.string.voting_list_loading),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -155,9 +167,7 @@ internal fun DateVotingScreen(
                             .fillMaxSize()
                             .background(MaterialTheme.colorScheme.background),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding =
-                        androidx.compose.foundation.layout
-                            .PaddingValues(16.dp),
+                    contentPadding = PaddingValues(16.dp),
                 ) {
                     item {
                         VotingListHeader(onCreateVoting = onCreateVoting)
@@ -185,13 +195,13 @@ internal fun DateVotingScreen(
                                         text = stringResource(R.string.voting_list_empty),
                                         style = MaterialTheme.typography.displaySmall,
                                         color = MaterialTheme.colorScheme.onSurface,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                                        textAlign = TextAlign.End,
                                     )
                                     Text(
                                         text = stringResource(R.string.voting_list_empty_subtitle),
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                                        textAlign = TextAlign.End,
                                     )
                                 }
                                 // Cozy animation anchored to bottom-left
@@ -223,26 +233,39 @@ internal fun DateVotingScreen(
 
 @Composable
 private fun VotingListHeader(onCreateVoting: () -> Unit) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onCreateVoting)
-                .padding(12.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        onClick = onCreateVoting,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     ) {
-        Icon(
-            imageVector = Icons.Filled.Add,
-            contentDescription = stringResource(R.string.create_voting_content_description),
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(8.dp),
-        )
-        Text(
-            text = stringResource(R.string.create_voting_title),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(4.dp),
+            ) {
+                Icon(
+                    imageVector = FmIcons.Add,
+                    contentDescription = stringResource(R.string.create_voting_content_description),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+
+            HSpacer(12.dp)
+
+            Text(
+                text = stringResource(R.string.create_voting_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
+        }
     }
 }
 

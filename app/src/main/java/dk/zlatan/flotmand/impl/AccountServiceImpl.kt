@@ -17,6 +17,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.storage
 import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
+import dk.zlatan.flotmand.util.SessionPrefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,7 +34,9 @@ import javax.inject.Inject
 
 class AccountServiceImpl
     @Inject
-    constructor() : AccountService {
+    constructor(
+        private val sessionPrefs: SessionPrefs,
+    ) : AccountService {
         init {
             // If the user is already signed in when the app starts (e.g. after an app restart),
             // saveFcmToken() is never called via signIn/signInWithGoogle.
@@ -274,6 +277,9 @@ class AccountServiceImpl
 
         override suspend fun signOut() {
             Firebase.auth.signOut()
+            // Session-scoped flags (e.g. the notification-permission prompt)
+            // start fresh for the next login.
+            sessionPrefs.clear()
         }
 
         override suspend fun signInWithGoogle(idToken: String) {
@@ -287,6 +293,8 @@ class AccountServiceImpl
             Firebase.auth.currentUser!!
                 .delete()
                 .await()
+            // Deleting the account implicitly signs out — reset session flags too.
+            sessionPrefs.clear()
         }
 
         override suspend fun updateFcmToken(token: String) {
