@@ -19,11 +19,14 @@ import dk.zlatan.flotmand.model.User
 import dk.zlatan.flotmand.model.service.AccountService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -31,8 +34,6 @@ import javax.inject.Inject
 class AccountServiceImpl
     @Inject
     constructor() : AccountService {
-        private val _manualUserUpdates = MutableSharedFlow<User?>(replay = 0)
-
         init {
             // If the user is already signed in when the app starts (e.g. after an app restart),
             // saveFcmToken() is never called via signIn/signInWithGoogle.
@@ -42,32 +43,40 @@ class AccountServiceImpl
             }
         }
 
+        // Auth state decides *who* is signed in; the user's Firestore doc is then observed
+        // with a snapshot listener. Latency compensation fires the listener immediately from
+        // the local cache on every write, so profile mutations (name, phone, bio, photo,
+        // profileCompleted) propagate to collectors without any manual re-emission — and
+        // changes made from other devices or Cloud Functions propagate too.
+        @OptIn(ExperimentalCoroutinesApi::class)
         override val currentUser: Flow<User?>
             get() =
-                merge(
-                    callbackFlow {
-                        val listener =
-                            FirebaseAuth.AuthStateListener { auth ->
-                                val firebaseUser = auth.currentUser
-                                if (firebaseUser == null) {
-                                    trySend(null)
-                                } else {
-                                    launch(Dispatchers.IO) {
-                                        val firestoreUser = getUserById(firebaseUser.uid)
-                                        trySend(
-                                            firebaseUser.toNotesUser().copy(
-                                                phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
-                                                bio = firestoreUser?.bio.orEmpty(),
-                                            ),
-                                        )
-                                    }
-                                }
+                callbackFlow {
+                    val listener = FirebaseAuth.AuthStateListener { auth -> trySend(auth.currentUser) }
+                    Firebase.auth.addAuthStateListener(listener)
+                    awaitClose { Firebase.auth.removeAuthStateListener(listener) }
+                }.flatMapLatest { firebaseUser ->
+                    if (firebaseUser == null) {
+                        flowOf(null)
+                    } else {
+                        observeUserById(firebaseUser.uid)
+                            .map { firestoreUser ->
+                                // toNotesUser() re-reads the live FirebaseUser on every snapshot,
+                                // so auth-profile changes are picked up as long as the mutation
+                                // also touches the Firestore doc (all of ours do).
+                                firebaseUser.toNotesUser().copy(
+                                    phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
+                                    bio = firestoreUser?.bio.orEmpty(),
+                                    profileCompleted = firestoreUser?.profileCompleted,
+                                )
+                            }.catch { e ->
+                                // E.g. a permission error racing sign-out; fall back to
+                                // auth-only data instead of killing collectors.
+                                Log.w(TAG, "users/${firebaseUser.uid} listener failed: ${e.message}")
+                                emit(firebaseUser.toNotesUser())
                             }
-                        Firebase.auth.addAuthStateListener(listener)
-                        awaitClose { Firebase.auth.removeAuthStateListener(listener) }
-                    },
-                    _manualUserUpdates,
-                )
+                    }
+                }
 
         override val currentUserId: String
             get() =
@@ -154,6 +163,10 @@ class AccountServiceImpl
             val currentUser = Firebase.auth.currentUser ?: return
             Log.d(TAG, "Saving user to Firestore: ${currentUser.uid}")
             try {
+                val docRef =
+                    Firebase.firestore
+                        .collection(USERS_COLLECTION)
+                        .document(currentUser.uid)
                 val updates =
                     mutableMapOf(
                         "email" to (currentUser.email.orEmpty()),
@@ -163,12 +176,15 @@ class AccountServiceImpl
                     )
                 val photoUrl = currentUser.photoUrl?.toString().orEmpty()
                 if (photoUrl.isNotBlank()) updates["photoUrl"] = photoUrl
-                Firebase.firestore
-                    .collection(USERS_COLLECTION)
-                    .document(currentUser.uid)
+                // Brand-new users (no doc yet) start with profileCompleted = false so they
+                // are routed through first-time profile setup. Docs that already exist are
+                // left untouched: absence of the field means the user predates the feature.
+                val isNewUser = !docRef.get().await().exists()
+                if (isNewUser) updates["profileCompleted"] = false
+                docRef
                     .set(updates, SetOptions.merge())
                     .await()
-                Log.d(TAG, "User saved successfully to Firestore")
+                Log.d(TAG, "User saved successfully to Firestore (isNewUser=$isNewUser)")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to save user to Firestore: ${e.message}", e)
             }
@@ -193,14 +209,6 @@ class AccountServiceImpl
                 .document(uid)
                 .update("phoneNumber", newPhoneNumber)
                 .await()
-            val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
-            val firestoreUser = getUserById(uid)
-            _manualUserUpdates.emit(
-                authUser.copy(
-                    phoneNumber = newPhoneNumber,
-                    bio = firestoreUser?.bio.orEmpty(),
-                ),
-            )
         }
 
         override suspend fun updateBio(newBio: String) {
@@ -212,14 +220,18 @@ class AccountServiceImpl
                 .document(uid)
                 .update("bio", trimmedBio)
                 .await()
-            val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
-            val firestoreUser = getUserById(uid)
-            _manualUserUpdates.emit(
-                authUser.copy(
-                    phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
-                    bio = trimmedBio,
-                ),
-            )
+        }
+
+        override suspend fun markProfileCompleted() {
+            val uid = currentUserId
+            if (uid.isBlank()) return
+            // Not awaited: the local write fires the currentUser snapshot listener
+            // immediately (latency compensation) and syncs to the server when online,
+            // so navigating to the main app isn't gated on a network round-trip.
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(uid)
+                .set(mapOf("profileCompleted" to true), SetOptions.merge())
         }
 
         override suspend fun updateProfilePhoto(imageUri: Uri) {
@@ -238,16 +250,6 @@ class AccountServiceImpl
                 .document(uid)
                 .update("photoUrl", downloadUrl)
                 .await()
-
-            val firestoreUser = getUserById(uid)
-            val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
-            _manualUserUpdates.emit(
-                authUser.copy(
-                    photoUrl = downloadUrl,
-                    phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
-                    bio = firestoreUser?.bio.orEmpty(),
-                ),
-            )
         }
 
         override suspend fun linkAccount(
@@ -304,22 +306,6 @@ class AccountServiceImpl
             } catch (e: Exception) {
                 Log.w(TAG, "Could not fetch or save FCM token: ${e.message}")
             }
-        }
-
-        override suspend fun reloadUser() {
-            Firebase.auth.currentUser
-                ?.reload()
-                ?.await()
-            val uid = currentUserId
-            if (uid.isBlank()) return
-            val authUser = Firebase.auth.currentUser?.toNotesUser() ?: return
-            val firestoreUser = getUserById(uid)
-            _manualUserUpdates.emit(
-                authUser.copy(
-                    phoneNumber = firestoreUser?.phoneNumber.orEmpty(),
-                    bio = firestoreUser?.bio.orEmpty(),
-                ),
-            )
         }
 
         private fun FirebaseUser?.toNotesUser(): User =

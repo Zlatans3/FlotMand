@@ -79,6 +79,15 @@
     <string name="login_title">Rita inn</string>
     <string name="login_with_google">Rita inn við Google-kontu</string>
     <string name="login_tagline">Savna vinirnar um góðan mat</string>
+    <string name="profile_setup_title">Fullfør tín profil</string>
+    <string name="profile_setup_subtitle">Kanna títt navn, og legg telefonnummar og eina stutta lýsing afturat, so vinirnir kenna teg.</string>
+    <string name="profile_setup_name_label">Navn</string>
+    <string name="profile_setup_phone_label">Telefonnummar</string>
+    <string name="profile_setup_phone_helper">Verður brúkt til MobilePay, tá ið tit býta rokningina</string>
+    <string name="profile_setup_bio_label">Bio</string>
+    <string name="profile_setup_continue">Halt fram</string>
+    <string name="profile_setup_skip">Leyp um</string>
+    <string name="profile_setup_error">Kundi ikki goyma profilin. Royn aftur.</string>
     <string name="google_logo_content_description">Google logo</string>
     <string name="error_unexpected_credential_type">Óvæntað credential-type: %1$s</string>
     <string name="error_sign_in_generic">Eitt mistak hendi undir innritan.</string>

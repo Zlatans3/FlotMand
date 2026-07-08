@@ -5,9 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.model.service.AccountService
+import dk.zlatan.flotmand.util.feature_flags.FeatureFlagManager
+import dk.zlatan.flotmand.util.feature_flags.FeatureKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,7 +18,8 @@ private const val TAG = "AppNavigationViewModel"
 
 @HiltViewModel
 class AppNavigationViewModel @Inject constructor(
-    private val accountService: AccountService
+    private val accountService: AccountService,
+    private val featureFlagManager: FeatureFlagManager,
 ) : ViewModel() {
 
     private val _navigationStack = MutableStateFlow<List<AppDestination>>(listOf(AppDestination.Authentication))
@@ -28,7 +32,10 @@ class AppNavigationViewModel @Inject constructor(
         Log.d(TAG, "ViewModel initialized with stack: ${_navigationStack.value}")
         // Initialize navigation based on current auth state
         viewModelScope.launch {
-            accountService.currentUser.collect { user ->
+            combine(
+                accountService.currentUser,
+                featureFlagManager.isEnabled(FeatureKey.FORCE_PROFILE_SETUP),
+            ) { user, forceProfileSetup -> user to forceProfileSetup }.collect { (user, forceProfileSetup) ->
                 // Check if user is valid: not null, has an ID, and is not anonymous
                 val isValidUser = user != null && user.id.isNotEmpty() && !user.isAnonymous
                 Log.d(TAG, "Auth state changed - User: ${user?.email ?: "null"}, ID: ${user?.id ?: "null"}, isAnonymous: ${user?.isAnonymous}, isValidUser: $isValidUser")
@@ -36,11 +43,20 @@ class AppNavigationViewModel @Inject constructor(
                 // Mark auth check as complete after first emission
                 _isCheckingAuth.value = false
 
-                if (isValidUser) {
-                    // User is logged in, navigate to main app
-                    if (_navigationStack.value.isEmpty() || _navigationStack.value.last() != AppDestination.MainApp) {
-                        Log.d(TAG, "Navigating to MainApp")
-                        _navigationStack.value = listOf(AppDestination.MainApp)
+                if (user != null && isValidUser) {
+                    // profileCompleted is only stamped (as false) on brand-new user docs,
+                    // so existing users — where the field is absent/null — never see setup.
+                    // The debug flag forces the screen; it is cleared again by
+                    // ProfileSetupViewModel when the user continues or skips.
+                    val target =
+                        if (forceProfileSetup || user.profileCompleted == false) {
+                            AppDestination.ProfileSetup
+                        } else {
+                            AppDestination.MainApp
+                        }
+                    if (_navigationStack.value.lastOrNull() != target) {
+                        Log.d(TAG, "Navigating to $target")
+                        _navigationStack.value = listOf(target)
                     }
                 } else {
                     // User is not logged in, show authentication

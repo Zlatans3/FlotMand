@@ -27,6 +27,9 @@ interface AccountService {
     /** Persists the user's bio (trimmed to [User.BIO_MAX_LENGTH] characters). */
     suspend fun updateBio(newBio: String)
 
+    /** Marks the first-time profile setup as done so the user is routed straight to the main app. */
+    suspend fun markProfileCompleted()
+
     suspend fun updateProfilePhoto(imageUri: Uri)
 
     suspend fun linkAccount(
@@ -44,10 +47,6 @@ interface AccountService {
     suspend fun signOut()
 
     suspend fun deleteAccount()
-
-    // had troubles with the user not updating after display name change
-    // so added this method to force reload the user and trigger the auth state listener
-    suspend fun reloadUser()
 
     /** Persists [token] to Firestore so Cloud Functions can address this device. */
     suspend fun updateFcmToken(token: String)

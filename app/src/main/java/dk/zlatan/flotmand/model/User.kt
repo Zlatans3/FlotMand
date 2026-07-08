@@ -17,6 +17,10 @@ data class User(
     @get:PropertyName("isGhostUser")
     val isGhostUser: Boolean = false,
     val fcmToken: String = "",
+    // First-time profile setup state. Only written for users created after the
+    // feature shipped: null = field absent (user predates the feature, never prompt),
+    // false = new user who hasn't finished setup yet, true = setup done or skipped.
+    val profileCompleted: Boolean? = null,
 ) {
     fun getFirstName(): String = displayName.split(" ").firstOrNull() ?: displayName
 

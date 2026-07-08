@@ -79,6 +79,15 @@
     <string name="login_title">Entrar</string>
     <string name="login_with_google">Entrar com sua conta Google</string>
     <string name="login_tagline">Junta os amigos à volta de boa comida</string>
+    <string name="profile_setup_title">Complete o seu perfil</string>
+    <string name="profile_setup_subtitle">Confirme o seu nome e adicione um número de telefone e uma breve bio para que os amigos o reconheçam.</string>
+    <string name="profile_setup_name_label">Nome</string>
+    <string name="profile_setup_phone_label">Número de telefone</string>
+    <string name="profile_setup_phone_helper">Usado para MobilePay quando dividem a conta</string>
+    <string name="profile_setup_bio_label">Bio</string>
+    <string name="profile_setup_continue">Continuar</string>
+    <string name="profile_setup_skip">Saltar</string>
+    <string name="profile_setup_error">Não foi possível guardar o perfil. Tente novamente.</string>
     <string name="google_logo_content_description">Logo do Google</string>
     <string name="error_unexpected_credential_type">Tipo de credencial inesperado: %1$s</string>
     <string name="error_sign_in_generic">Ocorreu um erro ao fazer login.</string>

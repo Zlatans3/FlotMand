@@ -115,6 +115,13 @@ internal fun FrontPageRoute(
                 onUserLongClicked = {
                     if (BuildConfig.DEBUG) showDebugSheet = true
                 },
+                // Debug builds: tapping the header logo also opens the feature-flag sheet.
+                onLogoClicked =
+                    if (BuildConfig.DEBUG) {
+                        { showDebugSheet = true }
+                    } else {
+                        null
+                    },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

@@ -126,6 +126,15 @@
     <string name="login_title">Log ind</string>
     <string name="login_with_google">Login med din Google-konto</string>
     <string name="login_tagline">Saml vennerne om god mad</string>
+    <string name="profile_setup_title">Fuldfør din profil</string>
+    <string name="profile_setup_subtitle">Tjek at dit navn er rigtigt, og tilføj telefonnummer og en kort bio, så vennerne kan kende dig.</string>
+    <string name="profile_setup_name_label">Navn</string>
+    <string name="profile_setup_phone_label">Telefonnummer</string>
+    <string name="profile_setup_phone_helper">Bruges til MobilePay, når I deles om regningen</string>
+    <string name="profile_setup_bio_label">Bio</string>
+    <string name="profile_setup_continue">Fortsæt</string>
+    <string name="profile_setup_skip">Spring over</string>
+    <string name="profile_setup_error">Kunne ikke gemme din profil. Prøv igen.</string>
     <string name="google_logo_content_description">Google logo</string>
     <string name="retry">Prøv igen</string>
 
