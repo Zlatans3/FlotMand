@@ -1,28 +1,70 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onPollCreated = exports.onEventRsvp = exports.onEventPriceSet = exports.onEventCreated = void 0;
-const functions = require("firebase-functions/v1");
+exports.onAuthUserDeleted = exports.onPollCreated = exports.onEventRsvp = exports.onEventPriceSet = exports.onEventCreated = void 0;
+const v2_1 = require("firebase-functions/v2");
+const firestore_1 = require("firebase-functions/v2/firestore");
+const functionsV1 = require("firebase-functions/v1");
+const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 admin.initializeApp();
 const db = admin.firestore();
+// As close as Cloud Functions v2 gets to the Firestore database in
+// europe-north2 (Stockholm): europe-north2 is not a supported Functions
+// region yet, so europe-north1 (Finland) keeps trigger delivery and all
+// reads/writes intra-Nordic instead of hopping to us-central1.
+(0, v2_1.setGlobalOptions)({ region: "europe-north1" });
 /** Fetch all users except [excludeUid], returning their uid and FCM token. */
 async function getUsersExcluding(excludeUid) {
-    const snapshot = await db.collection("users").get();
+    // select() limits the payload to the fields we need; the read count is
+    // the same but we stop shipping every profile field over the wire.
+    const snapshot = await db
+        .collection("users")
+        .select("fcmToken", "isGhostUser")
+        .get();
     const rows = [];
     snapshot.forEach((doc) => {
-        if (doc.id !== excludeUid) {
+        // Ghost users are rotation placeholders created by hosts — they can never
+        // sign in, so notification docs written for them are pure waste.
+        if (doc.id !== excludeUid && doc.data().isGhostUser !== true) {
             rows.push({ uid: doc.id, fcmToken: doc.data().fcmToken });
         }
     });
     return rows;
 }
+/**
+ * Notification docs carry an expiresAt timestamp so a Firestore TTL policy
+ * (collection group "items", field "expiresAt") can sweep them for free.
+ * Without this the per-user collections grow forever and every cold listener
+ * attach on a client re-reads all of them.
+ */
+const NOTIFICATION_TTL_DAYS = 60;
+/** Remove FCM tokens that FCM itself reports as permanently dead. */
+async function pruneDeadTokens(users, responses) {
+    const batch = db.batch();
+    let pruneCount = 0;
+    responses.forEach((res, i) => {
+        var _a;
+        const code = (_a = res.error) === null || _a === void 0 ? void 0 : _a.code;
+        if (code === "messaging/registration-token-not-registered" ||
+            code === "messaging/invalid-argument") {
+            batch.update(db.collection("users").doc(users[i].uid), {
+                fcmToken: admin.firestore.FieldValue.delete(),
+            });
+            pruneCount++;
+        }
+    });
+    if (pruneCount > 0) {
+        await batch.commit();
+        logger.info(`Pruned ${pruneCount} dead FCM token(s)`);
+    }
+}
 /** Send a multicast FCM push and write in-app notification documents. */
 async function fanOut(users, type, title, body, referenceId, senderPhotoUrl = "", senderDisplayName = "") {
     // ── 1. FCM push ────────────────────────────────────────────────────────────
-    const tokens = users.map((u) => { var _a; return (_a = u.fcmToken) !== null && _a !== void 0 ? _a : ""; }).filter(Boolean);
-    if (tokens.length > 0) {
+    const withTokens = users.filter((u) => u.fcmToken);
+    if (withTokens.length > 0) {
         const message = {
-            tokens,
+            tokens: withTokens.map((u) => u.fcmToken),
             data: { title, body },
             notification: { title, body },
             android: {
@@ -34,7 +76,10 @@ async function fanOut(users, type, title, body, referenceId, senderPhotoUrl = ""
             },
         };
         const response = await admin.messaging().sendEachForMulticast(message);
-        functions.logger.info(`FCM: ${response.successCount} ok, ${response.failureCount} failed`);
+        logger.info(`FCM: ${response.successCount} ok, ${response.failureCount} failed`);
+        if (response.failureCount > 0) {
+            await pruneDeadTokens(withTokens, response.responses);
+        }
     }
     // ── 2. In-app notification documents ───────────────────────────────────────
     const batch = db.batch();
@@ -48,8 +93,9 @@ async function fanOut(users, type, title, body, referenceId, senderPhotoUrl = ""
         createdAtMillis: now,
         senderPhotoUrl,
         senderDisplayName,
+        expiresAt: admin.firestore.Timestamp.fromMillis(now + NOTIFICATION_TTL_DAYS * 24 * 60 * 60 * 1000),
     };
-    functions.logger.info("Notification payload", payload);
+    logger.info("Notification payload", payload);
     users.forEach(({ uid }) => {
         const ref = db
             .collection("notifications")
@@ -59,13 +105,14 @@ async function fanOut(users, type, title, body, referenceId, senderPhotoUrl = ""
         batch.set(ref, payload);
     });
     await batch.commit();
-    functions.logger.info(`Wrote ${users.length} notification docs`);
+    logger.info(`Wrote ${users.length} notification docs`);
 }
 // ── Trigger: new event ────────────────────────────────────────────────────────
-exports.onEventCreated = functions.firestore
-    .document("dinnerEvents/{eventId}")
-    .onCreate(async (snapshot) => {
+exports.onEventCreated = (0, firestore_1.onDocumentCreated)("dinnerEvents/{eventId}", async (event) => {
     var _a, _b, _c, _d;
+    const snapshot = event.data;
+    if (!snapshot)
+        return;
     const data = snapshot.data();
     const publisherId = (_a = data.publisherId) !== null && _a !== void 0 ? _a : "";
     const eventName = (_b = data.eventName) !== null && _b !== void 0 ? _b : "Nyt event";
@@ -78,12 +125,12 @@ exports.onEventCreated = functions.firestore
     await fanOut(users, "event", `🍽️ ${publisherName} har oprettet et nyt event`, eventName, snapshot.id, publisherPhotoUrl, publisherName);
 });
 // ── Trigger: price set or updated on an event ────────────────────────────────
-exports.onEventPriceSet = functions.firestore
-    .document("dinnerEvents/{eventId}")
-    .onUpdate(async (change, context) => {
+exports.onEventPriceSet = (0, firestore_1.onDocumentUpdated)("dinnerEvents/{eventId}", async (event) => {
     var _a, _b, _c, _d, _e;
-    const before = change.before.data();
-    const after = change.after.data();
+    if (!event.data)
+        return;
+    const before = event.data.before.data();
+    const after = event.data.after.data();
     const priceBefore = before.totalPrice;
     const priceAfter = after.totalPrice;
     // Only fire when totalPrice is newly added or changed
@@ -97,9 +144,9 @@ exports.onEventPriceSet = functions.firestore
         return;
     const participantCount = participantIds.length > 0 ? participantIds.length : 1;
     const pricePerPerson = priceAfter / participantCount;
-    const formatted = pricePerPerson % 1 === 0
-        ? `${Math.round(pricePerPerson)}`
-        : pricePerPerson.toFixed(2);
+    const formatted = pricePerPerson % 1 === 0 ?
+        `${Math.round(pricePerPerson)}` :
+        pricePerPerson.toFixed(2);
     const [publisherDoc, ...recipientDocs] = await Promise.all([
         db.collection("users").doc(publisherId).get(),
         ...recipientIds.map((uid) => db.collection("users").doc(uid).get()),
@@ -107,9 +154,9 @@ exports.onEventPriceSet = functions.firestore
     const publisherName = ((_d = publisherDoc.data()) === null || _d === void 0 ? void 0 : _d.displayName) || "En bruger";
     const publisherPhotoUrl = ((_e = publisherDoc.data()) === null || _e === void 0 ? void 0 : _e.photoUrl) || "";
     const users = recipientDocs
-        .filter((doc) => doc.exists)
+        .filter((doc) => { var _a; return doc.exists && ((_a = doc.data()) === null || _a === void 0 ? void 0 : _a.isGhostUser) !== true; })
         .map((doc) => { var _a; return ({ uid: doc.id, fcmToken: (_a = doc.data()) === null || _a === void 0 ? void 0 : _a.fcmToken }); });
-    await fanOut(users, "event", eventName, `Prisen er sat til ${formatted} kr. pr. person`, context.params.eventId, publisherPhotoUrl, publisherName);
+    await fanOut(users, "event", eventName, `Prisen er sat til ${formatted} kr. pr. person`, event.params.eventId, publisherPhotoUrl, publisherName);
 });
 // ── Trigger: RSVP changed on an event ────────────────────────────────────────
 /**
@@ -135,14 +182,13 @@ function symmetricDiff(before, after) {
     });
     return changed;
 }
-exports.onEventRsvp = functions
-    .runWith({ timeoutSeconds: 60 })
-    .firestore.document("dinnerEvents/{eventId}")
-    .onUpdate(async (change, context) => {
+exports.onEventRsvp = (0, firestore_1.onDocumentUpdated)({ document: "dinnerEvents/{eventId}", timeoutSeconds: 60 }, async (event) => {
     var _a, _b, _c, _d, _e, _f;
-    const before = change.before.data();
-    const after = change.after.data();
-    const eventId = context.params.eventId;
+    if (!event.data)
+        return;
+    const before = event.data.before.data();
+    const after = event.data.after.data();
+    const eventId = event.params.eventId;
     const changedIds = new Set([
         ...symmetricDiff((_a = before.participantIds) !== null && _a !== void 0 ? _a : [], (_b = after.participantIds) !== null && _b !== void 0 ? _b : []),
         ...symmetricDiff((_c = before.declinedIds) !== null && _c !== void 0 ? _c : [], (_d = after.declinedIds) !== null && _d !== void 0 ? _d : []),
@@ -187,17 +233,18 @@ exports.onEventRsvp = functions
         if (!attending && !declined)
             return; // RSVP was withdrawn entirely
         const eventName = (_h = fresh.eventName) !== null && _h !== void 0 ? _h : "Middag";
-        const body = attending
-            ? `✅ ${userName} deltager`
-            : `❌ ${userName} deltager ikke`;
+        const body = attending ?
+            `✅ ${userName} deltager` :
+            `❌ ${userName} deltager ikke`;
         await fanOut([{ uid: publisherId, fcmToken: hostToken }], "event", eventName, body, eventId, userPhotoUrl, userName);
     }));
 });
 // ── Trigger: new poll ─────────────────────────────────────────────────────────
-exports.onPollCreated = functions.firestore
-    .document("dateVotings/{votingId}")
-    .onCreate(async (snapshot) => {
+exports.onPollCreated = (0, firestore_1.onDocumentCreated)("dateVotings/{votingId}", async (event) => {
     var _a, _b, _c, _d, _e, _f;
+    const snapshot = event.data;
+    if (!snapshot)
+        return;
     const data = snapshot.data();
     const creatorId = (_b = (_a = data.creatorId) !== null && _a !== void 0 ? _a : data.publisherId) !== null && _b !== void 0 ? _b : "";
     const title = (_d = (_c = data.title) !== null && _c !== void 0 ? _c : data.name) !== null && _d !== void 0 ? _d : "Ny afstemning";
@@ -208,5 +255,26 @@ exports.onPollCreated = functions.firestore
     const creatorName = ((_e = creatorDoc.data()) === null || _e === void 0 ? void 0 : _e.displayName) || "En bruger";
     const creatorPhotoUrl = ((_f = creatorDoc.data()) === null || _f === void 0 ? void 0 : _f.photoUrl) || "";
     await fanOut(users, "poll", `🗳️ ${creatorName} har oprettet en ny afstemning`, title, snapshot.id, creatorPhotoUrl, creatorName);
+});
+// ── Trigger: auth account deleted ─────────────────────────────────────────────
+/**
+ * Cleans up a user's Firestore footprint when their Auth account is deleted
+ * (from the app or the console). Without this, orphaned users docs keep
+ * receiving notification fan-outs forever.
+ *
+ * Auth onDelete triggers only exist in the v1 API, and v1 does not offer
+ * europe-north1 — europe-west1 is fine since Auth events carry no region
+ * affinity anyway.
+ */
+exports.onAuthUserDeleted = functionsV1
+    .region("europe-west1")
+    .auth.user()
+    .onDelete(async (user) => {
+    const uid = user.uid;
+    // recursiveDelete clears the notifications/{uid}/items subcollection even
+    // though the parent doc never existed.
+    await admin.firestore().recursiveDelete(db.collection("notifications").doc(uid));
+    await db.collection("users").doc(uid).delete();
+    logger.info(`Cleaned up Firestore data for deleted user ${uid}`);
 });
 //# sourceMappingURL=index.js.map
