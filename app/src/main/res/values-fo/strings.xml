@@ -201,6 +201,9 @@
 
     <string name="profile_section_other">Annað</string>
     <string name="privacy_policy">Persónupolitikkur</string>
+    <string name="accept">Góðtak</string>
+    <string name="login_privacy_sheet_text">Fyri at rita inn mást tú fyrst góðtaka okkara persónupolitikk. Hann lýsir, hvussu vit viðgera tíni data.</string>
+    <string name="login_privacy_read_policy">Les persónupolitikkin</string>
     <string name="theme_settings_title">Tema</string>
     <string name="theme_system">System</string>
     <string name="theme_system_description">Fylgir tækis ljóst/dimmur stillingu</string>

@@ -287,6 +287,9 @@
     <string name="profile_section_other">Andet</string>
     <string name="change_profile_photo">Skift profilbillede</string>
     <string name="privacy_policy">Privatlivspolitik</string>
+    <string name="accept">Accepter</string>
+    <string name="login_privacy_sheet_text">For at logge ind skal du først acceptere vores privatlivspolitik. Den beskriver, hvordan vi behandler dine data.</string>
+    <string name="login_privacy_read_policy">Læs privatlivspolitikken</string>
     <string name="theme_settings_title">Tema</string>
     <string name="theme_system">System</string>
     <string name="theme_system_description">Følger enhedens lys/mørk indstilling</string>

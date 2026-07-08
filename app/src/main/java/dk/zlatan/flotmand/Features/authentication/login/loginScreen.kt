@@ -25,7 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -87,6 +90,26 @@ private fun LoginContent(
     uiState: LoginUiState = LoginUiState(),
     onRetry: (() -> Unit)? = null,
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var showPrivacySheet by rememberSaveable { mutableStateOf(false) }
+
+    if (showPrivacySheet) {
+        PrivacyConsentBottomSheet(
+            onAccept = {
+                showPrivacySheet = false
+                scope.launch {
+                    launchCredManButtonUI(
+                        context = context,
+                        onRequestResult = onGoogleLoginClick,
+                        onError = onError,
+                    )
+                }
+            },
+            onDismiss = { showPrivacySheet = false },
+        )
+    }
+
     Box(modifier = modifier) {
         Column(
             modifier =
@@ -104,8 +127,7 @@ private fun LoginContent(
 
             LoginCard(
                 isLoading = uiState.isLoading,
-                onGoogleLoginClick = onGoogleLoginClick,
-                onError = onError,
+                onClick = { showPrivacySheet = true },
             )
 
             VSpacer(20.dp)
@@ -160,24 +182,13 @@ private fun LoginContent(
 @Composable
 private fun LoginCard(
     isLoading: Boolean,
-    onGoogleLoginClick: (Credential) -> Unit,
-    onError: (String) -> Unit,
+    onClick: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     Card(
         modifier =
             Modifier
                 .padding(horizontal = 20.dp)
-                .clickable(enabled = !isLoading, onClick = {
-                    scope.launch {
-                        launchCredManButtonUI(
-                            context = context,
-                            onRequestResult = onGoogleLoginClick,
-                            onError = onError,
-                        )
-                    }
-                }),
+                .clickable(enabled = !isLoading, onClick = onClick),
         colors =
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,

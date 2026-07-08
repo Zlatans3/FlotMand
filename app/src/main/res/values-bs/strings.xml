@@ -201,6 +201,9 @@
 
     <string name="profile_section_other">Ostalo</string>
     <string name="privacy_policy">Politika privatnosti</string>
+    <string name="accept">Prihvati</string>
+    <string name="login_privacy_sheet_text">Da biste se prijavili, prvo morate prihvatiti našu politiku privatnosti. Ona opisuje kako obrađujemo vaše podatke.</string>
+    <string name="login_privacy_read_policy">Pročitaj politiku privatnosti</string>
     <string name="theme_settings_title">Tema</string>
     <string name="theme_system">Sistem</string>
     <string name="theme_system_description">Prati postavku svjetla/tamnog uređaja</string>

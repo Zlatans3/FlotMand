@@ -201,6 +201,9 @@
 
     <string name="profile_section_other">Outro</string>
     <string name="privacy_policy">Política de privacidade</string>
+    <string name="accept">Aceitar</string>
+    <string name="login_privacy_sheet_text">Para iniciar sessão, tem primeiro de aceitar a nossa política de privacidade. Ela descreve como tratamos os seus dados.</string>
+    <string name="login_privacy_read_policy">Ler a política de privacidade</string>
     <string name="theme_settings_title">Tema</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_system_description">Segue a configuração claro/escuro do dispositivo</string>
