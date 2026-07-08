@@ -400,4 +400,7 @@
     <string name="user_details_previous_events">Tidligere events</string>
     <string name="user_details_no_previous_events">Ingen tidligere events endnu</string>
     <string name="user_details_user_not_found">Brugeren blev ikke fundet</string>
+
+    <!-- Date voting -->
+    <string name="none_of_the_dates">Ingen af ovenstående datoer</string>
 </resources>

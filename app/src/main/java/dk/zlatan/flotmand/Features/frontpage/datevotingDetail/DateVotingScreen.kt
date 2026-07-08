@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.EventBusy
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -126,6 +127,8 @@ internal fun DateVotingDetailRoute(
             votersByUserId = uiState.votersByUserId,
             onVoteForDate = viewModel::onVoteForDate,
             onRemoveVote = viewModel::onRemoveVote,
+            onVoteForNone = viewModel::onVoteForNone,
+            onRemoveNoneVote = viewModel::onRemoveNoneVote,
             onAddDate = { showDatePicker = true },
             errorMessage = uiState.errorMessage,
             publisher = uiState.publisherUser,
@@ -198,6 +201,8 @@ private fun DateVotingDetailScreen(
     votersByUserId: Map<String, User>,
     onVoteForDate: (LocalDate) -> Unit,
     onRemoveVote: (LocalDate) -> Unit,
+    onVoteForNone: () -> Unit = {},
+    onRemoveNoneVote: () -> Unit = {},
     publisher: User? = null,
     onAddDate: () -> Unit,
     errorMessage: String?,
@@ -278,6 +283,36 @@ private fun DateVotingDetailScreen(
                         }
                     },
                 )
+            }
+
+            // "None of the above dates" — only meaningful once there is at least one date
+            if (dateVotingItem.dateOptions.isNotEmpty()) {
+                item(key = "none_of_the_dates") {
+                    val noneVoters = dateVotingItem.noneVoterIds.map { voterId ->
+                        votersByUserId[voterId] ?: User(id = voterId, displayName = "Loading...")
+                    }
+                    val noneCount = dateVotingItem.noneVoterIds.size
+                    val noneSubtitle = when (noneCount) {
+                        0 -> stringResource(R.string.no_votes_yet)
+                        1 -> stringResource(R.string.one_person_voted)
+                        else -> stringResource(R.string.n_persons_voted, noneCount)
+                    }
+                    val isNoneSelected = dateVotingItem.noneVoterIds.contains(currentUserId)
+
+                    DateCard(
+                        modifier = Modifier.animateItem(),
+                        date = stringResource(R.string.none_of_the_dates),
+                        subtitle = noneSubtitle,
+                        voters = noneVoters,
+                        votePercentage = dateVotingItem.noneVotePercentage,
+                        isSelected = isNoneSelected,
+                        icon = Icons.Filled.EventBusy,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                            if (isNoneSelected) onRemoveNoneVote() else onVoteForNone()
+                        },
+                    )
+                }
             }
 
             item(key = "add_date") {

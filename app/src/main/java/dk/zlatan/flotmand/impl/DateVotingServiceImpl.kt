@@ -185,6 +185,38 @@ class DateVotingServiceImpl
             }
         }
 
+        override suspend fun addNoneVote(
+            votingId: String,
+            userId: String,
+        ) {
+            try {
+                val voting = getDateVoting(votingId) ?: return
+                val updatedVoting = voting.addNoneVote(userId)
+                updateDateVoting(updatedVoting)
+
+                Log.d(TAG, "User $userId voted none-of-the-dates in voting $votingId")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error adding none vote: ${e.message}", e)
+                throw e
+            }
+        }
+
+        override suspend fun removeNoneVote(
+            votingId: String,
+            userId: String,
+        ) {
+            try {
+                val voting = getDateVoting(votingId) ?: return
+                val updatedVoting = voting.removeNoneVote(userId)
+                updateDateVoting(updatedVoting)
+
+                Log.d(TAG, "User $userId removed none-of-the-dates vote in voting $votingId")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error removing none vote: ${e.message}", e)
+                throw e
+            }
+        }
+
         override suspend fun deleteVoteOption(
             voteOption: DateOption,
             votingId: String,

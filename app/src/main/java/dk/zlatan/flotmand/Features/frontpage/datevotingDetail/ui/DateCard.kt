@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -54,8 +55,9 @@ internal fun DateCard(
     votePercentage: Int,
     isSelected: Boolean,
     modifier: Modifier = Modifier,
+    icon: ImageVector = Icons.Filled.CalendarToday,
     onClick: () -> Unit = {},
-    onDeleteVoteOption: () -> Unit,
+    onDeleteVoteOption: (() -> Unit)? = null,
 ) {
     val accentColor = MaterialTheme.colorScheme.primary
     val surfaceColor = MaterialTheme.colorScheme.surfaceVariant
@@ -105,7 +107,7 @@ internal fun DateCard(
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.CalendarToday,
+                            imageVector = icon,
                             contentDescription = stringResource(R.string.date_icon_content_description),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp),
@@ -205,9 +207,9 @@ private fun VoteOptionAction(
     votePercentage: Int,
     isSelected: Boolean,
     accentColor: Color,
-    onDeleteVoteOption: () -> Unit,
+    onDeleteVoteOption: (() -> Unit)?,
 ) {
-    if (votePercentage == 0) {
+    if (votePercentage == 0 && onDeleteVoteOption != null) {
         Box(
             modifier =
                 Modifier
