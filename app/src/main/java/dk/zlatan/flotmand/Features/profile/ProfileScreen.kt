@@ -40,7 +40,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dk.zlatan.flotmand.BuildConfig
 import dk.zlatan.flotmand.Features.profile.ui.DisplayName
 import dk.zlatan.flotmand.Features.profile.ui.ProfileStatsRow
-import dk.zlatan.flotmand.Features.profile.ui.SectionCard
+import dk.zlatan.flotmand.Features.profile.ui.SettingsGroup
+import dk.zlatan.flotmand.Features.profile.ui.SettingsRowItem
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.HeaderContainer
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
@@ -166,28 +167,32 @@ internal fun ProfileScreen(
                 Box(contentAlignment = Alignment.BottomEnd) {
                     ProfileImage(
                         profilePic = userImage,
-                        profileSize = 80.dp,
+                        profileSize = 96.dp,
                         userName = userName,
                         onClick = onProfileImageClick,
                     )
                     if (isUploadingPhoto) {
                         CircularProgressIndicator(
-                            modifier = Modifier.size(80.dp),
+                            modifier = Modifier.size(96.dp),
                             strokeWidth = 3.dp,
                         )
                     }
                     Box(
                         modifier = Modifier
-                            .size(26.dp)
+                            .size(30.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
+                            // Ring in the header color lifts the badge off the photo.
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .padding(2.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
                             imageVector = Icons.Default.CameraAlt,
                             contentDescription = stringResource(R.string.change_profile_photo),
                             modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                         )
                     }
                 }
@@ -203,66 +208,59 @@ internal fun ProfileScreen(
             }
         }
         item {
-            VSpacer(24.dp)
-            Text(
-                text = stringResource(R.string.profile_section_settings),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 20.dp),
-            )
-            VSpacer(12.dp)
-            SectionCard(
-                title = stringResource(R.string.language_screen_title),
-                iconRes = FmIcons.globe,
-                onClick = onLanguageClick,
-            )
-            VSpacer(12.dp)
-            SectionCard(
-                title = stringResource(R.string.theme_settings_title),
-                iconRes = FmIcons.darkMode,
-                onClick = onThemeSettingsClick,
-            )
-            VSpacer(12.dp)
-            SectionCard(
-                title = stringResource(R.string.notification_settings_title),
-                iconRes = FmIcons.Bell,
-                onClick = onNotificationSettingsClick,
+            SectionLabel(stringResource(R.string.profile_section_settings))
+            SettingsGroup(
+                items =
+                    listOf(
+                        SettingsRowItem(
+                            icon = FmIcons.globe,
+                            title = stringResource(R.string.language_screen_title),
+                            onClick = onLanguageClick,
+                        ),
+                        SettingsRowItem(
+                            icon = FmIcons.darkMode,
+                            title = stringResource(R.string.theme_settings_title),
+                            onClick = onThemeSettingsClick,
+                        ),
+                        SettingsRowItem(
+                            icon = FmIcons.Bell,
+                            title = stringResource(R.string.notification_settings_title),
+                            onClick = onNotificationSettingsClick,
+                        ),
+                    ),
             )
 
-            VSpacer(50.dp)
-            Text(
-                text = stringResource(R.string.profile_section_other),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 20.dp),
-            )
-            VSpacer(12.dp)
-            SectionCard(
-                title = stringResource(R.string.privacy_policy),
-                iconRes = FmIcons.privacyTip,
-                trailingIcon = FmIcons.openInNew,
-                onClick = onPrivacyPolicyClick,
+            SectionLabel(stringResource(R.string.profile_section_other))
+            SettingsGroup(
+                items =
+                    listOf(
+                        SettingsRowItem(
+                            icon = FmIcons.privacyTip,
+                            title = stringResource(R.string.privacy_policy),
+                            trailingIcon = FmIcons.openInNew,
+                            onClick = onPrivacyPolicyClick,
+                        ),
+                    ),
             )
 
-            VSpacer(50.dp)
-            Text(
-                text = stringResource(R.string.profile_section_user),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 20.dp),
+            SectionLabel(stringResource(R.string.profile_section_user))
+            SettingsGroup(
+                items =
+                    listOf(
+                        SettingsRowItem(
+                            icon = FmIcons.Person,
+                            title = stringResource(R.string.account_information_title),
+                            onClick = onAccountInformationClick,
+                        ),
+                        SettingsRowItem(
+                            icon = FmIcons.logout,
+                            title = stringResource(R.string.logout),
+                            onClick = onLogoutClicked,
+                            isDestructive = true,
+                        ),
+                    ),
             )
-            VSpacer(12.dp)
-            SectionCard(
-                title = stringResource(R.string.account_information_title),
-                iconRes = FmIcons.Person,
-                onClick = onAccountInformationClick,
-            )
-            VSpacer(12.dp)
-            SectionCard(
-                title = stringResource(R.string.logout),
-                iconRes = FmIcons.logout,
-                onClick = onLogoutClicked,
-            )
+
             VSpacer(24.dp)
             Text(
                 text = "v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
@@ -275,6 +273,18 @@ internal fun ProfileScreen(
             )
         }
     }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    VSpacer(28.dp)
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 24.dp),
+    )
+    VSpacer(8.dp)
 }
 
 @Preview
