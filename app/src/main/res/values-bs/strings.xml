@@ -78,6 +78,7 @@
     <string name="delete_date_message">Jeste li sigurni da želite obrisati ovaj datum? Ova radnja se ne može poništiti.</string>
     <string name="login_title">Prijava</string>
     <string name="login_with_google">Prijavite se sa Google računom</string>
+    <string name="login_tagline">Okupi prijatelje uz dobru hranu</string>
     <string name="google_logo_content_description">Google logo</string>
     <string name="error_unexpected_credential_type">Neočekivani tip akreditiva: %1$s</string>
     <string name="error_sign_in_generic">Došlo je do greške prilikom prijave.</string>

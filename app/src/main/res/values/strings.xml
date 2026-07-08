@@ -125,6 +125,7 @@
     <!-- Login screen strings -->
     <string name="login_title">Log ind</string>
     <string name="login_with_google">Login med din Google-konto</string>
+    <string name="login_tagline">Saml vennerne om god mad</string>
     <string name="google_logo_content_description">Google logo</string>
     <string name="retry">Prøv igen</string>
 

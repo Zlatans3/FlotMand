@@ -78,6 +78,7 @@
     <string name="delete_date_message">Tem certeza que deseja excluir esta data? Esta ação não pode ser desfeita.</string>
     <string name="login_title">Entrar</string>
     <string name="login_with_google">Entrar com sua conta Google</string>
+    <string name="login_tagline">Junta os amigos à volta de boa comida</string>
     <string name="google_logo_content_description">Logo do Google</string>
     <string name="error_unexpected_credential_type">Tipo de credencial inesperado: %1$s</string>
     <string name="error_sign_in_generic">Ocorreu um erro ao fazer login.</string>
