@@ -56,14 +56,10 @@ internal fun AccountDetailsCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-        elevation =
-            CardDefaults.cardElevation(
-                defaultElevation = 2.dp,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             ),
     ) {
         Column(
@@ -72,14 +68,6 @@ internal fun AccountDetailsCard(
                     .fillMaxWidth()
                     .padding(16.dp),
         ) {
-            Text(
-                text = stringResource(R.string.account_details_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            VSpacer(12.dp)
-
             // User ID with visibility toggle
             if (user.id.isNotEmpty()) {
                 Column(modifier = Modifier.fillMaxWidth()) {

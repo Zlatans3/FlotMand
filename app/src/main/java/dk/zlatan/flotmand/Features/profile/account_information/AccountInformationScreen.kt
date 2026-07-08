@@ -11,8 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +38,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.Features.profile.account_information.ui.AccountDetailsCard
 import dk.zlatan.flotmand.Features.profile.account_information.ui.DeleteUserDialog
 import dk.zlatan.flotmand.Features.profile.account_information.ui.PersonalInfoCard
+import dk.zlatan.flotmand.Features.profile.ui.SettingsGroup
+import dk.zlatan.flotmand.Features.profile.ui.SettingsRowItem
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
@@ -162,15 +163,12 @@ private fun AccountInformationScreenContent(
         modifier =
             modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+                .background(MaterialTheme.colorScheme.background)
+                .verticalScroll(rememberScrollState()),
     ) {
-        VSpacer(8.dp)
-
-        // Personal Information Card (Editable)
+        SectionLabel(stringResource(R.string.personal_info_title))
         PersonalInfoCard(
+            modifier = Modifier.padding(horizontal = 20.dp),
             user = user,
             isLoading = isLoading,
             onUpdateDisplayName = onUpdateDisplayName,
@@ -178,21 +176,41 @@ private fun AccountInformationScreenContent(
             onDeletePhoneNumber = onDeletePhoneNumber,
         )
 
-        // Account Details Card
-        AccountDetailsCard(user = user)
+        SectionLabel(stringResource(R.string.account_details_title))
+        AccountDetailsCard(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            user = user,
+        )
 
         Spacer(modifier = Modifier.weight(1f))
-        Button(
-            onClick = onDeleteUserClick,
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
+
+        VSpacer(28.dp)
+        // Destructive action styled like the logout row on the profile screen.
+        SettingsGroup(
+            items =
+                listOf(
+                    SettingsRowItem(
+                        icon = Icons.Rounded.DeleteForever,
+                        title = stringResource(R.string.delete_user_button_title),
+                        onClick = onDeleteUserClick,
+                        isDestructive = true,
+                    ),
                 ),
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        ) {
-            Text(stringResource(R.string.delete_user_button_title))
-        }
+        )
+        VSpacer(16.dp)
     }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    VSpacer(28.dp)
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = 24.dp),
+    )
+    VSpacer(8.dp)
 }
 
 @Preview
