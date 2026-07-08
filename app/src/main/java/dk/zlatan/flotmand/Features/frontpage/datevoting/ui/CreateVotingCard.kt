@@ -7,8 +7,11 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -17,12 +20,16 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +46,7 @@ private const val VOTING_NAME_MAX_LENGTH = 100
  * Inline create-voting form shown in place of the create CTA — same expand-in-place
  * pattern as the add-price card on the event detail screen.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun CreateVotingCard(
     onCancel: () -> Unit,
@@ -47,6 +55,24 @@ internal fun CreateVotingCard(
 ) {
     var votingName by rememberSaveable { mutableStateOf("") }
     var isFocused by rememberSaveable { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+
+    // Focus the field (and raise the keyboard) as soon as the form expands.
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    // Dismissing the keyboard dismisses the whole form. The keyboard animates in
+    // after first composition, so only react to hidden once it has been visible.
+    val imeVisible = WindowInsets.isImeVisible
+    var keyboardWasVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(imeVisible) {
+        if (imeVisible) {
+            keyboardWasVisible = true
+        } else if (keyboardWasVisible) {
+            onCancel()
+        }
+    }
 
     Column(
         modifier = modifier
@@ -79,6 +105,7 @@ internal fun CreateVotingCard(
             label = { Text(stringResource(R.string.create_voting_label)) },
             modifier = Modifier
                 .fillMaxWidth()
+                .focusRequester(focusRequester)
                 .onFocusChanged { isFocused = it.isFocused },
             placeholder = { Text(stringResource(R.string.create_voting_placeholder)) },
             singleLine = true,
