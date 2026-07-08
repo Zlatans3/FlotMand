@@ -1,5 +1,10 @@
 package dk.zlatan.flotmand.Features.frontpage.datevoting
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dk.zlatan.flotmand.Features.frontpage.datevoting.ui.CreateVotingCard
 import dk.zlatan.flotmand.Features.frontpage.datevoting.ui.votingListItem
 import dk.zlatan.flotmand.design_system.componenets.FmBackButton
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
@@ -85,13 +91,6 @@ internal fun DateVotingRoute(
         }
     }
 
-    if (uiState.showCreateVotingDialog) {
-        CreateVotingDialog(
-            onDismiss = viewModel::dismissCreateVotingDialog,
-            onConfirm = viewModel::createNewVoting,
-        )
-    }
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -120,6 +119,8 @@ internal fun DateVotingRoute(
             uiState = uiState,
             onVotingClick = onVotingClick,
             onCreateVoting = viewModel::showCreateVotingDialog,
+            onCancelCreate = viewModel::dismissCreateVotingDialog,
+            onConfirmCreate = viewModel::createNewVoting,
         )
     }
 }
@@ -130,7 +131,14 @@ internal fun DateVotingScreen(
     uiState: DateVotingListUiState = DateVotingListUiState(),
     onVotingClick: (String) -> Unit = {},
     onCreateVoting: () -> Unit = {},
+    onCancelCreate: () -> Unit = {},
+    onConfirmCreate: (String) -> Unit = {},
 ) {
+    // Back while the inline create form is open closes it instead of leaving the screen.
+    BackHandler(enabled = uiState.showCreateVotingDialog) {
+        onCancelCreate()
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         when {
             uiState.isLoading -> {
@@ -170,7 +178,21 @@ internal fun DateVotingScreen(
                     contentPadding = PaddingValues(16.dp),
                 ) {
                     item {
-                        VotingListHeader(onCreateVoting = onCreateVoting)
+                        // CTA morphs into the inline create form in place — same
+                        // pattern as the add-price card on the event detail screen.
+                        AnimatedContent(
+                            targetState = uiState.showCreateVotingDialog,
+                            transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        ) { isCreating ->
+                            if (isCreating) {
+                                CreateVotingCard(
+                                    onCancel = onCancelCreate,
+                                    onCreate = onConfirmCreate,
+                                )
+                            } else {
+                                VotingListHeader(onCreateVoting = onCreateVoting)
+                            }
+                        }
                     }
 
                     if (uiState.votings.isEmpty()) {
