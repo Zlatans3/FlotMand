@@ -43,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.EventCard
 import dk.zlatan.flotmand.design_system.componenets.FmBackButton
+import dk.zlatan.flotmand.design_system.componenets.FullScreenImageViewer
 import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
@@ -171,6 +172,15 @@ private fun UserDetailsContent(
     onEditBioClick: () -> Unit,
 ) {
     val danishFormatter = remember { DanishDateFormatter.getDanishDateFormatter("E 'd.' d MMM") }
+    var showFullScreenImage by rememberSaveable { mutableStateOf(false) }
+
+    if (showFullScreenImage) {
+        FullScreenImageViewer(
+            imageUrl = user.photoUrl,
+            onDismiss = { showFullScreenImage = false },
+            contentDescription = user.displayName,
+        )
+    }
 
     Column(
         modifier = modifier
@@ -185,6 +195,11 @@ private fun UserDetailsContent(
             profilePic = user.photoUrl,
             userName = user.displayName,
             profileSize = 96.dp,
+            onClick = if (user.photoUrl.isNotBlank()) {
+                { showFullScreenImage = true }
+            } else {
+                null
+            },
         )
 
         VSpacer(12.dp)
