@@ -79,6 +79,7 @@
     <string name="login_title">Rita inn</string>
     <string name="login_with_google">Rita inn við Google-kontu</string>
     <string name="login_tagline">Savna vinirnar um góðan mat</string>
+    <string name="event_image_drag_hint">Drag fyri at stilla skurðin</string>
     <string name="profile_setup_title">Fullfør tín profil</string>
     <string name="profile_setup_subtitle">Kanna títt navn, og legg telefonnummar og eina stutta lýsing afturat, so vinirnir kenna teg.</string>
     <string name="profile_setup_name_label">Navn</string>

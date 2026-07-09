@@ -12,6 +12,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,16 +68,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -284,6 +290,7 @@ internal fun AddEventScreen(
             isEditMode = false,
             onEventImageUrlChange = viewModel::onEventImageUrlChange,
             onImageUrlFromClipboard = viewModel::onImageUrlFromClipboard,
+            onImageFocusChange = viewModel::onImageFocusChange,
         )
         }
 
@@ -443,6 +450,7 @@ internal fun EditEventScreen(
             isEditMode = true,
             onEventImageUrlChange = viewModel::onEventImageUrlChange,
             onImageUrlFromClipboard = viewModel::onImageUrlFromClipboard,
+            onImageFocusChange = viewModel::onImageFocusChange,
         )
     }
 }
@@ -469,6 +477,7 @@ private fun EventScreenContent(
     isKeyboardOpen: Boolean,
     onEventImageUrlChange: (String) -> Unit = {},
     onImageUrlFromClipboard: (String) -> Unit = {},
+    onImageFocusChange: (Float) -> Unit = {},
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -607,12 +616,28 @@ private fun EventScreenContent(
             val imageUrl = event.eventImageUrl
             if (!imageUrl.isNullOrBlank()) {
                 VSpacer(8.dp)
+                val focusY = (event.imageFocusY ?: 0.5).toFloat()
+                // pointerInput is keyed on the url, so the drag lambda would capture a
+                // stale focus value without rememberUpdatedState.
+                val currentFocusY by rememberUpdatedState(focusY)
+                var previewHeightPx by remember { mutableIntStateOf(0) }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(140.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .onSizeChanged { previewHeightPx = it.height }
+                        .pointerInput(imageUrl) {
+                            detectVerticalDragGestures { change, dragAmount ->
+                                change.consume()
+                                if (previewHeightPx > 0) {
+                                    // Dragging down reveals content further up the image.
+                                    val delta = -dragAmount / (previewHeightPx * 2f)
+                                    onImageFocusChange((currentFocusY + delta).coerceIn(0f, 1f))
+                                }
+                            }
+                        },
                 ) {
                     val context = LocalContext.current
                     AsyncImage(
@@ -622,6 +647,7 @@ private fun EventScreenContent(
                             .build(),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
+                        alignment = BiasAlignment(0f, focusY * 2f - 1f),
                         modifier = Modifier.fillMaxSize(),
                         onError = { imageLoadError = true },
                         onSuccess = { imageLoadError = false },
@@ -634,6 +660,18 @@ private fun EventScreenContent(
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .padding(horizontal = 16.dp),
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.event_image_drag_hint),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                                .clip(RoundedCornerShape(50))
+                                .background(Color.Black.copy(alpha = 0.45f))
+                                .padding(horizontal = 10.dp, vertical = 4.dp),
                         )
                     }
                 }

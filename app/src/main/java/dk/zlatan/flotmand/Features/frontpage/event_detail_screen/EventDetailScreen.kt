@@ -51,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -349,6 +350,8 @@ private fun EventDetailScreenContent(
                             .build(),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
+                        // Vertical focal point chosen by the host when picking the image.
+                        alignment = BiasAlignment(0f, ((event.imageFocusY ?: 0.5).toFloat() * 2f - 1f)),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(340.dp),

@@ -159,13 +159,18 @@ class AddEventViewModel
         }
 
         fun onEventImageUrlChange(url: String) {
-            _event.value = _event.value.copy(eventImageUrl = url.ifBlank { null })
+            // A focal point chosen for the previous image is meaningless for a new one.
+            _event.value = _event.value.copy(eventImageUrl = url.ifBlank { null }, imageFocusY = null)
         }
 
         fun onImageUrlFromClipboard(url: String) {
             if (isValidImageUrl(url)) {
-                _event.value = _event.value.copy(eventImageUrl = url)
+                _event.value = _event.value.copy(eventImageUrl = url, imageFocusY = null)
             }
+        }
+
+        fun onImageFocusChange(focusY: Float) {
+            _event.value = _event.value.copy(imageFocusY = focusY.toDouble())
         }
 
         fun onDescriptionChange(description: String) {

@@ -40,6 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -129,6 +130,8 @@ fun ClosestEventCard(
                             .build(),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
+                        // Same vertical focal point as the detail hero.
+                        alignment = BiasAlignment(0f, ((event.imageFocusY ?: 0.5).toFloat() * 2f - 1f)),
                         modifier = Modifier.matchParentSize(),
                         onError = { imageError = true },
                     )
