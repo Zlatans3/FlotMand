@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,6 +44,7 @@ fun DateTimeInfoBox(
     date: LocalDate?,
     time: LocalTime?,
     modifier: Modifier = Modifier,
+    onDateClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier =
@@ -56,9 +58,12 @@ fun DateTimeInfoBox(
                 modifier =
                     Modifier
                         .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
                         .background(
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(12.dp),
+                        ).then(
+                            if (onDateClick != null) Modifier.clickable(onClick = onDateClick) else Modifier,
                         ).padding(16.dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
@@ -84,6 +89,17 @@ fun DateTimeInfoBox(
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
+                }
+                if (onDateClick != null) {
+                    // Overlaid at the edge so it never steals width from the date text.
+                    Icon(
+                        imageVector = Icons.Filled.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(16.dp),
+                    )
                 }
             }
         }
@@ -214,6 +230,7 @@ private fun DateTimeInfoBoxPreview() {
         DateTimeInfoBox(
             date = LocalDate.of(2026, 1, 28),
             time = LocalTime.of(19, 0),
+            onDateClick = {},
         )
     }
 }

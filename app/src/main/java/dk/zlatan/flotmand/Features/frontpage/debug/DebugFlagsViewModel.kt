@@ -27,7 +27,8 @@ class DebugFlagsViewModel @Inject constructor(
     val flags: StateFlow<List<DebugFlagItem>> = combine(
         featureFlagManager.isEnabled(FeatureKey.SHOW_PHONE_DIALOG_ON_PRICE_ADDED),
         featureFlagManager.isEnabled(FeatureKey.SHOW_NEXT_HOST_BANNER),
-    ) { showPhoneDialog, showNextHostBanner ->
+        featureFlagManager.isEnabled(FeatureKey.FORCE_PROFILE_SETUP),
+    ) { showPhoneDialog, showNextHostBanner, forceProfileSetup ->
         listOf(
             DebugFlagItem(
                 key = FeatureKey.SHOW_PHONE_DIALOG_ON_PRICE_ADDED,
@@ -40,6 +41,12 @@ class DebugFlagsViewModel @Inject constructor(
                 displayName = "Next host banner",
                 description = "Show a banner on the front page when it's the user's next turn to host",
                 isEnabled = showNextHostBanner,
+            ),
+            DebugFlagItem(
+                key = FeatureKey.FORCE_PROFILE_SETUP,
+                displayName = "Force profile setup",
+                description = "Present the first-time profile setup screen; auto-disables when you continue or skip",
+                isEnabled = forceProfileSetup,
             ),
         )
     }.stateIn(

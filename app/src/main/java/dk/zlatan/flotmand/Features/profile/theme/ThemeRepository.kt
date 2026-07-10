@@ -34,7 +34,10 @@ class ThemeRepository
         private fun getSavedThemeMode(): ThemeMode =
             runCatching {
                 ThemeMode.valueOf(
-                    prefs.getString(KEY_THEME_MODE, ThemeMode.FLOTMAND.name) ?: ThemeMode.FLOTMAND.name,
+                    prefs.getString(KEY_THEME_MODE, ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name,
                 )
-            }.getOrDefault(ThemeMode.FLOTMAND)
+            }.getOrDefault(ThemeMode.SYSTEM)
+                // FLOTMAND is not selectable in theme settings; mapping it to SYSTEM
+                // guarantees the settings screen always has a selected option.
+                .let { if (it == ThemeMode.FLOTMAND) ThemeMode.SYSTEM else it }
     }

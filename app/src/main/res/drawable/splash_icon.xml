@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ always clips the splash icon to an invisible circle.
+     ~15% inset keeps the (roughly square) logo inside that circular
+     safe zone — corners of a square hit the circle at ~14.6%. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/flotmandapp"
+    android:inset="15%" />

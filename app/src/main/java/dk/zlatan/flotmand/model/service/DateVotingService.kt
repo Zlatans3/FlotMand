@@ -46,6 +46,16 @@ interface DateVotingService {
      */
     suspend fun removeVote(votingId: String, date: LocalDate, userId: String)
 
+    /**
+     * Vote "none of the above dates" — clears the user's date votes
+     */
+    suspend fun addNoneVote(votingId: String, userId: String)
+
+    /**
+     * Retract a "none of the above dates" vote
+     */
+    suspend fun removeNoneVote(votingId: String, userId: String)
+
     suspend fun deleteVoteOption(voteOption: DateOption, votingId: String)
 
     /**

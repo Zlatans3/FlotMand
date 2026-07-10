@@ -48,6 +48,8 @@ data class DateVotingItem(
     val name: String? = null,
     val status: VotingStatus = VotingStatus.OPEN,
     val dateOptions: List<DateOption> = emptyList(),
+    // Users who voted "none of the above dates" — mutually exclusive with date votes
+    val noneVoterIds: List<String> = emptyList(),
     val createdAtString: String? = null
 ) {
     // use exclude to prevent Firestore from trying to serialize these locally computed properties
@@ -61,14 +63,23 @@ data class DateVotingItem(
 
     @get:Exclude
     val usersVoted: Int
-        get() = dateOptions.flatMap { it.votersId }.toSet().size
+        get() = (dateOptions.flatMap { it.votersId } + noneVoterIds).toSet().size
 
     @get:Exclude
     val isOpen: Boolean
         get() = status == VotingStatus.OPEN
 
+    // All votes cast, including "none of the dates" — shared percentage denominator
+    @get:Exclude
+    val allVotes: Int
+        get() = totalVotes + noneVoterIds.size
+
+    @get:Exclude
+    val noneVotePercentage: Int
+        get() = if (allVotes == 0) 0 else (noneVoterIds.size * 100) / allVotes
+
     fun getVotePercentage(dateOption: DateOption): Int {
-        return if (totalVotes == 0) 0 else (dateOption.voteCount * 100) / totalVotes
+        return if (allVotes == 0) 0 else (dateOption.voteCount * 100) / allVotes
     }
 
     fun addVote(date: LocalDate, userId: String): DateVotingItem {
@@ -85,7 +96,26 @@ data class DateVotingItem(
                 option
             }
         }
-        return this.copy(dateOptions = updatedOptions)
+        // Voting for a date contradicts "none of the dates"
+        return this.copy(
+            dateOptions = updatedOptions,
+            noneVoterIds = noneVoterIds.filterNot { it == userId },
+        )
+    }
+
+    fun addNoneVote(userId: String): DateVotingItem {
+        // "None of the dates" contradicts any date vote
+        val clearedOptions = dateOptions.map { option ->
+            option.copy(votersId = option.votersId.filterNot { it == userId })
+        }
+        return this.copy(
+            dateOptions = clearedOptions,
+            noneVoterIds = if (noneVoterIds.contains(userId)) noneVoterIds else noneVoterIds + userId,
+        )
+    }
+
+    fun removeNoneVote(userId: String): DateVotingItem {
+        return this.copy(noneVoterIds = noneVoterIds.filterNot { it == userId })
     }
 
     fun removeVote(date: LocalDate, userId: String): DateVotingItem {

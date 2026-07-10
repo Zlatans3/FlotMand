@@ -2,9 +2,8 @@ package dk.zlatan.flotmand.design_system.componenets
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -25,6 +25,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.imageLoader
 import coil.memory.MemoryCache
 import coil.request.ImageRequest
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.util.FirebaseStorageInterceptor
 
 @Composable
@@ -34,9 +35,17 @@ fun ProfileImage(
     profileSize: Dp = 40.dp,
     userName: String,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
 ) {
     val optionalClickableModifier =
-        if (onClick != null) Modifier.clickable { onClick() } else Modifier
+        if (onClick != null || onLongClick != null) {
+            Modifier.combinedClickable(
+                onClick = { onClick?.invoke() },
+                onLongClick = onLongClick,
+            )
+        } else {
+            Modifier
+        }
     val baseModifier = modifier
         .clip(CircleShape)
         .then(optionalClickableModifier)
@@ -61,7 +70,7 @@ fun ProfileImage(
         if (cachedBitmap != null) {
             Image(
                 painter = remember(cachedBitmap) { BitmapPainter(cachedBitmap.asImageBitmap()) },
-                contentDescription = "Profile Image",
+                contentDescription = stringResource(R.string.profile_image_content_description),
                 modifier = baseModifier,
             )
         } else {
@@ -78,7 +87,7 @@ fun ProfileImage(
             }
             SubcomposeAsyncImage(
                 model = model,
-                contentDescription = "Profile Image",
+                contentDescription = stringResource(R.string.profile_image_content_description),
                 modifier = baseModifier,
                 loading = { InitialsBadge(userName, profileSize) },
                 error = { InitialsBadge(userName, profileSize) },
@@ -93,7 +102,7 @@ fun ProfileImage(
 private fun InitialsBadge(
     userName: String,
     profileSize: Dp,
-    modifier: Modifier = Modifier.fillMaxSize(),
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier.background(MaterialTheme.colorScheme.inversePrimary),

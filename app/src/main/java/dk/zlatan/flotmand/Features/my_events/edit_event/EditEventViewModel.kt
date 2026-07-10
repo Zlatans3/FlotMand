@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventViewModel
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.Event
@@ -132,7 +133,8 @@ class EditEventViewModel @AssistedInject constructor(
     fun onLocationChange(textFieldValue: TextFieldValue) {
         Log.d(TAG, "onLocationChange: ${textFieldValue.text}")
         _locationTextFieldValue.value = textFieldValue
-        _event.value = _event.value.copy(location = textFieldValue.text)
+        _event.value = _event.value.copy(location = textFieldValue.text, geoLocation = null)
+        _selectedGeoLocation.value = null
         _errorMessage.value = null
         searchAddressPredictions(textFieldValue.text)
     }
@@ -153,6 +155,21 @@ class EditEventViewModel @AssistedInject constructor(
         Log.d(TAG, "onDescriptionChange: $description")
         _event.value = _event.value.copy(description = description)
         _errorMessage.value = null
+    }
+
+    fun onEventImageUrlChange(url: String) {
+        // A focal point chosen for the previous image is meaningless for a new one.
+        _event.value = _event.value.copy(eventImageUrl = url.ifBlank { null }, imageFocusY = null)
+    }
+
+    fun onImageUrlFromClipboard(url: String) {
+        if (AddEventViewModel.isValidImageUrl(url)) {
+            _event.value = _event.value.copy(eventImageUrl = url, imageFocusY = null)
+        }
+    }
+
+    fun onImageFocusChange(focusY: Float) {
+        _event.value = _event.value.copy(imageFocusY = focusY.toDouble())
     }
 
     private fun searchAddressPredictions(query: String) {

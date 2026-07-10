@@ -10,7 +10,11 @@ package dk.zlatan.flotmand.Features.frontpage.host_rotation
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.ui.tooling.preview.Preview
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +24,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.PersonAdd
@@ -46,7 +52,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dk.zlatan.flotmand.R
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -118,55 +127,62 @@ private fun HostRotationSheetContent(
         }
     }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 4.dp, bottom = 8.dp),
-    ) {
-        Text(
-            text = stringResource(R.string.rotation_order_title),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.weight(1f),
-        )
-        IconButton(onClick = onAddGhostUserClick) {
-            Icon(
-                imageVector = Icons.Filled.PersonAdd,
-                contentDescription = stringResource(R.string.add_user_content_description),
+    Column(modifier = Modifier.padding(start = 20.dp, end = 4.dp, bottom = 12.dp)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = stringResource(R.string.rotation_order_title),
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.weight(1f),
             )
+            IconButton(onClick = onAddGhostUserClick) {
+                Icon(
+                    imageVector = Icons.Filled.PersonAdd,
+                    contentDescription = stringResource(R.string.add_user_content_description),
+                )
+            }
         }
+        Text(
+            text = stringResource(R.string.rotation_reorder_hint),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(end = 16.dp),
+        )
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = lazyListState,
             modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(displayMembers, key = { it.id }) { user ->
                 ReorderableItem(reorderableState, key = user.id) { isDragging ->
                     val elevation by animateDpAsState(if (isDragging) 8.dp else 0.dp)
-                    Surface(shadowElevation = elevation) {
-                        RotationMemberRow(
-                            user = user,
-                            onRemove = { onRemoveUser(user.id) },
-                            dragHandle = {
-                                IconButton(
-                                    modifier = Modifier.draggableHandle(
-                                        onDragStopped = {
-                                            onSaveOrder(displayMembers.map { it.id })
-                                        },
-                                    ),
-                                    onClick = {},
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.DragHandle,
-                                        contentDescription = stringResource(R.string.drag_handle_content_description),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            },
-                        )
-                    }
+                    RotationMemberRow(
+                        user = user,
+                        shadowElevation = elevation,
+                        onRemove = { onRemoveUser(user.id) },
+                        dragHandle = {
+                            IconButton(
+                                modifier = Modifier.draggableHandle(
+                                    onDragStopped = {
+                                        onSaveOrder(displayMembers.map { it.id })
+                                    },
+                                ),
+                                onClick = {},
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.DragHandle,
+                                    contentDescription = stringResource(R.string.drag_handle_content_description),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        },
+                    )
                 }
             }
 
@@ -175,7 +191,7 @@ private fun HostRotationSheetContent(
                     onClick = onResetPlacements,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(vertical = 8.dp)
                         .navigationBarsPadding(),
                 ) {
                     Text(stringResource(R.string.reset_placements))
@@ -195,65 +211,73 @@ private fun HostRotationSheetContent(
 @Composable
 private fun RotationMemberRow(
     user: User,
+    shadowElevation: Dp = 0.dp,
     onRemove: () -> Unit,
     dragHandle: @Composable () -> Unit,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+        shadowElevation = shadowElevation,
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        dragHandle()
-
-        HSpacer(8.dp)
-
-        if (user.isGhostUser) {
-            Box(
-                modifier = Modifier.size(40.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.PersonOff,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(28.dp),
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+        ) {
+            if (user.isGhostUser) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PersonOff,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+            } else {
+                ProfileImage(
+                    profilePic = user.photoUrl,
+                    profileSize = 40.dp,
+                    userName = user.displayName,
                 )
             }
-        } else {
-            ProfileImage(
-                profilePic = user.photoUrl,
-                profileSize = 40.dp,
-                userName = user.displayName,
-            )
-        }
 
-        HSpacer(12.dp)
+            HSpacer(12.dp)
 
-        Text(
-            text = user.displayName,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
-
-        if (user.isGhostUser) {
-            Text(
-                text = stringResource(R.string.guest_label),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(end = 4.dp),
-            )
-        }
-
-        if (user.isGhostUser) {
-            IconButton(onClick = onRemove) {
-                Icon(
-                    imageVector = Icons.Filled.RemoveCircleOutline,
-                    contentDescription = stringResource(R.string.remove_content_description),
-                    tint = MaterialTheme.colorScheme.error,
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = user.displayName,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
+                if (user.isGhostUser) {
+                    Text(
+                        text = stringResource(R.string.guest_label),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
+
+            if (user.isGhostUser) {
+                IconButton(onClick = onRemove) {
+                    Icon(
+                        imageVector = Icons.Filled.RemoveCircleOutline,
+                        contentDescription = stringResource(R.string.remove_content_description),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+
+            dragHandle()
         }
     }
 }

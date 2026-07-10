@@ -4,11 +4,8 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.unit.IntOffset
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -16,10 +13,10 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.EventDetailScreenRoute
+import dk.zlatan.flotmand.Features.frontpage.user_details.UserDetailsScreenRoute
 import dk.zlatan.flotmand.Features.my_events.MyEventScreenRoute
 import dk.zlatan.flotmand.Features.my_events.add_new_event.AddEventScreen
 import dk.zlatan.flotmand.Features.my_events.add_new_event.EditEventScreen
-import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -91,6 +88,21 @@ fun MyEventsNavigation(
                                 viewModel.navigate(MyEventsDestination.EditEvent(eventId))
                             },
                             onNavigateToAccountInformation = onNavigateToAccountInformation,
+                            onUserClick = { userId ->
+                                viewModel.navigate(MyEventsDestination.UserDetails(userId))
+                            },
+                        )
+                    }
+                }
+
+                is MyEventsDestination.UserDetails -> {
+                    NavEntry(key) {
+                        UserDetailsScreenRoute(
+                            userId = key.userId,
+                            onDismiss = { viewModel.pop() },
+                            onEventClick = { eventId ->
+                                viewModel.navigate(MyEventsDestination.EventDetail(eventId))
+                            },
                         )
                     }
                 }

@@ -35,7 +35,6 @@ data class AddEventUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val isEventCreated: String? = null,
-    val hasHandledCreation: Boolean = false,
     val addressPredictions: List<AddressPrediction> = emptyList(),
     val isLoadingPredictions: Boolean = false,
     val selectedGeoLocation: GeoLocation? = null,
@@ -66,7 +65,6 @@ class AddEventViewModel
         private val _isLoading = MutableStateFlow(false)
         private val _errorMessage = MutableStateFlow<String?>(null)
         private val _isEventCreated = MutableStateFlow<String?>(null)
-        private val _hasHandledCreation = MutableStateFlow(false)
         private val _addressPredictions = MutableStateFlow<List<AddressPrediction>>(emptyList())
         private val _isLoadingPredictions = MutableStateFlow(false)
         private val _selectedGeoLocation = MutableStateFlow<GeoLocation?>(null)
@@ -105,7 +103,6 @@ class AddEventViewModel
                 _isLoading,
                 _errorMessage,
                 _isEventCreated,
-                _hasHandledCreation,
                 _addressPredictions,
                 _isLoadingPredictions,
                 _selectedGeoLocation,
@@ -116,7 +113,6 @@ class AddEventViewModel
                 isLoading: Boolean,
                 errorMessage: String?,
                 isEventCreated: String?,
-                hasHandledCreation: Boolean,
                 addressPredictions: List<AddressPrediction>,
                 isLoadingPredictions: Boolean,
                 selectedGeoLocation: GeoLocation?,
@@ -128,7 +124,6 @@ class AddEventViewModel
                     isLoading = isLoading,
                     errorMessage = errorMessage,
                     isEventCreated = isEventCreated,
-                    hasHandledCreation = hasHandledCreation,
                     addressPredictions = addressPredictions,
                     isLoadingPredictions = isLoadingPredictions,
                     selectedGeoLocation = selectedGeoLocation,
@@ -145,7 +140,8 @@ class AddEventViewModel
 
         fun onLocationChange(textFieldValue: TextFieldValue) {
             _locationTextFieldValue.value = textFieldValue
-            _event.value = _event.value.copy(location = textFieldValue.text)
+            _event.value = _event.value.copy(location = textFieldValue.text, geoLocation = null)
+            _selectedGeoLocation.value = null
             _errorMessage.value = null
 
             // Trigger address predictions with debounce
@@ -160,6 +156,21 @@ class AddEventViewModel
         fun onEventTimeChange(time: LocalTime) {
             _event.value = _event.value.copyWithDates(eventStartTime = time)
             _errorMessage.value = null
+        }
+
+        fun onEventImageUrlChange(url: String) {
+            // A focal point chosen for the previous image is meaningless for a new one.
+            _event.value = _event.value.copy(eventImageUrl = url.ifBlank { null }, imageFocusY = null)
+        }
+
+        fun onImageUrlFromClipboard(url: String) {
+            if (isValidImageUrl(url)) {
+                _event.value = _event.value.copy(eventImageUrl = url, imageFocusY = null)
+            }
+        }
+
+        fun onImageFocusChange(focusY: Float) {
+            _event.value = _event.value.copy(imageFocusY = focusY.toDouble())
         }
 
         fun onDescriptionChange(description: String) {
@@ -331,6 +342,13 @@ class AddEventViewModel
             _errorMessage.value = null
         }
 
+        companion object {
+            fun isValidImageUrl(url: String): Boolean {
+                val lower = url.lowercase()
+                return lower.startsWith("https://") && lower.contains(".com")
+            }
+        }
+
         /** Secret autofill triggered by 5 taps on the top bar title. Dev/test only. */
         fun autofillTestData() {
             val address = "Rådhuspladsen 1, 1550 København V"
@@ -359,7 +377,6 @@ class AddEventViewModel
             _isLoading.value = false
             _errorMessage.value = null
             _isEventCreated.value = null
-            _hasHandledCreation.value = false
             _addressPredictions.value = emptyList()
             _isLoadingPredictions.value = false
             _selectedGeoLocation.value = null

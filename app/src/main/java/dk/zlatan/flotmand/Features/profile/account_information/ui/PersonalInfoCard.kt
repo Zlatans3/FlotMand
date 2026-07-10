@@ -43,7 +43,6 @@ internal fun PersonalInfoCard(
 
     EditableInfoCard(
         modifier = modifier,
-        title = stringResource(R.string.personal_info_title),
         items =
             buildList {
                 if (user.displayName.isNotEmpty() || isEditingDisplayName) {

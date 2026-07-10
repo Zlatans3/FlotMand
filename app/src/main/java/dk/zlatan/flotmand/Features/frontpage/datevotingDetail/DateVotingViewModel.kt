@@ -112,10 +112,9 @@ internal class DateVotingViewModel
         private fun fetchVoterData(voting: DateVotingItem) {
             viewModelScope.launch {
                 try {
-                    // Collect all unique voter IDs
+                    // Collect all unique voter IDs, including "none of the dates" voters
                     val allVoterIds =
-                        voting.dateOptions
-                            .flatMap { it.votersId }
+                        (voting.dateOptions.flatMap { it.votersId } + voting.noneVoterIds)
                             .distinct()
 
                     if (allVoterIds.isEmpty()) {
@@ -148,6 +147,42 @@ internal class DateVotingViewModel
                     _uiState.update {
                         it.copy(
                             snackbarMessage = stringProvider.getString(R.string.error_vote, e.message.orEmpty()),
+                        )
+                    }
+                }
+            }
+        }
+
+        fun onVoteForNone() {
+            viewModelScope.launch {
+                try {
+                    val votingId = uiState.value.dateVotingItem?.votingId ?: return@launch
+                    val userId = accountService.currentUserId
+                    dateVotingService.addNoneVote(votingId, userId)
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(
+                            snackbarMessage = stringProvider.getString(R.string.error_vote, e.message.orEmpty()),
+                        )
+                    }
+                }
+            }
+        }
+
+        fun onRemoveNoneVote() {
+            viewModelScope.launch {
+                try {
+                    val votingId = uiState.value.dateVotingItem?.votingId ?: return@launch
+                    val userId = accountService.currentUserId
+                    dateVotingService.removeNoneVote(votingId, userId)
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(
+                            snackbarMessage =
+                                stringProvider.getString(
+                                    R.string.error_remove_vote,
+                                    e.message.orEmpty(),
+                                ),
                         )
                     }
                 }

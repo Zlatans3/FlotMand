@@ -12,10 +12,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 
 @Composable
@@ -32,7 +34,7 @@ fun ProfileStatsRow(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        StatItem(count = eventsHosted, label = "Events\nafholdt")
+        StatItem(count = eventsHosted, label = stringResource(R.string.profile_stats_hosted))
         HorizontalDivider(
             modifier = Modifier
                 .width(1.dp)
@@ -40,7 +42,7 @@ fun ProfileStatsRow(
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
         )
-        StatItem(count = eventsAttended, label = "Events\ndeltaget")
+        StatItem(count = eventsAttended, label = stringResource(R.string.profile_stats_attended))
         HorizontalDivider(
             modifier = Modifier
                 .width(1.dp)
@@ -48,7 +50,7 @@ fun ProfileStatsRow(
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
         )
-        StatItem(count = totalEvents, label = "Events\ni alt")
+        StatItem(count = totalEvents, label = stringResource(R.string.profile_stats_total))
     }
 }
 

@@ -43,6 +43,7 @@ import dk.zlatan.flotmand.Features.frontpage.navigation.FrontPageNavigationViewM
 import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsDestination
 import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigation
 import dk.zlatan.flotmand.Features.my_events.navigaiton.MyEventsNavigationViewModel
+import dk.zlatan.flotmand.Features.onboarding.ProfileSetupScreenRoute
 import dk.zlatan.flotmand.Features.polls.navigation.PollsNavigation
 import dk.zlatan.flotmand.Features.polls.navigation.PollsNavigationViewModel
 import dk.zlatan.flotmand.Features.profile.navigation.ProfileDestination
@@ -72,6 +73,12 @@ fun AppNavigation(
                 AppDestination.Authentication -> {
                     NavEntry(key) {
                         AuthenticationNavigation()
+                    }
+                }
+
+                AppDestination.ProfileSetup -> {
+                    NavEntry(key) {
+                        ProfileSetupScreenRoute(modifier = modifier)
                     }
                 }
 

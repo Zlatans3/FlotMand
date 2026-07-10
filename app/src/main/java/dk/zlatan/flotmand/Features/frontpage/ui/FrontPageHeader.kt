@@ -1,11 +1,11 @@
 package dk.zlatan.flotmand.Features.frontpage.ui
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +24,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
@@ -86,6 +87,8 @@ fun newFmTopAppBar(
     unreadNotificationCount: Int,
     onNotificationsClick: () -> Unit = {},
     onUserClicked: (() -> Unit)?,
+    onUserLongClicked: (() -> Unit)? = null,
+    onLogoClicked: (() -> Unit)? = null,
 ) {
     val insert = TopAppBarDefaults.windowInsets
     Column(modifier = modifier) {
@@ -100,13 +103,24 @@ fun newFmTopAppBar(
             navigationIcon = {
                 Row {
                     HSpacer(10.dp)
+                    val logoClickModifier =
+                        if (onLogoClicked != null) {
+                            Modifier.clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = onLogoClicked,
+                            )
+                        } else {
+                            Modifier
+                        }
                     Image(
                         painter = painterResource(id = R.drawable.flotmandapp),
                         contentDescription = stringResource(R.string.flotmand_logo_content_description),
                         modifier =
                             Modifier
                                 .size(40.dp)
-                                .padding(start = 8.dp),
+                                .padding(start = 8.dp)
+                                .then(logoClickModifier),
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                     )
                 }
@@ -153,6 +167,7 @@ fun newFmTopAppBar(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onUserClicked?.invoke()
                     },
+                    onLongClick = onUserLongClicked,
                 )
                 HSpacer(20.dp)
             },

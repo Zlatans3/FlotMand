@@ -11,15 +11,22 @@ data class User(
     val provider: String = "",
     val displayName: String = "",
     val photoUrl: String = "",
+    val bio: String = "",
     val isAnonymous: Boolean = true,
     @field:PropertyName("isGhostUser")
     @get:PropertyName("isGhostUser")
     val isGhostUser: Boolean = false,
     val fcmToken: String = "",
+    // First-time profile setup state. Only written for users created after the
+    // feature shipped: null = field absent (user predates the feature, never prompt),
+    // false = new user who hasn't finished setup yet, true = setup done or skipped.
+    val profileCompleted: Boolean? = null,
 ) {
     fun getFirstName(): String = displayName.split(" ").firstOrNull() ?: displayName
 
     companion object {
+        const val BIO_MAX_LENGTH = 140
+
         fun mockUserWithCounter(counter: Int): List<User> =
             List(counter) { index ->
                 val names =

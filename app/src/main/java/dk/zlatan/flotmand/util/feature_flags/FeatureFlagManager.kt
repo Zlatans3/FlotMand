@@ -22,4 +22,12 @@ class FeatureFlagManager @Inject constructor(
             prefs[key.prefKey] = !(prefs[key.prefKey] ?: false)
         }
     }
+
+    // No debug check: disabling is a no-op in release builds, where flags are never set,
+    // and app flows use it to reset one-shot flags (e.g. FORCE_PROFILE_SETUP).
+    suspend fun disable(key: FeatureKey) {
+        dataStore.edit { prefs ->
+            prefs[key.prefKey] = false
+        }
+    }
 }

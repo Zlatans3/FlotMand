@@ -10,4 +10,7 @@ enum class FeatureKey(val prefKey: Preferences.Key<Boolean>) {
     SHOW_NEXT_HOST_BANNER(
         booleanPreferencesKey("show_next_host_banner"),
     ),
+    FORCE_PROFILE_SETUP(
+        booleanPreferencesKey("force_profile_setup"),
+    ),
 }
