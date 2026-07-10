@@ -110,17 +110,17 @@ private fun HostOptionsContent(
         }
         ActionRow(
             icon = Icons.AutoMirrored.Filled.ExitToApp,
-            label = "Giv pladsen videre",
+            label = stringResource(R.string.rotation_pass_spot),
             onClick = onGiveUpSpot,
         )
         ActionRow(
             icon = Icons.Filled.Edit,
-            label = "Skift vært",
+            label = stringResource(R.string.rotation_change_host),
             onClick = onReplaceUser,
         )
         ActionRow(
             icon = Icons.Filled.Delete,
-            label = "Fjern fra rækkefølgen",
+            label = stringResource(R.string.rotation_remove_from_order),
             color = MaterialTheme.colorScheme.error,
             iconTint = MaterialTheme.colorScheme.error,
             onClick = onRemoveFromRotation,
@@ -136,7 +136,7 @@ private fun UserPickerContent(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Vælg en person",
+            text = stringResource(R.string.rotation_choose_person),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),

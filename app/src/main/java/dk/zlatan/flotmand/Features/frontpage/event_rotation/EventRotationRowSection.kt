@@ -22,9 +22,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 
 @Composable
@@ -45,21 +47,21 @@ fun RotationImagesAndNames(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Ingen i rækkefølgen endnu",
+            text = stringResource(R.string.rotation_empty_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "Tilmeld dig og sæt rotationen i gang",
+            text = stringResource(R.string.rotation_empty_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(20.dp))
         Button(onClick = onAddSelf) {
-            Text("Tilmeld mig")
+            Text(stringResource(R.string.rotation_join_button))
         }
     }
 }

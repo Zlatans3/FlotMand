@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -24,6 +25,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.imageLoader
 import coil.memory.MemoryCache
 import coil.request.ImageRequest
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.util.FirebaseStorageInterceptor
 
 @Composable
@@ -68,7 +70,7 @@ fun ProfileImage(
         if (cachedBitmap != null) {
             Image(
                 painter = remember(cachedBitmap) { BitmapPainter(cachedBitmap.asImageBitmap()) },
-                contentDescription = "Profile Image",
+                contentDescription = stringResource(R.string.profile_image_content_description),
                 modifier = baseModifier,
             )
         } else {
@@ -85,7 +87,7 @@ fun ProfileImage(
             }
             SubcomposeAsyncImage(
                 model = model,
-                contentDescription = "Profile Image",
+                contentDescription = stringResource(R.string.profile_image_content_description),
                 modifier = baseModifier,
                 loading = { InitialsBadge(userName, profileSize) },
                 error = { InitialsBadge(userName, profileSize) },

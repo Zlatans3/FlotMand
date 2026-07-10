@@ -104,7 +104,7 @@
     <string name="create_voting_label">Naziv glasanja</string>
     <string name="create_voting_placeholder">Npr. kod Davida</string>
     <string name="voting_list_title">Glasanja</string>
-    <string name="voting_list_loading">Učitavanje glasanja...</string>
+    <string name="voting_list_loading">Učitavanje glasanja…</string>
     <string name="create_voting_content_description">Kreiraj novo glasanje</string>
     <string name="error_could_not_create_voting">Nije moguće kreirati glasanje: %1$s</string>
     <string name="date_icon_content_description">Ikona datuma</string>
@@ -233,7 +233,7 @@
     <string name="theme_dark_description">Uvijek tamni način</string>
 
     <string name="error_loading_event">Nešto je pošlo po krivu</string>
-    <string name="my_events_loading">Učitavanje vaših eventa...</string>
+    <string name="my_events_loading">Učitavanje vaših eventa…</string>
     <string name="my_events_empty_create_prompt">Kreirajte svoj prvi event!</string>
     <string name="add_event_content_description">Dodaj event</string>
     <string name="tab_upcoming">Nadolazeći</string>
@@ -357,4 +357,24 @@
     <string name="user_details_user_not_found">Korisnik nije pronađen</string>
     <string name="voting_list_empty">Još\nnema\nglasanja</string>
     <string name="voting_list_empty_subtitle">Kada najbolje odgovara?\nKreirajte glasanje i saznajte</string>
+
+    <string name="profile_image_content_description">Profilna slika</string>
+    <string name="profile_stats_hosted">Organizovani\neventi</string>
+    <string name="profile_stats_attended">Posjećeni\neventi</string>
+    <string name="profile_stats_total">Eventi\nukupno</string>
+    <string name="show_more_options">Prikaži više opcija</string>
+    <string name="rotation_vacant_label">Slobodno mjesto</string>
+    <string name="rotation_join_label">Prijavi se</string>
+    <string name="rotation_you_label">Ti</string>
+    <string name="rotation_empty_title">Još nema nikoga u redoslijedu</string>
+    <string name="rotation_empty_subtitle">Prijavite se i pokrenite rotaciju</string>
+    <string name="rotation_join_button">Prijavi me</string>
+    <string name="rotation_reminder_message">Kreirajte glasanje ili event za svoj mjesec.</string>
+    <string name="rotation_reminder_action">Kreiraj sada</string>
+    <string name="rotation_pass_spot">Proslijedi mjesto</string>
+    <string name="rotation_change_host">Promijeni domaćina</string>
+    <string name="rotation_remove_from_order">Ukloni iz redoslijeda</string>
+    <string name="rotation_choose_person">Odaberite osobu</string>
+    <string name="copy_address_content_description">Kopiraj adresu</string>
+    <string name="event_detail_location_label">Lokacija</string>
 </resources>

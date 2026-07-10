@@ -40,12 +40,14 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.ProfileImage
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
@@ -58,9 +60,9 @@ fun RotationTimeline(
     items: List<RotationTimelineItem>,
     onNormalCardClick: (monthId: String, hostId: String, hostName: String) -> Unit,
     onVacantCardClick: (monthId: String) -> Unit,
+    modifier: Modifier = Modifier,
     showAddSelf: Boolean = false,
     onAddSelf: () -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     LazyRow(
         modifier = modifier,
@@ -209,7 +211,7 @@ private fun VacantRotationCard(
                 VSpacer(10.dp)
 
                 Text(
-                    text = "Ledig plads",
+                    text = stringResource(R.string.rotation_vacant_label),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = contentColor,
@@ -250,7 +252,7 @@ private fun AddSelfCard(onClick: () -> Unit) {
         modifier = Modifier.width(CardWidth),
     ) {
         MonthLabel(
-            label = "Tilmeld",
+            label = stringResource(R.string.rotation_join_label),
             color = primaryColor,
             isCurrent = false,
         )
@@ -288,7 +290,7 @@ private fun AddSelfCard(onClick: () -> Unit) {
                 VSpacer(10.dp)
 
                 Text(
-                    text = "Dig",
+                    text = stringResource(R.string.rotation_you_label),
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Medium,
                     color = primaryColor,

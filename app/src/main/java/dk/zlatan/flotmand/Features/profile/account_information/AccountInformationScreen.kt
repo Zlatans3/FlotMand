@@ -1,7 +1,6 @@
 package dk.zlatan.flotmand.Features.profile.account_information
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,8 +43,6 @@ import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.componenets.topappbar.FmTopAppBar
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.User
-import kotlinx.coroutines.CoroutineScope
-import kotlin.jvm.java
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,7 +84,7 @@ internal fun AccountInformationScreenRoute(
                     IconButton(onClick = { expandDropdownMenu = !expandDropdownMenu }) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            contentDescription = "Show more options"
+                            contentDescription = stringResource(R.string.show_more_options)
                         )
                     }
 

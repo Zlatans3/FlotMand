@@ -156,7 +156,7 @@
     <string name="create_voting_label">Navn på afstemning</string>
     <string name="create_voting_placeholder">F.eks. hos David</string>
     <string name="voting_list_title">Afstemninger</string>
-    <string name="voting_list_loading">Henter afstemninger...</string>
+    <string name="voting_list_loading">Henter afstemninger…</string>
     <string name="voting_list_empty">Ingen\nafstemninger\nendnu</string>
     <string name="voting_list_empty_subtitle">Hvornår passer det bedst?\nOpret en afstemning og find ud af det</string>
     <string name="create_voting_content_description">Opret ny afstemning</string>
@@ -201,7 +201,7 @@
     <string name="remove_voting_permanently">Fjern denne afstemning permanent</string>
 
     <!-- New strings for EventDetailScreen -->
-    <string name="loading_event">Henter et flot event...</string>
+    <string name="loading_event">Henter et flot event…</string>
     <string name="event_not_found">Event ikke fundet</string>
     <string name="event_not_loaded">Eventet kunne ikke indlæses eller eksisterer ikke</string>
     <string name="open_navigation_with">Åbn navigation med</string>
@@ -320,7 +320,7 @@
     <string name="error_loading_event">Noget gik galt</string>
 
     <!-- My Events screen -->
-    <string name="my_events_loading">Henter dine events...</string>
+    <string name="my_events_loading">Henter dine events…</string>
     <string name="my_events_empty_create_prompt">Opret dit første event!</string>
     <string name="add_event_content_description">Tilføj event</string>
 
@@ -423,4 +423,25 @@
 
     <!-- Date voting -->
     <string name="none_of_the_dates">Ingen af ovenstående datoer</string>
+
+    <!-- Previously hardcoded in composables -->
+    <string name="profile_image_content_description">Profilbillede</string>
+    <string name="profile_stats_hosted">Events\nafholdt</string>
+    <string name="profile_stats_attended">Events\ndeltaget</string>
+    <string name="profile_stats_total">Events\ni alt</string>
+    <string name="show_more_options">Vis flere muligheder</string>
+    <string name="rotation_vacant_label">Ledig plads</string>
+    <string name="rotation_join_label">Tilmeld</string>
+    <string name="rotation_you_label">Dig</string>
+    <string name="rotation_empty_title">Ingen i rækkefølgen endnu</string>
+    <string name="rotation_empty_subtitle">Tilmeld dig og sæt rotationen i gang</string>
+    <string name="rotation_join_button">Tilmeld mig</string>
+    <string name="rotation_reminder_message">Opret en afstemning eller et event for din måned.</string>
+    <string name="rotation_reminder_action">Opret nu</string>
+    <string name="rotation_pass_spot">Giv pladsen videre</string>
+    <string name="rotation_change_host">Skift vært</string>
+    <string name="rotation_remove_from_order">Fjern fra rækkefølgen</string>
+    <string name="rotation_choose_person">Vælg en person</string>
+    <string name="copy_address_content_description">Kopier adresse</string>
+    <string name="event_detail_location_label">Lokation</string>
 </resources>

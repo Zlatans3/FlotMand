@@ -103,7 +103,7 @@
     <string name="create_voting_label">Navn á atkvøðu</string>
     <string name="create_voting_placeholder">T.d. hjá David</string>
     <string name="voting_list_title">Atkvøður</string>
-    <string name="voting_list_loading">Heintar atkvøður...</string>
+    <string name="voting_list_loading">Heintar atkvøður…</string>
     <string name="create_voting_content_description">Stovna nýggja atkvøðu</string>
     <string name="error_could_not_create_voting">Kundi ikki stovna atkvøðu: %1$s</string>
     <string name="date_icon_content_description">Dato ikon</string>
@@ -140,7 +140,7 @@
     <string name="delete_voting_content_description">Strika atkvøðu</string>
     <string name="delete_voting">Strika Atkvøðu</string>
     <string name="remove_voting_permanently">Fjarn hesa atkvøðu varandi</string>
-    <string name="loading_event">Heintar eitt flott tiltak...</string>
+    <string name="loading_event">Heintar eitt flott tiltak…</string>
     <string name="event_not_found">Tiltak ikki funnið</string>
     <string name="event_not_loaded">Tiltakið kundi ikki latast upp ella finst ikki</string>
     <string name="open_navigation_with">Lat upp navigatión við</string>
@@ -232,7 +232,7 @@
     <string name="theme_dark_description">Altíð dimmur</string>
 
     <string name="error_loading_event">Eitthvað fór úrskeiðis</string>
-    <string name="my_events_loading">Heintar tín tiltøk...</string>
+    <string name="my_events_loading">Heintar tín tiltøk…</string>
     <string name="my_events_empty_create_prompt">Stovna títt fyrsta tiltak!</string>
     <string name="add_event_content_description">Legg tiltak afturat</string>
     <string name="tab_upcoming">Komandi</string>
@@ -354,4 +354,24 @@
     <string name="user_details_user_not_found">Brúkarin varð ikki funnin</string>
     <string name="voting_list_empty">Ongar\natkvøðugreiðslur\nenn</string>
     <string name="voting_list_empty_subtitle">Nær hóskar best?\nStovna eina atkvøðugreiðslu og fá at vita</string>
+
+    <string name="profile_image_content_description">Vangamynd</string>
+    <string name="profile_stats_hosted">Tiltøk\nhildin</string>
+    <string name="profile_stats_attended">Tiltøk\nluttikið í</string>
+    <string name="profile_stats_total">Tiltøk\ntilsamans</string>
+    <string name="show_more_options">Vís fleiri møguleikar</string>
+    <string name="rotation_vacant_label">Leyst pláss</string>
+    <string name="rotation_join_label">Melda til</string>
+    <string name="rotation_you_label">Tú</string>
+    <string name="rotation_empty_title">Eingin í raðfylgjuni enn</string>
+    <string name="rotation_empty_subtitle">Melda teg til og set rotatiónina í gongd</string>
+    <string name="rotation_join_button">Melda meg til</string>
+    <string name="rotation_reminder_message">Stovna eina atkvøðugreiðslu ella eitt tiltak fyri tín mánað.</string>
+    <string name="rotation_reminder_action">Stovna nú</string>
+    <string name="rotation_pass_spot">Lat plássið víðari</string>
+    <string name="rotation_change_host">Skift vert</string>
+    <string name="rotation_remove_from_order">Tak burtur úr raðfylgjuni</string>
+    <string name="rotation_choose_person">Vel ein persón</string>
+    <string name="copy_address_content_description">Avrita adressu</string>
+    <string name="event_detail_location_label">Staður</string>
 </resources>

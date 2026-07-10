@@ -140,7 +140,7 @@
     <string name="delete_voting_content_description">Excluir votação</string>
     <string name="delete_voting">Excluir Votação</string>
     <string name="remove_voting_permanently">Remover esta votação permanentemente</string>
-    <string name="loading_event">Carregando um evento elegante...</string>
+    <string name="loading_event">Carregando um evento elegante…</string>
     <string name="event_not_found">Evento não encontrado</string>
     <string name="event_not_loaded">O evento não pôde ser carregado ou não existe</string>
     <string name="open_navigation_with">Abrir navegação com</string>
@@ -232,7 +232,7 @@
     <string name="theme_dark_description">Sempre no modo escuro</string>
 
     <string name="error_loading_event">Algo deu errado</string>
-    <string name="my_events_loading">Carregando seus eventos...</string>
+    <string name="my_events_loading">Carregando seus eventos…</string>
     <string name="my_events_empty_create_prompt">Crie seu primeiro evento!</string>
     <string name="add_event_content_description">Adicionar evento</string>
     <string name="tab_upcoming">Próximos</string>
@@ -354,4 +354,24 @@
     <string name="user_details_user_not_found">Utilizador não encontrado</string>
     <string name="voting_list_empty">Ainda\nsem\nvotações</string>
     <string name="voting_list_empty_subtitle">Quando dá mais jeito?\nCrie uma votação e descubra</string>
+
+    <string name="profile_image_content_description">Foto de perfil</string>
+    <string name="profile_stats_hosted">Eventos\norganizados</string>
+    <string name="profile_stats_attended">Eventos\nparticipados</string>
+    <string name="profile_stats_total">Eventos\nno total</string>
+    <string name="show_more_options">Mostrar mais opções</string>
+    <string name="rotation_vacant_label">Lugar livre</string>
+    <string name="rotation_join_label">Inscrever</string>
+    <string name="rotation_you_label">Tu</string>
+    <string name="rotation_empty_title">Ainda ninguém na ordem</string>
+    <string name="rotation_empty_subtitle">Inscreva-se e ponha a rotação a andar</string>
+    <string name="rotation_join_button">Inscrever-me</string>
+    <string name="rotation_reminder_message">Crie uma votação ou um evento para o seu mês.</string>
+    <string name="rotation_reminder_action">Criar agora</string>
+    <string name="rotation_pass_spot">Passar o lugar</string>
+    <string name="rotation_change_host">Mudar anfitrião</string>
+    <string name="rotation_remove_from_order">Remover da ordem</string>
+    <string name="rotation_choose_person">Escolha uma pessoa</string>
+    <string name="copy_address_content_description">Copiar endereço</string>
+    <string name="event_detail_location_label">Localização</string>
 </resources>
