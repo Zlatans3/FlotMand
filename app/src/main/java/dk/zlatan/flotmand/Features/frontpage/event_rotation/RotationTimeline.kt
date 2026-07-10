@@ -67,6 +67,12 @@ fun RotationTimeline(
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        // First in the row so users discover it without scrolling past the months.
+        if (showAddSelf) {
+            item(key = "add_self") {
+                AddSelfCard(onClick = onAddSelf)
+            }
+        }
         items(items, key = { it.monthId }) { item ->
             when (item) {
                 is RotationTimelineItem.Normal -> NormalRotationCard(
@@ -78,11 +84,6 @@ fun RotationTimeline(
                     item = item,
                     onClick = { onVacantCardClick(item.monthId) },
                 )
-            }
-        }
-        if (showAddSelf) {
-            item(key = "add_self") {
-                AddSelfCard(onClick = onAddSelf)
             }
         }
     }

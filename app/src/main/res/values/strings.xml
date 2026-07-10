@@ -127,6 +127,12 @@
     <string name="login_with_google">Login med din Google-konto</string>
     <string name="login_tagline">Saml vennerne om god mad</string>
     <string name="event_image_drag_hint">Træk for at justere beskæringen</string>
+    <string name="voting_add_date_button">Tilføj dato</string>
+    <string name="voting_done_button">Færdig</string>
+    <plurals name="voting_dates_added">
+        <item quantity="one">%d dato tilføjet</item>
+        <item quantity="other">%d datoer tilføjet</item>
+    </plurals>
     <string name="profile_setup_title">Fuldfør din profil</string>
     <string name="profile_setup_subtitle">Tjek at dit navn er rigtigt, og tilføj telefonnummer og en kort bio, så vennerne kan kende dig.</string>
     <string name="profile_setup_name_label">Navn</string>

@@ -80,6 +80,13 @@
     <string name="login_with_google">Prijavite se sa Google računom</string>
     <string name="login_tagline">Okupi prijatelje uz dobru hranu</string>
     <string name="event_image_drag_hint">Povucite za podešavanje isječka</string>
+    <string name="voting_add_date_button">Dodaj datum</string>
+    <string name="voting_done_button">Gotovo</string>
+    <plurals name="voting_dates_added">
+        <item quantity="one">%d datum dodan</item>
+        <item quantity="few">%d datuma dodana</item>
+        <item quantity="other">%d datuma dodano</item>
+    </plurals>
     <string name="profile_setup_title">Dovršite svoj profil</string>
     <string name="profile_setup_subtitle">Provjerite svoje ime i dodajte broj telefona i kratku biografiju kako bi vas prijatelji prepoznali.</string>
     <string name="profile_setup_name_label">Ime</string>

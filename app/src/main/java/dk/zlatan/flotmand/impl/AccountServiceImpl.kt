@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 class AccountServiceImpl
@@ -276,6 +278,27 @@ class AccountServiceImpl
         }
 
         override suspend fun signOut() {
+            // Detach this device from the account, otherwise the old user's doc keeps
+            // this device's FCM token and pushes for that account keep arriving here
+            // after switching. Must happen before auth is torn down (security rules),
+            // and is best-effort with a timeout so an offline sign-out can't hang.
+            try {
+                withTimeoutOrNull(FCM_DETACH_TIMEOUT_MS) {
+                    val uid = currentUserId
+                    if (uid.isNotBlank()) {
+                        Firebase.firestore
+                            .collection(USERS_COLLECTION)
+                            .document(uid)
+                            .update(FCM_TOKEN_FIELD, FieldValue.delete())
+                            .await()
+                    }
+                    // Invalidate the token itself as a backstop: any doc still holding
+                    // it stops delivering, and a fresh token is issued at next sign-in.
+                    FirebaseMessaging.getInstance().deleteToken().await()
+                } ?: Log.w(TAG, "FCM detach timed out during sign-out (offline?)")
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to detach FCM token on sign-out: ${e.message}")
+            }
             Firebase.auth.signOut()
             // Session-scoped flags (e.g. the notification-permission prompt)
             // start fresh for the next login.
@@ -342,6 +365,7 @@ class AccountServiceImpl
         companion object {
             private const val USERS_COLLECTION = "users"
             private const val FCM_TOKEN_FIELD = "fcmToken"
+            private const val FCM_DETACH_TIMEOUT_MS = 3_000L
             private const val TAG = "AccountService"
         }
     }

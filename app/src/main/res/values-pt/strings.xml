@@ -80,6 +80,12 @@
     <string name="login_with_google">Entrar com sua conta Google</string>
     <string name="login_tagline">Junta os amigos à volta de boa comida</string>
     <string name="event_image_drag_hint">Arraste para ajustar o recorte</string>
+    <string name="voting_add_date_button">Adicionar data</string>
+    <string name="voting_done_button">Concluído</string>
+    <plurals name="voting_dates_added">
+        <item quantity="one">%d data adicionada</item>
+        <item quantity="other">%d datas adicionadas</item>
+    </plurals>
     <string name="profile_setup_title">Complete o seu perfil</string>
     <string name="profile_setup_subtitle">Confirme o seu nome e adicione um número de telefone e uma breve bio para que os amigos o reconheçam.</string>
     <string name="profile_setup_name_label">Nome</string>

@@ -80,6 +80,12 @@
     <string name="login_with_google">Rita inn við Google-kontu</string>
     <string name="login_tagline">Savna vinirnar um góðan mat</string>
     <string name="event_image_drag_hint">Drag fyri at stilla skurðin</string>
+    <string name="voting_add_date_button">Legg dato afturat</string>
+    <string name="voting_done_button">Liðugt</string>
+    <plurals name="voting_dates_added">
+        <item quantity="one">%d dato løgd afturat</item>
+        <item quantity="other">%d datoir lagdar afturat</item>
+    </plurals>
     <string name="profile_setup_title">Fullfør tín profil</string>
     <string name="profile_setup_subtitle">Kanna títt navn, og legg telefonnummar og eina stutta lýsing afturat, so vinirnir kenna teg.</string>
     <string name="profile_setup_name_label">Navn</string>
