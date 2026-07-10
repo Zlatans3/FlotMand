@@ -404,7 +404,7 @@
     <string name="image_url_info_title">Sådan finder du et billede</string>
     <string name="image_url_info_step_1">Tryk på web-ikonet for at åbne Pexels</string>
     <string name="image_url_info_step_2">Find et billede der passer til dit event</string>
-    <string name="image_url_info_step_3">Hold fingeren nede på billedet → tryk "Copy image link"</string>
+    <string name="image_url_info_step_3">Hold fingeren nede på billedet → tryk \"Copy image link\"</string>
     <string name="image_url_info_step_4">Vend tilbage til appen — URL\'en udfyldes automatisk</string>
     <string name="image_url_info_step_5">Tjek at forhåndsvisningen ser rigtig ud inden du gemmer</string>
 
