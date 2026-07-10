@@ -1,5 +1,6 @@
 package dk.zlatan.flotmand.model
 
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.PropertyName
 
@@ -13,6 +14,8 @@ data class AppNotification(
     val createdAtMillis: Long = 0L,
     val senderPhotoUrl: String = "",
     val senderDisplayName: String = "",
+    // Consumed by the server-side Firestore TTL policy; unused in the UI.
+    val expiresAt: Timestamp? = null,
 ) {
     val notificationType: NotificationType get() = NotificationType.fromValue(type)
 }

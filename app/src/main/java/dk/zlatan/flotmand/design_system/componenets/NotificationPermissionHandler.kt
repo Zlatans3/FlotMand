@@ -17,15 +17,32 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
+import dk.zlatan.flotmand.util.SessionPrefs
+import javax.inject.Inject
+
+@HiltViewModel
+class NotificationPermissionViewModel
+    @Inject
+    constructor(
+        private val sessionPrefs: SessionPrefs,
+    ) : ViewModel() {
+        fun shouldPrompt(): Boolean = !sessionPrefs.isNotificationPromptShown()
+
+        fun markPrompted() = sessionPrefs.markNotificationPromptShown()
+    }
 
 /**
  * Handles the POST_NOTIFICATIONS permission flow on Android 13+.
  *
  * Drop this anywhere in the post-login composition tree — it renders no UI of its own,
- * only showing dialogs when necessary. State is rememberSaveable so the rationale is
- * only shown once per session; the system handles subsequent "don't ask again" behaviour.
+ * only showing dialogs when necessary. The rationale is shown at most once per login:
+ * the flag persists across app restarts (SessionPrefs) and is cleared on sign-out,
+ * so a user who declined isn't nagged on every launch.
  *
  * Flow:
  *   already granted → silent no-op
@@ -33,7 +50,7 @@ import dk.zlatan.flotmand.design_system.componenets.dialogs.FmConfirmDialog
  *   permanently denied (after prompt) → "go to Settings" dialog
  */
 @Composable
-fun NotificationPermissionHandler() {
+fun NotificationPermissionHandler(viewModel: NotificationPermissionViewModel = hiltViewModel()) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
 
     val context = LocalContext.current
@@ -42,7 +59,6 @@ fun NotificationPermissionHandler() {
         context, Manifest.permission.POST_NOTIFICATIONS,
     ) == PackageManager.PERMISSION_GRANTED
 
-    var hasPrompted by rememberSaveable { mutableStateOf(false) }
     var showRationale by rememberSaveable { mutableStateOf(false) }
     var showGoToSettings by rememberSaveable { mutableStateOf(false) }
 
@@ -60,10 +76,10 @@ fun NotificationPermissionHandler() {
         }
     }
 
-    // Show rationale once per session if permission has not been granted yet
+    // Show rationale once per login if permission has not been granted yet
     LaunchedEffect(Unit) {
-        if (!isGranted && !hasPrompted) {
-            hasPrompted = true
+        if (!isGranted && viewModel.shouldPrompt()) {
+            viewModel.markPrompted()
             showRationale = true
         }
     }

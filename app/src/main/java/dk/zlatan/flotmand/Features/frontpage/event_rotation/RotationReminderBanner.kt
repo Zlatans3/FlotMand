@@ -21,10 +21,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.HSpacer
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
@@ -72,7 +74,7 @@ fun RotationReminderBanner(
                     VSpacer(4.dp)
 
                     Text(
-                        text = "Opret en afstemning eller et event for din måned.",
+                        text = stringResource(R.string.rotation_reminder_message),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
                     )
@@ -89,7 +91,7 @@ fun RotationReminderBanner(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp),
                     ) {
                         Text(
-                            text = "Opret nu",
+                            text = stringResource(R.string.rotation_reminder_action),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold,
                         )

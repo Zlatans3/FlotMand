@@ -6,6 +6,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -81,6 +82,12 @@ internal fun PriceCard(
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var showPhonePromptDialog by remember { mutableStateOf(false) }
+
+    // Back while editing cancels the edit instead of leaving the screen.
+    BackHandler(enabled = isEditing) {
+        onTotalPriceChanged(totalPrice?.formatKr(withSuffix = false).orEmpty())
+        isEditing = false
+    }
 
     // Detect the isSavingPrice true→false transition. Because the price update and the
     // isSaving=false happen in the same coroutine, they land in the same frame, so comparing

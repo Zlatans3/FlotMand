@@ -69,6 +69,9 @@ class NotificationServiceImpl
                         callbackFlow {
                             val listener = itemsCollection(uid)
                                 .orderBy(CREATED_AT_FIELD, Query.Direction.DESCENDING)
+                                // Caps the reads a cold listener attach can cost; anything
+                                // older ages out via the server-side TTL on expiresAt.
+                                .limit(QUERY_LIMIT)
                                 // Fires immediately with the current snapshot, then again on
                                 // every document change — giving us real-time updates.
                                 .addSnapshotListener { snapshot, error ->
@@ -88,11 +91,12 @@ class NotificationServiceImpl
                     }
                 }
                 // Turns the cold flow into a hot SharedFlow so all subscribers share one
-                // Firestore listener. Eagerly starts immediately; replay=1 delivers the
-                // latest list to new subscribers without waiting for the next snapshot.
+                // Firestore listener. WhileSubscribed detaches the listener when nothing
+                // observes it (app in background) instead of streaming forever; replay=1
+                // still hands new subscribers the latest list immediately.
                 .shareIn(
                     scope = scope,
-                    started = SharingStarted.Eagerly,
+                    started = SharingStarted.WhileSubscribed(5_000),
                     replay = 1,
                 )
 
@@ -144,14 +148,20 @@ class NotificationServiceImpl
             if (uid.isBlank()) return
             scope.launch {
                 try {
+                    // Filtering on isRead too keeps the query from re-reading (and
+                    // re-writing) docs that are already read every time a detail
+                    // screen opens. Equality-only filters need no composite index.
                     val docs = itemsCollection(uid)
                         .whereEqualTo(REFERENCE_ID_FIELD, referenceId)
+                        .whereEqualTo(IS_READ_FIELD, false)
                         .get()
                         .await()
                     if (docs.documents.isEmpty()) return@launch
-                    val batch = Firebase.firestore.batch()
-                    docs.documents.forEach { doc -> batch.update(doc.reference, IS_READ_FIELD, true) }
-                    batch.commit().await()
+                    docs.documents.chunked(MAX_BATCH_OPS).forEach { chunk ->
+                        val batch = Firebase.firestore.batch()
+                        chunk.forEach { doc -> batch.update(doc.reference, IS_READ_FIELD, true) }
+                        batch.commit().await()
+                    }
                 } catch (e: Exception) {
                     Log.w(TAG, "markAsReadByReferenceId: FAILED for referenceId=$referenceId — ${e.message}")
                 }
@@ -163,11 +173,16 @@ class NotificationServiceImpl
             if (uid.isBlank()) return
             scope.launch {
                 try {
+                    // Deliberately queries the server rather than the replay cache: the
+                    // listener is capped at QUERY_LIMIT docs, but "clear all" must also
+                    // delete anything older than what the UI shows.
                     val docs = itemsCollection(uid).get().await()
                     if (docs.documents.isEmpty()) return@launch
-                    val batch = Firebase.firestore.batch()
-                    docs.documents.forEach { doc -> batch.delete(doc.reference) }
-                    batch.commit().await()
+                    docs.documents.chunked(MAX_BATCH_OPS).forEach { chunk ->
+                        val batch = Firebase.firestore.batch()
+                        chunk.forEach { doc -> batch.delete(doc.reference) }
+                        batch.commit().await()
+                    }
                 } catch (e: Exception) {
                     Log.w(TAG, "Failed to dismiss all notifications: ${e.message}")
                 }
@@ -211,9 +226,11 @@ class NotificationServiceImpl
                 try {
                     val unread = itemsCollection(uid).whereEqualTo(IS_READ_FIELD, false).get().await()
                     if (unread.documents.isEmpty()) return@launch
-                    val batch = Firebase.firestore.batch()
-                    unread.documents.forEach { doc -> batch.update(doc.reference, IS_READ_FIELD, true) }
-                    batch.commit().await()
+                    unread.documents.chunked(MAX_BATCH_OPS).forEach { chunk ->
+                        val batch = Firebase.firestore.batch()
+                        chunk.forEach { doc -> batch.update(doc.reference, IS_READ_FIELD, true) }
+                        batch.commit().await()
+                    }
                 } catch (e: Exception) {
                     Log.w(TAG, "Failed to mark all notifications as read: ${e.message}")
                 }
@@ -226,6 +243,10 @@ class NotificationServiceImpl
             private const val IS_READ_FIELD = "isRead"
             private const val REFERENCE_ID_FIELD = "referenceId"
             private const val CREATED_AT_FIELD = "createdAtMillis"
+            private const val QUERY_LIMIT = 100L
+
+            // Firestore rejects write batches above 500 operations.
+            private const val MAX_BATCH_OPS = 500
             private const val TAG = "NotificationService"
         }
     }

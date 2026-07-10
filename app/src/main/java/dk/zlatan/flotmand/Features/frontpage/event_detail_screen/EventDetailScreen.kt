@@ -1,7 +1,9 @@
 package dk.zlatan.flotmand.Features.frontpage.event_detail_screen
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.provider.CalendarContract
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -12,6 +14,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,10 +30,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -43,19 +44,26 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.AddressMapCard
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.DetailHeader
 import dk.zlatan.flotmand.Features.frontpage.event_detail_screen.ui.EventDetailTopAppBar
@@ -77,6 +85,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +98,7 @@ internal fun EventDetailScreenRoute(
     onDismiss: () -> Unit,
     onEditEvent: (String) -> Unit,
     onNavigateToAccountInformation: () -> Unit = {},
+    onUserClick: (String) -> Unit = {},
     viewModel: EventDetailViewModel =
         hiltViewModel<EventDetailViewModel, EventDetailViewModel.Factory>(
             key = eventId,
@@ -100,6 +112,17 @@ internal fun EventDetailScreenRoute(
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    val density = LocalDensity.current
+    val heroHeightPx = remember(density) { with(density) { 340.dp.toPx() } }
+    val scrollState = rememberScrollState()
+    val hasHero by remember { derivedStateOf { !uiState.event?.eventImageUrl.isNullOrBlank() } }
+    val topBarAlpha by remember {
+        derivedStateOf {
+            if (!hasHero) 1f
+            else (scrollState.value.toFloat() / heroHeightPx).coerceIn(0f, 1f)
+        }
+    }
+
     LaunchedEffect(uiState.isDeleted) {
         if (uiState.isDeleted) onDismiss()
     }
@@ -109,6 +132,7 @@ internal fun EventDetailScreenRoute(
             modifier = Modifier,
             topBar = {
                 EventDetailTopAppBar(
+                    containerAlpha = topBarAlpha,
                     onBackClick = onDismiss,
                     isPublisher = uiState.isPublisher,
                     canEdit = uiState.event?.status != EventStatus.COMPLETED,
@@ -118,44 +142,54 @@ internal fun EventDetailScreenRoute(
             },
         ) { paddingValues ->
             val topBarPadding = paddingValues.calculateTopPadding()
+            // Captured locally so the null check smart-casts (uiState is a delegated
+            // state property, so uiState.event can't be smart-cast directly).
+            val event = uiState.event
             when {
-                uiState.event != null -> {
-                    val event = uiState.event
-                    if (event != null) {
-                        EventDetailScreenContent(
-                            modifier = Modifier.padding(top = topBarPadding),
-                            event = event,
-                            rsvpStatus = uiState.rsvpStatus,
-                            publisher = uiState.publisher,
-                            geoLocation = event.geoLocation,
-                            onParticipantsClick = {
-                                val hasAnyone = !event.participantIds.isNullOrEmpty() ||
-                                    !event.declinedIds.isNullOrEmpty()
-                                if (hasAnyone) viewModel.showParticipants()
-                            },
-                            isPublisher = uiState.isPublisher,
-                            onAccept = { viewModel.onUserRsvp(accepted = true) },
-                            onDecline = { viewModel.onUserRsvp(accepted = false) },
-                            onMapClick = {
-                                val intent = buildDirectionsChooserIntent(
-                                    latitude = event.geoLocation?.latitude,
-                                    longitude = event.geoLocation?.longitude,
-                                    address = event.location,
-                                )
-                                context.startActivity(intent)
-                            },
-                            participants = uiState.participants,
-                            totalPriceInput = uiState.totalPriceInput,
-                            pricePerPerson = uiState.pricePerPerson,
-                            isSavingPrice = uiState.isSavingPrice,
-                            priceError = uiState.priceError,
-                            onTotalPriceChanged = viewModel::onTotalPriceChanged,
-                            onSaveTotalPrice = viewModel::saveTotalPrice,
-                            shouldPromptPhone = shouldPromptPhone,
-                            onPhoneDialogDismissed = viewModel::onPhoneDialogDismissed,
-                            onNavigateToAccountInformation = onNavigateToAccountInformation,
-                        )
-                    }
+                event != null -> {
+                    EventDetailScreenContent(
+                        modifier = Modifier.padding(top = if (hasHero) 0.dp else topBarPadding),
+                        scrollState = scrollState,
+                        event = event,
+                        rsvpStatus = uiState.rsvpStatus,
+                        publisher = uiState.publisher,
+                        geoLocation = event.geoLocation,
+                        onParticipantsClick = {
+                            val hasAnyone = !event.participantIds.isNullOrEmpty() ||
+                                !event.declinedIds.isNullOrEmpty()
+                            if (hasAnyone) viewModel.showParticipants()
+                        },
+                        isPublisher = uiState.isPublisher,
+                        onAccept = { viewModel.onUserRsvp(accepted = true) },
+                        onDecline = { viewModel.onUserRsvp(accepted = false) },
+                        onMapClick = {
+                            val intent = buildDirectionsChooserIntent(
+                                latitude = event.geoLocation?.latitude,
+                                longitude = event.geoLocation?.longitude,
+                                address = event.location,
+                            )
+                            context.startActivity(intent)
+                        },
+                        onDateClick = {
+                            buildAddToCalendarIntent(event)?.let { intent ->
+                                try {
+                                    context.startActivity(intent)
+                                } catch (_: ActivityNotFoundException) {
+                                    // No calendar app installed — nothing sensible to do.
+                                }
+                            }
+                        },
+                        participants = uiState.participants,
+                        totalPriceInput = uiState.totalPriceInput,
+                        pricePerPerson = uiState.pricePerPerson,
+                        isSavingPrice = uiState.isSavingPrice,
+                        priceError = uiState.priceError,
+                        onTotalPriceChanged = viewModel::onTotalPriceChanged,
+                        onSaveTotalPrice = viewModel::saveTotalPrice,
+                        shouldPromptPhone = shouldPromptPhone,
+                        onPhoneDialogDismissed = viewModel::onPhoneDialogDismissed,
+                        onNavigateToAccountInformation = onNavigateToAccountInformation,
+                    )
                 }
 
                 uiState.isLoadingEvent || uiState.isDeleted -> {
@@ -197,7 +231,9 @@ internal fun EventDetailScreenRoute(
                     }
                 }
 
-                uiState.event == null && !uiState.isDeleted -> {
+                // Earlier branches already handled event != null, loading and deleted,
+                // so the only state left is "finished loading but no event found".
+                else -> {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -225,6 +261,17 @@ internal fun EventDetailScreenRoute(
                 participants = uiState.participants,
                 declinedUsers = uiState.declinedUsers,
                 publisherId = uiState.publisher?.id,
+                availableGhosts = uiState.availableGhosts,
+                showAddGhostDialog = uiState.showAddGhostDialog,
+                onShowAddGhostDialog = viewModel::onShowAddGhostDialog,
+                onDismissAddGhostDialog = viewModel::onDismissAddGhostDialog,
+                onAddGhostToList = viewModel::onAddGhostToList,
+                onRemoveGhost = if (uiState.isPublisher) viewModel::onRemoveGhostFromList else null,
+                onUserClick = { userId ->
+                    // The sheet lives in its own window and would cover the pushed screen.
+                    viewModel.onDismissParticipantsSheet()
+                    onUserClick(userId)
+                },
             )
         }
 
@@ -247,6 +294,7 @@ internal fun EventDetailScreenRoute(
 @Composable
 private fun EventDetailScreenContent(
     modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState(),
     event: Event,
     geoLocation: GeoLocation?,
     rsvpStatus: RsvpStatus = RsvpStatus.NONE,
@@ -256,6 +304,7 @@ private fun EventDetailScreenContent(
     onAccept: () -> Unit,
     onDecline: () -> Unit,
     onMapClick: () -> Unit,
+    onDateClick: () -> Unit = {},
     participants: List<User>,
     totalPriceInput: String = "",
     pricePerPerson: Double? = null,
@@ -267,7 +316,6 @@ private fun EventDetailScreenContent(
     onPhoneDialogDismissed: () -> Unit = {},
     onNavigateToAccountInformation: () -> Unit = {},
 ) {
-    val scrollState = rememberScrollState()
     var showFab by remember { mutableStateOf(true) }
 
     LaunchedEffect(scrollState) {
@@ -290,7 +338,28 @@ private fun EventDetailScreenContent(
                 .verticalScroll(scrollState)
                 .background(MaterialTheme.colorScheme.background),
         ) {
-            VSpacer(20.dp)
+            val heroUrl = event.eventImageUrl
+            if (!heroUrl.isNullOrBlank()) {
+                var heroError by remember { mutableStateOf(false) }
+                if (!heroError) {
+                    val context = LocalContext.current
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(heroUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        // Vertical focal point chosen by the host when picking the image.
+                        alignment = BiasAlignment(0f, ((event.imageFocusY ?: 0.5).toFloat() * 2f - 1f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(340.dp),
+                        onError = { heroError = true },
+                    )
+                    VSpacer(20.dp)
+                }
+            }
             DetailHeader(
                 eventDate = event.eventDate,
                 eventTitle = event.eventName.orEmpty(),
@@ -308,6 +377,7 @@ private fun EventDetailScreenContent(
                 date = event.eventDate,
                 time = event.eventStartTime,
                 modifier = Modifier.padding(horizontal = 16.dp),
+                onDateClick = onDateClick,
             )
 
             VSpacer(20.dp)
@@ -347,7 +417,7 @@ private fun EventDetailScreenContent(
 
             if (geoLocation != null && geoLocation.isValid()) {
                 Text(
-                    text = "Lokation",
+                    text = stringResource(R.string.event_detail_location_label),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -370,7 +440,7 @@ private fun EventDetailScreenContent(
             Spacer(modifier = Modifier.height(80.dp))
         }
 
-        if (!isPublisher && event.status == EventStatus.UPCOMING) {
+        if (!isPublisher && event.status != EventStatus.COMPLETED) {
             AnimatedVisibility(
                 visible = showFab,
                 modifier = Modifier.align(Alignment.BottomEnd),
@@ -538,6 +608,39 @@ private fun RsvpFab(
     }
 }
 
+/**
+ * Opens the user's calendar app with a prefilled "new event" form.
+ * Duration mirrors the 3-hour assumption in [Event.status]; events without a
+ * start time are inserted as all-day.
+ */
+private fun buildAddToCalendarIntent(event: Event): Intent? {
+    val date = event.eventDate ?: return null
+    val startTime = event.eventStartTime
+
+    return Intent(Intent.ACTION_INSERT).apply {
+        data = CalendarContract.Events.CONTENT_URI
+        putExtra(CalendarContract.Events.TITLE, event.eventName.orEmpty())
+        event.location?.let { putExtra(CalendarContract.Events.EVENT_LOCATION, it) }
+        event.description?.let { putExtra(CalendarContract.Events.DESCRIPTION, it) }
+
+        if (startTime != null) {
+            val startMillis =
+                LocalDateTime.of(date, startTime)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            val endMillis = startMillis + Duration.ofHours(3).toMillis()
+            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
+        } else {
+            val startMillis =
+                date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+            putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, true)
+        }
+    }
+}
+
 private fun buildDirectionsChooserIntent(
     latitude: Double?,
     longitude: Double?,
@@ -548,9 +651,9 @@ private fun buildDirectionsChooserIntent(
     val uri: Uri =
         if (latitude != null && longitude != null) {
             val label = Uri.encode(address ?: "Event")
-            Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude($label)")
+            "geo:$latitude,$longitude?q=$latitude,$longitude($label)".toUri()
         } else {
-            Uri.parse("geo:0,0?q=${Uri.encode(address.orEmpty())}")
+            "geo:0,0?q=${Uri.encode(address.orEmpty())}".toUri()
         }
 
     val mapIntent = Intent(Intent.ACTION_VIEW, uri)

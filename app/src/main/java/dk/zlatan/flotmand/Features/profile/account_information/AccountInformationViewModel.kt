@@ -62,9 +62,9 @@ class AccountInformationViewModel
                 try {
                     _isLoading.value = true
                     _errorMessage.value = null
+                    // The Firestore write inside updateDisplayName fires the
+                    // currentUser snapshot listener, so the UI updates on its own.
                     accountService.updateDisplayName(newDisplayName)
-                    // Reload user to trigger AuthStateListener and update UI
-                    accountService.reloadUser()
                 } catch (e: Exception) {
                     _errorMessage.value =
                         stringProvider.getString(R.string.error_update_display_name, e.message.orEmpty())

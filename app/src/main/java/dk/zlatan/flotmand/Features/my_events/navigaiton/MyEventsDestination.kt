@@ -6,5 +6,6 @@ sealed class MyEventsDestination {
     data class EditEvent(val eventId: String) : MyEventsDestination()
     data class AddEventFromVoting(val votingId: String) : MyEventsDestination()
     data class EventDetail(val eventId: String) : MyEventsDestination()
+    data class UserDetails(val userId: String) : MyEventsDestination()
 }
 

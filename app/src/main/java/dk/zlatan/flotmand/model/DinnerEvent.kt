@@ -23,6 +23,9 @@ data class Event(
     val geoLocation: GeoLocation? = null,
     val description: String? = null,
     val totalPrice: Double? = null,
+    val eventImageUrl: String? = null,
+    // Vertical focal point for the hero image crop: 0 = top, 0.5/null = center, 1 = bottom.
+    val imageFocusY: Double? = null,
     // Firestore-compatible fields (stored as Strings)
     var eventDateString: String? = null,
     var eventStartTimeString: String? = null,
@@ -53,6 +56,8 @@ data class Event(
         geoLocation: GeoLocation? = this.geoLocation,
         description: String? = this.description,
         totalPrice: Double? = this.totalPrice,
+        eventImageUrl: String? = this.eventImageUrl,
+        imageFocusY: Double? = this.imageFocusY,
         eventDate: LocalDate? = this.eventDate,
         eventStartTime: LocalTime? = this.eventStartTime,
     ): Event =
@@ -66,6 +71,8 @@ data class Event(
             geoLocation = geoLocation,
             description = description,
             totalPrice = totalPrice,
+            eventImageUrl = eventImageUrl,
+            imageFocusY = imageFocusY,
             eventDateString = eventDate?.toString() ?: this.eventDateString,
             eventStartTimeString = eventStartTime?.toString() ?: this.eventStartTimeString,
         )
@@ -118,6 +125,7 @@ data class Event(
             geoLocation: GeoLocation? = null,
             description: String? = null,
             totalPrice: Double? = null,
+            eventImageUrl: String? = null,
             eventDate: LocalDate? = null,
             eventStartTime: LocalTime? = null,
         ): Event =
@@ -131,6 +139,7 @@ data class Event(
                 geoLocation = geoLocation,
                 description = description,
                 totalPrice = totalPrice,
+                eventImageUrl = eventImageUrl,
                 eventDateString = eventDate?.toString(),
                 eventStartTimeString = eventStartTime?.toString(),
             )

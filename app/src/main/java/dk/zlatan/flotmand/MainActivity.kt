@@ -3,10 +3,12 @@ package dk.zlatan.flotmand
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.animation.DecelerateInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,7 +46,22 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        // Gentle zoom-and-fade into the app instead of the default hard cut.
+        splashScreen.setOnExitAnimationListener { provider ->
+            provider.view
+                .animate()
+                .alpha(0f)
+                .scaleX(1.15f)
+                .scaleY(1.15f)
+                .setDuration(350L)
+                .setInterpolator(DecelerateInterpolator())
+                .withEndAction { provider.remove() }
+                .start()
+        }
+
         enableEdgeToEdge(
             statusBarStyle =
                 SystemBarStyle.auto(

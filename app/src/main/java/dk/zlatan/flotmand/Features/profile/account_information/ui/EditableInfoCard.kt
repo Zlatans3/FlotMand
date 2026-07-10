@@ -42,28 +42,23 @@ import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 /**
  * A card component that displays a list of editable information fields.
  * Supports inline editing with save/cancel actions and loading states.
+ * The section title lives outside the card, profile-screen style.
  *
- * @param title The title displayed at the top of the card
  * @param items List of editable information items to display
  * @param isLoading Whether the card is in a loading state
  */
 @Composable
 internal fun EditableInfoCard(
     modifier: Modifier = Modifier,
-    title: String,
     items: List<EditableInfoItem>,
     isLoading: Boolean = false,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-        elevation =
-            CardDefaults.cardElevation(
-                defaultElevation = 2.dp,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             ),
     ) {
         Column(
@@ -72,25 +67,18 @@ internal fun EditableInfoCard(
                     .fillMaxWidth()
                     .padding(16.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                if (isLoading) {
+            if (isLoading) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.padding(4.dp),
+                        modifier = Modifier.size(18.dp),
                         strokeWidth = 2.dp,
                     )
                 }
+                VSpacer(8.dp)
             }
-            VSpacer(12.dp)
 
             items.forEachIndexed { index, item ->
                 EditableInfoRow(

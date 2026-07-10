@@ -25,8 +25,7 @@ import dk.zlatan.flotmand.Features.profile.notificationsettings.NotificationSett
 import dk.zlatan.flotmand.Features.profile.switchlanguage.SwitchLanguageScreen
 import dk.zlatan.flotmand.Features.profile.theme.ThemeSettingsScreen
 import dk.zlatan.flotmand.design_system.componenets.PredictiveBackScaleContainer
-
-private const val PRIVACY_POLICY_URL = "https://zlatans3.github.io/privacy-policy/"
+import dk.zlatan.flotmand.util.ExternalLinks
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -57,7 +56,7 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             },
                             onPrivacyPolicyClick = {
                                 CustomTabsIntent.Builder().build()
-                                    .launchUrl(context, PRIVACY_POLICY_URL.toUri())
+                                    .launchUrl(context, ExternalLinks.PRIVACY_POLICY_URL.toUri())
                             },
                         )
                     }
@@ -130,7 +129,7 @@ fun ProfileNavigation(viewModel: ProfileNavigationViewModel = hiltViewModel()) {
                             },
                             onPrivacyPolicyClick = {
                                 CustomTabsIntent.Builder().build()
-                                    .launchUrl(context, PRIVACY_POLICY_URL.toUri())
+                                    .launchUrl(context, ExternalLinks.PRIVACY_POLICY_URL.toUri())
                             },
                         )
                     }

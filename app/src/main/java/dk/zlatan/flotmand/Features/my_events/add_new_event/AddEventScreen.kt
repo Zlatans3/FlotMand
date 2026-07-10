@@ -12,6 +12,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -32,9 +34,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Today
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,6 +50,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -54,18 +62,29 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.BiasAlignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -75,12 +94,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.AddressAutocompleteDropdown
 import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.EventTextField
+import dk.zlatan.flotmand.Features.my_events.add_new_event.ui.openPexelsSearch
 import dk.zlatan.flotmand.Features.my_events.edit_event.EditEventViewModel
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
+import dk.zlatan.flotmand.design_system.icon.FmIcons
 import dk.zlatan.flotmand.model.AddressPrediction
 import dk.zlatan.flotmand.model.Event
 import com.airbnb.lottie.compose.LottieAnimation
@@ -262,6 +288,9 @@ internal fun AddEventScreen(
             isKeyboardOpen = isKeyboardOpen,
             focusManager = focusManager,
             isEditMode = false,
+            onEventImageUrlChange = viewModel::onEventImageUrlChange,
+            onImageUrlFromClipboard = viewModel::onImageUrlFromClipboard,
+            onImageFocusChange = viewModel::onImageFocusChange,
         )
         }
 
@@ -419,6 +448,9 @@ internal fun EditEventScreen(
             isKeyboardOpen = isKeyboardOpen,
             focusManager = focusManager,
             isEditMode = true,
+            onEventImageUrlChange = viewModel::onEventImageUrlChange,
+            onImageUrlFromClipboard = viewModel::onImageUrlFromClipboard,
+            onImageFocusChange = viewModel::onImageFocusChange,
         )
     }
 }
@@ -443,12 +475,36 @@ private fun EventScreenContent(
     onCreateEvent: () -> Unit,
     isEditMode: Boolean,
     isKeyboardOpen: Boolean,
+    onEventImageUrlChange: (String) -> Unit = {},
+    onImageUrlFromClipboard: (String) -> Unit = {},
+    onImageFocusChange: (Float) -> Unit = {},
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showImageInfoSheet by remember { mutableStateOf(false) }
+    var imageLoadError by remember { mutableStateOf(false) }
+    var awaitingPexelsClipboard by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val locationFieldRequester = remember { BringIntoViewRequester() }
+    val imageInfoSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(event.eventImageUrl) { imageLoadError = false }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, lifecycleEvent ->
+            if (lifecycleEvent == Lifecycle.Event.ON_RESUME && awaitingPexelsClipboard) {
+                awaitingPexelsClipboard = false
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val text = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                if (text != null) onImageUrlFromClipboard(text)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     LaunchedEffect(addressPredictions.isNotEmpty(), locationTextFieldValue.text) {
         if (addressPredictions.isNotEmpty() || locationTextFieldValue.text.isNotEmpty()) {
@@ -498,6 +554,129 @@ private fun EventScreenContent(
             minLines = 3,
             maxLines = 6,
         )
+
+        VSpacer(16.dp)
+
+        // Image URL field
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.image_url_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                IconButton(
+                    onClick = { showImageInfoSheet = true },
+                    modifier = Modifier.size(32.dp).padding(start = 4.dp),
+                ) {
+                    Icon(
+                        imageVector = FmIcons.info,
+                        contentDescription = stringResource(R.string.image_url_info_content_description),
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            VSpacer(8.dp)
+            OutlinedTextField(
+                value = event.eventImageUrl.orEmpty(),
+                onValueChange = {
+                    onEventImageUrlChange(it)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = {
+                    Text(
+                        text = stringResource(R.string.image_url_placeholder),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        focusManager.clearFocus()
+                        awaitingPexelsClipboard = true
+                        openPexelsSearch(context, event.eventName.orEmpty())
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = stringResource(R.string.open_pexels_content_description),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                ),
+            )
+
+            val imageUrl = event.eventImageUrl
+            if (!imageUrl.isNullOrBlank()) {
+                VSpacer(8.dp)
+                val focusY = (event.imageFocusY ?: 0.5).toFloat()
+                // pointerInput is keyed on the url, so the drag lambda would capture a
+                // stale focus value without rememberUpdatedState.
+                val currentFocusY by rememberUpdatedState(focusY)
+                var previewHeightPx by remember { mutableIntStateOf(0) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .onSizeChanged { previewHeightPx = it.height }
+                        .pointerInput(imageUrl) {
+                            detectVerticalDragGestures { change, dragAmount ->
+                                change.consume()
+                                if (previewHeightPx > 0) {
+                                    // Dragging down reveals content further up the image.
+                                    val delta = -dragAmount / (previewHeightPx * 2f)
+                                    onImageFocusChange((currentFocusY + delta).coerceIn(0f, 1f))
+                                }
+                            }
+                        },
+                ) {
+                    val context = LocalContext.current
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        alignment = BiasAlignment(0f, focusY * 2f - 1f),
+                        modifier = Modifier.fillMaxSize(),
+                        onError = { imageLoadError = true },
+                        onSuccess = { imageLoadError = false },
+                    )
+                    if (imageLoadError) {
+                        Text(
+                            text = stringResource(R.string.image_load_error),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(horizontal = 16.dp),
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.event_image_drag_hint),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White,
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .padding(bottom = 8.dp)
+                                .clip(RoundedCornerShape(50))
+                                .background(Color.Black.copy(alpha = 0.45f))
+                                .padding(horizontal = 10.dp, vertical = 4.dp),
+                        )
+                    }
+                }
+            }
+        }
 
         VSpacer(20.dp)
 
@@ -720,7 +899,54 @@ private fun EventScreenContent(
                 }
             }
         }
+    } // Column
+
+    if (showImageInfoSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showImageInfoSheet = false },
+            sheetState = imageInfoSheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 40.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.image_url_info_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                val steps = listOf(
+                    stringResource(R.string.image_url_info_step_1),
+                    stringResource(R.string.image_url_info_step_2),
+                    stringResource(R.string.image_url_info_step_3),
+                    stringResource(R.string.image_url_info_step_4),
+                    stringResource(R.string.image_url_info_step_5),
+                )
+                steps.forEachIndexed { index, step ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.Top,
+                    ) {
+                        Text(
+                            text = "${index + 1}.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            text = step,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
+        }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
