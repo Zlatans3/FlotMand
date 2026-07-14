@@ -62,6 +62,8 @@ import dk.zlatan.flotmand.Features.frontpage.ui.NextEventSection
 import dk.zlatan.flotmand.Features.frontpage.ui.newFmTopAppBar
 import dk.zlatan.flotmand.R
 import dk.zlatan.flotmand.design_system.componenets.EventCard
+import dk.zlatan.flotmand.design_system.componenets.dialogs.FmWhatsNewDialog
+import dk.zlatan.flotmand.design_system.componenets.dialogs.WhatsNewChange
 import dk.zlatan.flotmand.design_system.componenets.spacers.VSpacer
 import dk.zlatan.flotmand.design_system.theme.FlotMandTheme
 import dk.zlatan.flotmand.model.Event
@@ -82,6 +84,7 @@ internal fun FrontPageRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val bottomSheetState by viewModel.bottomSheetState.collectAsStateWithLifecycle()
+    val showWhatsNew by viewModel.showWhatsNew.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     var showDebugSheet by remember { mutableStateOf(false) }
     var showHostRotationSheet by remember { mutableStateOf(false) }
@@ -253,6 +256,21 @@ internal fun FrontPageRoute(
         HostRotationSheet(
             onDismiss = { showHostRotationSheet = false },
             snackbarHostState = snackbarHostState,
+        )
+    }
+
+    if (showWhatsNew && !uiState.isLoading) {
+        FmWhatsNewDialog(
+            versionName = BuildConfig.VERSION_NAME,
+            changes =
+                WhatsNewContent.entries.map { entry ->
+                    WhatsNewChange(
+                        type = entry.type,
+                        title = stringResource(entry.titleRes),
+                        description = entry.descriptionRes?.let { stringResource(it) },
+                    )
+                },
+            onDismiss = viewModel::onWhatsNewDismissed,
         )
     }
 }

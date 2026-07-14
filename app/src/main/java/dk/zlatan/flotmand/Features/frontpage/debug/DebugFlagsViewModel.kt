@@ -28,7 +28,8 @@ class DebugFlagsViewModel @Inject constructor(
         featureFlagManager.isEnabled(FeatureKey.SHOW_PHONE_DIALOG_ON_PRICE_ADDED),
         featureFlagManager.isEnabled(FeatureKey.SHOW_NEXT_HOST_BANNER),
         featureFlagManager.isEnabled(FeatureKey.FORCE_PROFILE_SETUP),
-    ) { showPhoneDialog, showNextHostBanner, forceProfileSetup ->
+        featureFlagManager.isEnabled(FeatureKey.FORCE_WHATS_NEW),
+    ) { showPhoneDialog, showNextHostBanner, forceProfileSetup, forceWhatsNew ->
         listOf(
             DebugFlagItem(
                 key = FeatureKey.SHOW_PHONE_DIALOG_ON_PRICE_ADDED,
@@ -47,6 +48,12 @@ class DebugFlagsViewModel @Inject constructor(
                 displayName = "Force profile setup",
                 description = "Present the first-time profile setup screen; auto-disables when you continue or skip",
                 isEnabled = forceProfileSetup,
+            ),
+            DebugFlagItem(
+                key = FeatureKey.FORCE_WHATS_NEW,
+                displayName = "Force what's new dialog",
+                description = "Show the what's new dialog on the front page regardless of the last seen version; auto-disables when dismissed",
+                isEnabled = forceWhatsNew,
             ),
         )
     }.stateIn(

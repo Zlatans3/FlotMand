@@ -444,4 +444,23 @@
     <string name="rotation_choose_person">Vælg en person</string>
     <string name="copy_address_content_description">Kopier adresse</string>
     <string name="event_detail_location_label">Lokation</string>
+
+    <!--    WHATS NEW DIALOG-->
+    <string name="whats_new_title">Hvad er nyt?</string>
+    <string name="whats_new_version">Version %1$s</string>
+    <string name="whats_new_confirm">Fedt, lad os komme i gang!</string>
+    <string name="whats_new_next">Næste</string>
+    <string name="change_type_new">Nyt</string>
+    <string name="change_type_improved">Forbedret</string>
+    <string name="change_type_fixed">Rettet</string>
+
+    <!--    WHATS NEW 1.4.0 ENTRIES-->
+    <string name="whats_new_140_images_title">Billeder på events</string>
+    <string name="whats_new_140_images_description">Dine events får nu et flot billede, og du kan selv justere udsnittet.</string>
+    <string name="whats_new_140_polls_title">Nemmere afstemninger</string>
+    <string name="whats_new_140_polls_description">Ny oplevelse når du opretter afstemninger, og du kan tilføje flere datoer ad gangen.</string>
+    <string name="whats_new_140_profile_title">Opdateret profil</string>
+    <string name="whats_new_140_profile_description">Profil- og kontosiderne har fået en visuel overhaling.</string>
+    <string name="whats_new_140_fixes_title">Fejlrettelser</string>
+    <string name="whats_new_140_fixes_description">Diverse småfejl er rettet og notifikationer er blevet optimeret.</string>
 </resources>

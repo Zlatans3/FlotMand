@@ -13,4 +13,7 @@ enum class FeatureKey(val prefKey: Preferences.Key<Boolean>) {
     FORCE_PROFILE_SETUP(
         booleanPreferencesKey("force_profile_setup"),
     ),
+    FORCE_WHATS_NEW(
+        booleanPreferencesKey("force_whats_new"),
+    ),
 }
