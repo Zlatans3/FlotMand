@@ -6,7 +6,7 @@
   </picture>
 </div>
 
-
+![CI](https://github.com/zlatans3/FlotMand/actions/workflows/internal-release.yml/badge.svg)
 
 <h1 align="center">
   👋 Hello FlotMand
