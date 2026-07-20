@@ -102,53 +102,75 @@ I made a public trelloboard to keep track and display the current workflow of th
 
 this app is an Online first app starting with a login screen that lets you authenticate via Gmail through Firebase auth. From there you will land on the home screen with bottomnavigation to let you navigate through the app.
 
+After login, you will be taken to the main app which makes you able to swithch between different bottomnavigation tabs. 
+
 <BR><BR>
 
 ```mermaid
 graph TD
-      Login[Login] -->|Firebase auth| MainApp
+    Login[Login] -->|Firebase auth, new user| ProfileSetup[Profile Setup]
+    Login -->|Firebase auth, existing user| MainApp
+    ProfileSetup -->|completed| MainApp
 
-      subgraph App Launch
-          Login
-      end
+    subgraph "App Launch"
+        Login
+        ProfileSetup
+    end
 
-      subgraph Bottom Navigation
-          FrontPage[Front Page]                                                                                             
-          MyEvents[My Events]
-          Profile[Profile]
-      end
+    subgraph "Bottom Navigation"
+        FrontPage[Front Page]
+        Polls[Polls]
+        MyEvents[My Events]
+        Profile[Profile]
+    end
 
-      MainApp --> FrontPage
-      MainApp --> MyEvents
-      MainApp --> Profile
-  
-      %% Front Page stack
-      FrontPage --> Notif[Notifications]
-      FrontPage -->|any event| FP_Detail[Event Detail]
-      FrontPage --> Polls[Polls]
+    MainApp --> FrontPage
+    MainApp --> Polls
+    MainApp --> MyEvents
+    MainApp --> Profile
 
-      Notif -->|event tap| FP_Detail
-      Notif -->|poll tap| PollDetail
+    %% Front Page stack
+    FrontPage --> Notif[Notifications]
+    FrontPage -->|event tap| FP_Detail[Event Detail]
+    FrontPage -->|user tap| FP_UserDetails[User Details]
+    FrontPage -.->|polls button, cross-tab| Polls
 
-      Polls --> PollDetail[Poll Detail]                                                                                     
-      PollDetail -->|create event| FP_CreateEvent[Create Event]
-      FP_CreateEvent -->|event created| FP_Detail
+    Notif -->|event tap| FP_Detail
+    Notif -->|poll tap| FP_VotingDetail[Voting Detail]
 
-      FP_Detail --> FP_Edit[Edit Event]
+    FP_Detail --> FP_Edit[Edit Event]
+    FP_Detail --> FP_UserDetails
+    FP_Detail -.->|account info, cross-tab| Profile
 
-      %% My Events stack
-      MyEvents --> ME_CreateEvent[Create Event]                                                                             
-      MyEvents -->|own event| ME_Detail[Event Detail]
-      ME_Detail --> ME_Edit[Edit Event]
-      ME_CreateEvent -->|event created| ME_Detail
+    FP_UserDetails -->|event tap| FP_Detail
 
-      %% Profile stack
-      Profile -->|log out| Login                                                                                            
-      Profile --> AccountInfo[Account Information]
-      Profile --> Language[Language]
-      Profile --> NotifSettings[Notification Settings]
-      Profile --> Theme[Theme Settings]
-      AccountInfo --> Licenses[Open Source Licenses]
+    FP_VotingDetail -->|create event| FP_AddEvent[Add Event]
+    FP_AddEvent -.->|event created, cross-tab| ME_Detail
+
+    %% Polls stack
+    Polls -->|voting tap| PollDetail[Poll Detail]
+    PollDetail -->|create event| P_AddEvent[Add Event]
+    P_AddEvent -.->|event created, cross-tab| ME_Detail
+
+    %% My Events stack
+    MyEvents --> ME_AddEvent[Add Event]
+    MyEvents -->|event tap| ME_Detail[Event Detail]
+    ME_Detail --> ME_Edit[Edit Event]
+    ME_Detail --> ME_UserDetails[User Details]
+    ME_Detail -.->|account info, cross-tab| Profile
+    ME_AddEvent -->|event created| ME_Detail
+    ME_UserDetails -->|event tap| ME_Detail
+
+    %% Profile stack
+    Profile -->|log out| Login
+    Profile --> AccountInfo[Account Information]
+    Profile --> Language[Language]
+    Profile --> NotifSettings[Notification Settings]
+    Profile --> Theme[Theme Settings]
+    Profile -->|privacy policy| ExternalBrowser[External Browser]
+    AccountInfo --> Licenses[Open Source Licenses]
+
+
 ````
 
 # 👤 Can i use this app? 
