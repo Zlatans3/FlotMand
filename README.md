@@ -36,29 +36,30 @@ if you are interested in following the roadmap, i made public [Trello board](htt
 
 # ⚙️ What makes this app special? 
 
-Unlike many other vibe coded app, I strove for consistent and concise architecture. I also make sure to follow the best practices whether it is state handling navigation and logic in general. 
-This is very loosely based on the Now in Android Repo. 
+Unlike many other vibe coded app, This project is meant as an architectural playground, where i could set myself up to learn the many best practices and design patterns that the Android world covers while staying in the loop of the newest development that the Kotlin team is producing.
 
-The aim is to make my little hobby project look like enterprice quality app material. 
+The aim is to create something scalable, easy to read and fun to use. 
 
 <BR>
-<BR>
+<BR> 
 
 # 🎨 Design
 
-I love being creative, but designing is hard. I created a figma but most of it is screenshots for now, sinse i wanted quick results. 
+Sinse i've got no internal branding and would like to make the switch from light to dark mode as easy as possible, material theming was the obvious choice here. 
 
-[FIGMA](https://www.figma.com/design/ABW0FggMW6D8578ptpNgAx/Flotmand-App?node-id=0-1&t=AW1gJDiwbwg9VJYZ-1)
+I unfurtunetly hadn't had extra time to fit in any Figma design so here are some screenshots. 
 
-## 📱 Some nice looking screenshots
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/bf0e4638-b020-4e08-9b3b-e074768ca787" />
 
-<img width="250" alt="image" src="https://github.com/user-attachments/assets/a00794d6-fd7a-4974-a603-2bdfd94f93c6" />
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/fd01162c-2b55-460f-8a26-a14ea45df140" />
 
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/6dc01b48-218d-47de-b80d-47e72382e594" />
 
-<img width="250" alt="image" src="https://github.com/user-attachments/assets/cf3ee348-9955-485b-bb0f-0bcd9847dfce" />
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/aef4bd1e-fb81-4efa-b595-668426470a31" />
 
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/0c319373-5dac-4128-aa71-49705778baf6" />
 
-<img width="250" alt="image" src="https://github.com/user-attachments/assets/14ccd8a8-c211-4c16-83f8-a8f555200e1c" />
+<img width="250" alt="image" src="https://github.com/user-attachments/assets/29a5bd24-f932-4e53-862c-bd88a6b298c3" />
 
 
 
@@ -76,21 +77,26 @@ I love being creative, but designing is hard. I created a figma but most of it i
 
 I am hoping to add a lot of interesting entires to this list. Here you will be able to read about the interesting dependencies and technical stuff that has helped this project become what it is
 
-- setup Hilt and dagger for DI
+- setup Hilt/ dagger for DI
+- setup environment handling for both debug and release
+- created my own custom implementation of a debug feature flag menu
+- CI/CD pipeline for uploading new builds to internal test track on google play console
 - Migrated app from Nav2 to Nav3
-- Firebase Authenication With Google Login
+- Firebase Authenication OAuth using Google
 - Firestore Database as Backend with CRUD
 - Complete use of Material 3 theme and fully Dark/ light mode supported
-- 
+- Displaying Profile images and linked URL's using Coil
+- Firebase FCM Tokken based notifications using Node.js
+- Google Maps SDK and Places API for searching addresses/ places and displaying them on a map
 
 # 📍 Road Map 
 
+I made a public trelloboard to keep track and display the current workflow of the app. During the next fase i would like to work on the following: 
+
+- Refactor project to serve as a comunity hub, so other people can make use of event planning just like my friends and i
 - Hoping to recreate this project as Compose multiplatform
-- Add retrofit support for adding addresses and rejseplanen API.
-- Notifications for reminders
+- adding addresses and rejseplanen API
 - Widget with Glance
-- Using Google maps to show address
-- Use of Room to save user data
 
 # 🏗️ Structure 
 
